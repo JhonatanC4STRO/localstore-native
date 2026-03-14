@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa con Ubicación</title>
+    <!-- CSS de Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mostrar mi ubicación en un mapa</h1>
+    <button id="btnUbicacion">Obtener y mostrar ubicación</button>
+    <p id="estado"></p>
+    <div id="map"></div>
+
+    <!-- JS de Leaflet -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        const estado = document.getElementById("estado");
+        const btn = document.getElementById("btnUbicacion");
+
+        btn.addEventListener("click", () => {
+            if (!navigator.geolocation) {
+                estado.textContent = "La geolocalización no es soportada por tu navegador.";
+                return;
+            }
+
+            estado.textContent = "Obteniendo ubicación...";
+
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const lat = pos.coords.latitude;
+                    const lon = pos.coords.longitude;
+
+                    estado.textContent = `Ubicación obtenida: Lat ${lat}, Lon ${lon}`;
+
+                    // Crear mapa centrado en la ubicación
+                    const map = L.map('map').setView([lat, lon], 15);
+
+                    // Cargar capa de mapa
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; OpenStreetMap contributors'
+                    }).addTo(map);
+
+                    // Agregar marcador
+                    L.marker([lat, lon]).addTo(map)
+                        .bindPopup("📍 Estás aquí")
+                        .openPopup();
+                },
+                (error) => {
+                    switch (error.code) {
+                        case error.PERMISSION_DENIED:
+                            estado.textContent = "Permiso denegado para obtener ubicación.";
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            estado.textContent = "Información de ubicación no disponible.";
+                            break;
+                        case error.TIMEOUT:
+                            estado.textContent = "Tiempo de espera agotado.";
+                            break;
+                        default:
+                            estado.textContent = "Error desconocido.";
+                            break;
+                    }
+                }
+            );
+        });
+    </script>
+</body>
+</html>
