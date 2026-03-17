@@ -13,10 +13,6 @@ if (isset($_POST['save'])) {
 
     if (mysqli_num_rows($result) > 0) {
         $_SESSION['user'] = mysqli_fetch_assoc($result);
-        header("Location: ../app/dashboard.php");
-    } else {
-        $_SESSION['message'] = "Credenciales incorrectas";
-        $_SESSION['message_type'] = "error";
-        header("Location: ../app/auth/login.php");
+        header("Location: ../app/inde.php");
     }
 }

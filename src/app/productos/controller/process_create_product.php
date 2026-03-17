@@ -1,5 +1,11 @@
 <?php
 include("../../../config/conexion.php");
+session_start();
+
+if (!isset($_SESSION['user'])) {
+    header("Location: ../../auth/login.php");
+    exit();
+}
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nombre = $_POST['nombre'];
@@ -9,9 +15,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $longitude = $_POST['longitude'];
     $latitude = $_POST['latitude'];
     $estado = $_POST['estado'];
+
     // Insertar el producto en la base de datos
-    $query = "INSERT INTO products (title, price, description, longitude, latitude, category_id, status)
-          VALUES ('$nombre', '$precio', '$descripcion', '$longitude', '$latitude', '$categoria', '$estado')";
+    $user_id = $_SESSION['user']['id'];
+    $query = "INSERT INTO products (title, price, description, longitude, latitude, category_id, status, user_id)
+          VALUES ('$nombre', '$precio', '$descripcion', '$longitude', '$latitude', '$categoria', '$estado', '$user_id')";
 
     if (mysqli_query($conn, $query)) {
         $product_id = mysqli_insert_id($conn);
@@ -31,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         }
 
-        header("Location: ../crear.php");
+        header("Location: ../../crear.php");
         exit();
     } else {
         echo "Error: " . mysqli_error($conn);
