@@ -13,7 +13,7 @@
         <div class="swiper-wrapper">
 
             <!-- Slide 1 -->
-            <div class="swiper-slide flex items-center px-40 bg-gray-300 p-10">
+            <div class="swiper-slide flex items-center px-40 bg-green-300 p-10">
 
                 <!-- Texto -->
                 <div class="w-1/2">
@@ -34,7 +34,7 @@
             </div>
 
             <!-- Slide 2 -->
-            <div class="swiper-slide px-40 flex items-center bg-gray-300 p-10">
+            <div class="swiper-slide px-40 flex items-center bg-yellow-300 p-10">
 
                 <div class="w-1/2">
                     <h2 class="text-5xl font-bold mb-4">¡Familias emprendedoras!</h2>
@@ -53,7 +53,7 @@
             </div>
 
             <!-- Slide 3 -->
-            <div class="swiper-slide px-40 flex items-center bg-gray-300 p-10">
+            <div class="swiper-slide px-40 flex items-center bg-blue-300 p-10">
 
                 <div class="w-1/2">
                     <h2 class="text-5xl font-bold mb-4">Productos locales</h2>
