@@ -13,6 +13,7 @@ require_once "../../config/conexion.php";
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <link rel="stylesheet" href="../../style/register.css">
+  <link rel="stylesheet" href="../../output.css">
 </head>
 
 <body>
@@ -24,10 +25,7 @@ require_once "../../config/conexion.php";
 
     <div class="lp-content">
 
-      <a href="#" class="lp-logo">
-        <div class="lp-logo-icon"><i class="bi bi-shop-window"></i></div>
-        <a href="../inde.php" class="lp-logo-text">Comercio<em>Local</em></a>
-      </a>
+       <a href="../inde.php" class=" flex justify-center" ><img class="h-40 w-40" src="../Logo de Comercio Local.png" alt=""></a>
 
       <h2 class="lp-headline">Únete a la<br>comunidad <em>local</em><br>más grande</h2>
       <p class="lp-sub">Más de 120.000 personas ya compran y venden en su ciudad con ComercioLocal. ¡Sé parte hoy!</p>
@@ -225,7 +223,7 @@ require_once "../../config/conexion.php";
       </div>
 
       <div class="login-prompt">
-        ¿Ya tienes una cuenta? <a href="#">Iniciar sesión</a>
+        ¿Ya tienes una cuenta? <a href="./login.php">Iniciar sesión</a>
       </div>
 
       <div class="security-badge">

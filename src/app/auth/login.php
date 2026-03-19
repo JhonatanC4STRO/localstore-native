@@ -177,7 +177,7 @@ require_once "../../config/conexion.php";
       </div>
 
       <div class="register-prompt">
-        ¿No tienes cuenta? <a href="#">Crear cuenta gratis</a>
+        ¿No tienes cuenta? <a href="./register.php">Crear cuenta gratis</a>
       </div>
 
       <div class="security-badge">

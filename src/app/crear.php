@@ -3,7 +3,7 @@
 <?php
 session_start();
 if (!isset($_SESSION['user'])) {
-    header("Location: ./auth/register.php");
+    header("Location: ./auth/login.php");
     exit();
 }
 
@@ -25,138 +25,81 @@ $user_id = $_SESSION['user']['id'];
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../output.css">
+    <link rel="stylesheet" href="../style/crear.css">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../style/crear.css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 
 
     <style>
-        :root {
-            --green-900: #0d3a1e;
-            --green-800: #145228;
-            --green-700: #1a6b33;
-            --green-600: #1f8340;
-            --green-500: #25a050;
-            --green-400: #36c465;
-            --green-300: #5dd988;
-            --green-100: #d0f5df;
-            --green-50: #edfaf3;
 
-            --yellow-600: #c47a00;
-            --yellow-500: #e8930a;
-            --yellow-400: #f7ab1e;
-            --yellow-300: #fcc945;
-            --yellow-200: #fde08a;
-            --yellow-100: #fef3cc;
-            --yellow-50: #fffae8;
-
-            --text-dark: #0f1f15;
-            --text-mid: #344a3b;
-            --text-soft: #6b8070;
-            --bg-page: #f5faf7;
-            --bg-card: #ffffff;
-            --radius-card: 18px;
-            --shadow-card:
-                0 4px 20px rgba(13, 58, 30, 0.1), 0 1px 4px rgba(13, 58, 30, 0.06);
-            --shadow-hover:
-                0 10px 36px rgba(13, 58, 30, 0.16), 0 2px 8px rgba(13, 58, 30, 0.08);
-        }
-
-        .user-chip {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1.5px solid rgba(255, 255, 255, 0.18);
-            border-radius: 50px;
-            padding: 5px 14px 5px 5px;
-            cursor: pointer;
-            transition: all 0.2s;
-            user-select: none;
-        }
-
-        .user-chip:hover {
-            background: rgba(255, 255, 255, 0.14);
-            border-color: var(--yellow-400);
-        }
-
-        .user-avatar {
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--yellow-400), var(--yellow-300));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: "Syne", sans-serif;
-            font-weight: 800;
-            font-size: 0.88rem;
-            color: var(--green-900);
-            flex-shrink: 0;
-            box-shadow: 0 0 0 2px rgba(247, 171, 30, 0.4);
-        }
-
-        .user-chip-info {
-            line-height: 1.2;
-        }
-
-        .user-chip-greeting {
-            font-size: 0.68rem;
-            color: rgba(255, 255, 255, 0.45);
-        }
-
-        .user-chip-name {
-            font-size: 0.84rem;
-            font-weight: 600;
-            color: #fff;
-            max-width: 100px;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-        }
-
-        .user-chip-arrow {
-            font-size: 0.7rem;
-            color: rgba(255, 255, 255, 0.45);
-            transition: transform 0.2s;
-        }
-
-        .user-menu-wrap.open .user-chip-arrow {
-            transform: rotate(180deg);
-        }
     </style>
 
 </head>
 
 <body>
 
-    <!-- ── TOP BAR ── -->
     <header class="topbar">
-        <a href="./inde.php" class="topbar-logo">
-            <div cass="logo-box"><i class="bi bi-shop"></i></div>
-            Comercio<span class="logo-em">Local</span>
-        </a>
-        <div class="topbar-spacer"></div>
-        <!-- <nav class="topbar-nav">
-            <a href="#" class="active"><i class="bi bi-speedometer2"></i> Dashboard</a>
-            <a href="#"><i class="bi bi-box-seam"></i> Mis productos</a>
-            <a href="#"><i class="bi bi-chat-dots"></i> Mensajes</a>
-        </nav> -->
-        <a href="#" class="topbar-btn"><i class="bi bi-plus-circle-fill"></i> Publicar</a>
-        <?php if (isset($_SESSION['user'])): ?>
-            <div class="user-chip" id="userChip">
-                <div style="position:relative;">
-                    <div class="user-avatar"><?php echo $userInitial; ?></div>
-                    <div class="online-dot"></div>
-                </div>
-                <div class="user-chip-info">
-                    <div class="user-chip-greeting">Hola,</div>
-                    <div class="user-chip-name"><?php echo htmlspecialchars($userName); ?></div>
-                </div>
-                <i class="bi bi-chevron-down user-chip-arrow"></i>
+        <a href="./inde.php" class="h-28 w-28"><img class="h-28 w-28" src="./Logo de Comercio Local.png" alt=""></a>
+
+        <div class="tb-search">
+            <input type="text" placeholder="Buscar productos, anuncios...">
+            <button><i class="bi bi-search"></i></button>
+        </div>
+
+        <div class="tb-spacer"></div>
+
+        <div class="tb-actions">
+
+            <div class="tb-icon-btn">
+                <i class="bi bi-bell"></i>
+                <div class="notif-dot"></div>
             </div>
-        <?php endif; ?>
+            <div class="tb-icon-btn">
+                <i class="bi bi-chat-dots"></i>
+            </div>
+            <div class="tb-icon-btn">
+                <i class="bi bi-question-circle"></i>
+            </div>
+
+            <!-- User chip + dropdown — LOGIC PRESERVED -->
+            <?php if ($isLoggedIn): ?>
+                <div class="user-menu-wrap" id="userMenuWrap">
+                    <div class="user-chip" id="userChip">
+                        <div style="position:relative;">
+                            <div class="user-avatar"><?php echo $userInitial; ?></div>
+                            <div class="online-dot"></div>
+                        </div>
+                        <div class="uc-info">
+                            <div class="uc-greeting">Hola,</div>
+                            <div class="uc-name"><?php echo htmlspecialchars($userName); ?></div>
+                        </div>
+                        <i class="bi bi-chevron-down uc-arrow"></i>
+                    </div>
+
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="ud-head">
+                            <div class="ud-av"><?php echo $userInitial; ?></div>
+                            <div>
+                                <div class="ud-name"><?php echo htmlspecialchars($user['full_name']); ?></div>
+                                <div class="ud-email"><?php echo htmlspecialchars($user['email']); ?></div>
+                            </div>
+                        </div>
+                        <div class="ud-body">
+                            <a class="ud-lnk" href="./dashboard.php"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                            <a class="ud-lnk" href="#"><i class="bi bi-plus-square"></i> Publicar producto</a>
+                            <a class="ud-lnk" href="./anuncios.php"><i class="bi bi-box-seam"></i> Mis anuncios</a>
+                            <a class="ud-lnk" href="./perfil.php"><i class="bi bi-person-circle"></i> Mi perfil</a>
+                            <div class="ud-sep"></div>
+                            <a class="ud-logout" href="../controller/logout.php"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</a>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+        </div>
     </header>
 
 
@@ -164,27 +107,36 @@ $user_id = $_SESSION['user']['id'];
 
         <!-- ── SIDEBAR ── -->
         <aside class="sidebar">
-            <div class="sidebar-section-label">Menú vendedor</div>
+            <div class="sb-section-label">Principal</div>
 
-            <a class="sidebar-link" href="./dashboard.php"><i class="bi bi-speedometer2"></i> Panel principal</a>
-            <a class="sidebar-link active" href="#"><i class="bi bi-plus-square-fill"></i> Publicar producto</a>
-            <a class="sidebar-link" href="#"><i class="bi bi-box-seam"></i> Mis anuncios <span class="badge">3</span></a>
-            <a class="sidebar-link" href="#"><i class="bi bi-heart"></i> Favoritos</a>
-            <a class="sidebar-link" href="#"><i class="bi bi-chat-dots"></i> Mensajes <span class="badge">5</span></a>
+            <a class="sb-link " href="./dashboard.php"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a class="sb-link active" href="./crear.php"><i class="bi bi-plus-square-fill"></i> Publicar producto</a>
+            <a class="sb-link" href="#">
+                <i class="bi bi-box-seam"></i> Mis productos
+                <span class="sb-badge">1122</span>
+            </a>
+            <a class="sb-link" href="#">
+                <i class="bi bi-chat-dots"></i> Mensajes
+                <span class="sb-badge yellow">5</span>
+            </a>
+            <a class="sb-link" href="#"><i class="bi bi-graph-up-arrow"></i> Ventas</a>
+            <a class="sb-link" href="#"><i class="bi bi-heart"></i> Favoritos</a>
 
-            <div class="sidebar-divider"></div>
-            <div class="sidebar-section-label">Cuenta</div>
+            <div class="sb-divider"></div>
+            <div class="sb-section-label">Cuenta</div>
 
-            <a class="sidebar-link" href="#"><i class="bi bi-person-circle"></i> Mi perfil</a>
-            <a class="sidebar-link" href="#"><i class="bi bi-star"></i> Reseñas</a>
-            <a class="sidebar-link" href="#"><i class="bi bi-bar-chart-line"></i> Estadísticas</a>
-            <a class="sidebar-link" href="#"><i class="bi bi-gear"></i> Configuración</a>
+            <a class="sb-link" href="#"><i class="bi bi-person-circle"></i> Mi perfil</a>
+            <a class="sb-link" href="#"><i class="bi bi-star"></i> Reseñas</a>
+            <a class="sb-link" href="#"><i class="bi bi-gear"></i> Configuración</a>
+            <a class="sb-link" href="../controller/logout.php" style="color:rgba(239,68,68,.7);">
+                <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+            </a>
 
-            <div class="sidebar-divider"></div>
+            <div class="sb-divider"></div>
 
-            <div class="sidebar-promo">
-                <div class="promo-icon">⭐</div>
-                <p>Destaca tu anuncio y llega a 10× más compradores.</p>
+            <div class="sb-promo">
+                <div class="sb-promo-icon">⭐</div>
+                <p>Destaca tu anuncio y llega a 10× más compradores hoy.</p>
                 <a href="#">Ver planes</a>
             </div>
         </aside>
@@ -192,24 +144,6 @@ $user_id = $_SESSION['user']['id'];
         <!-- ── MAIN ── -->
         <main class="main-content">
 
-            <!-- Page Header -->
-            <div class="page-header">
-                <div class="page-header-left">
-                    <div class="page-breadcrumb">
-                        <a href="#">Inicio</a>
-                        <i class="bi bi-chevron-right" style="font-size:.7rem;"></i>
-                        <a href="#">Dashboard</a>
-                        <i class="bi bi-chevron-right" style="font-size:.7rem;"></i>
-                        <span>Publicar producto</span>
-                    </div>
-                    <h1 class="page-title">Publicar <span>producto</span></h1>
-                    <p class="page-subtitle">Completa todos los campos para que tu anuncio sea más visible.</p>
-                </div>
-                <div class="page-header-actions">
-                    <a class="btn-outline" href="#"><i class="bi bi-eye"></i> Vista previa</a>
-                    <a class="btn-outline" href="#"><i class="bi bi-save"></i> Guardar borrador</a>
-                </div>
-            </div>
 
             <!-- FORM wrapper — preserves original action/method/enctype -->
             <form action="./productos/controller/process_create_product.php" method="POST" enctype="multipart/form-data" id="mainForm">
@@ -487,96 +421,27 @@ $user_id = $_SESSION['user']['id'];
 
             </form><!-- /form -->
 
-            <!-- ══════════════════════════════════════ -->
-            <!--   PRODUCTS LIST — LOGIC 100% PRESERVED  -->
-            <!-- ══════════════════════════════════════ -->
-            <section class="products-section">
-
-                <div class="products-section-header">
-                    <h2 class="products-section-title">Mis productos <span>publicados</span></h2>
-                    <a class="btn-outline" href="#"><i class="bi bi-arrow-repeat"></i> Actualizar</a>
-                </div>
-
-                <div class="products-grid">
-                    <?php
-                    /* LOGIC PRESERVED: exact original query */
-                    $user_id = $_SESSION['user']['id'];
-
-                    $query = "SELECT products.*, categories.name as category_name
-                      FROM products 
-                      LEFT JOIN categories ON products.category_id = categories.id
-                      WHERE products.user_id = '$user_id'";
-                    $result = mysqli_query($conn, $query);
-
-                    while ($row = mysqli_fetch_array($result)) {
-                        $product_id = $row['id'];
-
-                        /* Collect images first */
-                        $img_query = "SELECT * FROM product_images WHERE product_id = '$product_id'";
-                        $img_result_inner = mysqli_query($conn, $img_query);
-                        $images = [];
-                        while ($img_row = mysqli_fetch_array($img_result_inner)) {
-                            $images[] = $img_row['image_url'];
-                        }
-
-                        $status_class = ($row['status'] == 1) ? 'status-1' : 'status-0';
-                        $status_label = ($row['status'] == 1) ? 'Activo' : 'Inactivo';
-                    ?>
-                        <div class="php-product-card">
-                            <div class="php-product-img-slot">
-                                <?php if (!empty($images)): ?>
-                                    <img src="./productos/uploads/<?php echo $images[0]; ?>" alt="">
-                                <?php else: ?>
-                                    <i class="bi bi-box-seam"></i>
-                                <?php endif; ?>
-                            </div>
-                            <div class="php-product-body">
-                                <div class="php-product-price">$<?php echo number_format($row['price'], 0, ',', '.'); ?></div>
-                                <div class="php-product-title"><?php echo $row['title']; ?></div>
-                                <div class="php-product-meta">
-                                    <div class="php-meta-row"><i class="bi bi-grid"></i> <?php echo $row['category_name']; ?></div>
-                                    <div class="php-meta-row">
-                                        <i class="bi bi-circle-fill" style="font-size:.45rem;"></i>
-                                        <span class="status-badge <?php echo $status_class; ?>"><?php echo $status_label; ?></span>
-                                    </div>
-                                    <?php if ($row['latitude'] && $row['longitude']): ?>
-                                        <div class="php-meta-row"><i class="bi bi-geo-alt-fill"></i> <?php echo $row['latitude']; ?>, <?php echo $row['longitude']; ?></div>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-
-                            <?php
-                            /* LOGIC PRESERVED: per-product map */
-                            if ($row['latitude'] && $row['longitude']) {
-                                $lat = $row['latitude'];
-                                $lon = $row['longitude'];
-                                $map_id = "map_" . $row['id'];
-                                echo "<div class='php-product-map'><div id='$map_id' style='height:140px;width:100%;'></div></div>";
-                                echo "<script>
-                        document.addEventListener('DOMContentLoaded', function() {
-                            if (typeof L !== 'undefined') {
-                                var map{$row['id']} = L.map('$map_id').setView([$lat, $lon], 15);
-                                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                                    attribution: 'OSM'
-                                }).addTo(map{$row['id']});
-                                L.marker([$lat, $lon]).addTo(map{$row['id']});
-                            } else {
-                                console.error('Leaflet no se ha cargado correctamente');
-                            }
-                        });
-                        </script>";
-                            }
-                            ?>
-                        </div>
-                    <?php } ?>
-                </div>
-            </section>
-
         </main>
 
     </div><!-- /page-shell -->
 
     <script>
+        /* ── User dropdown toggle ── */
+        const wrap = document.getElementById('userMenuWrap');
+        const chip = document.getElementById('userChip');
+        if (chip) {
+            chip.addEventListener('click', e => {
+                e.stopPropagation();
+                wrap.classList.toggle('open');
+            });
+            document.addEventListener('click', e => {
+                if (!wrap.contains(e.target)) wrap.classList.remove('open');
+            });
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape') wrap.classList.remove('open');
+            });
+        }
+
         /* ── LOGIC PRESERVED: geolocation + Leaflet map ── */
         const estado = document.getElementById("est");
         const btn = document.getElementById("btnUbicacion");

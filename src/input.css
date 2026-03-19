@@ -75,7 +75,7 @@ a {
   display: flex;
   align-items: center;
   gap: 20px;
-  height: 68px;
+  height: 88px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
 }
 
@@ -616,8 +616,7 @@ a {
   background-color: rgba(255, 255, 255, 0.3); /* Transparencia */
   backdrop-filter: blur(8px); /* Aplica el desenfoque */
   -webkit-backdrop-filter: blur(8px); /* Soporte Safari */
-}
-/* ========= CATEGORIES ========= */
+} /* ========= CATEGORIES ========= */
 .categories-section {
   padding: 50px 40px 30px;
   background: #fff;
@@ -648,100 +647,93 @@ a {
 .section-link:hover {
   gap: 8px;
 }
-
-.categories-grid {
-  display: flex;
-  gap: 14px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-  scrollbar-width: none;
-  padding: 10px;
-}
-.categories-grid::-webkit-scrollbar {
-  display: none;
+/* ── Categories Swiper ── */
+.categories-section {
+  padding: 40px 40px 30px;
+  background: #fff;
 }
 
+.categories-swiper {
+  padding: 8px 8px 16px !important;
+  position: relative;
+}
+
+
+/* ── Cat card: estilo limpio tipo imagen de referencia ── */
 .cat-card {
-  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  background: var(--bg-page);
-  border: 2px solid transparent;
-  border-radius: var(--radius-card);
-  padding: 22px 28px;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 8px;
   cursor: pointer;
-  transition: all 0.25s;
-  width: 120px;
+  transition: all 0.2s ease;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  border-radius: 0;
+  width: 100%;
+  height: auto;
+  box-sizing: border-box;
 }
 .cat-card:hover {
-  border-color: var(--green-400);
-  background: var(--green-50);
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-hover);
+  transform: translateY(-3px);
 }
-.cat-card.active {
-  border-color: var(--green-500);
-  background: var(--green-50);
+.cat-card:hover .cat-label {
+  color: var(--green-600);
+}
+.cat-card.active .cat-label {
+  color: var(--green-600);
+  font-weight: 700;
+}
+.cat-card.active .cat-icon i {
+  color: var(--green-500);
 }
 
+/* ── Ícono: grande, sin fondo, solo el icono ── */
 .cat-icon {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
+  width: auto;
+  height: auto;
+  background: none !important;
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.4rem;
+  font-size: 2.2rem;          /* ícono grande */
+  color: #2d2d2d;
+  transition: color 0.2s;
 }
-.cat-card:nth-child(1) .cat-icon {
-  background: #e8f5e9;
-  color: #2e7d32;
-}
-.cat-card:nth-child(2) .cat-icon {
-  background: #fff3e0;
-  color: #ef6c00;
-}
-.cat-card:nth-child(3) .cat-icon {
-  background: #e3f2fd;
-  color: #1565c0;
-}
-.cat-card:nth-child(4) .cat-icon {
-  background: #fce4ec;
-  color: #c62828;
-}
-.cat-card:nth-child(5) .cat-icon {
-  background: #f3e5f5;
-  color: #6a1b9a;
-}
-.cat-card:nth-child(6) .cat-icon {
-  background: #e0f7fa;
-  color: #00695c;
-}
-.cat-card:nth-child(7) .cat-icon {
-  background: #f9fbe7;
-  color: #558b2f;
-}
-.cat-card:nth-child(8) .cat-icon {
-  background: #efebe9;
-  color: #4e342e;
+.cat-card:hover .cat-icon i {
+  color: var(--green-500);
 }
 
+/* Eliminar colores de fondo cíclicos anteriores */
+.swiper-slide:nth-child(8n + 1) .cat-icon,
+.swiper-slide:nth-child(8n + 2) .cat-icon,
+.swiper-slide:nth-child(8n + 3) .cat-icon,
+.swiper-slide:nth-child(8n + 4) .cat-icon,
+.swiper-slide:nth-child(8n + 5) .cat-icon,
+.swiper-slide:nth-child(8n + 6) .cat-icon,
+.swiper-slide:nth-child(8n + 7) .cat-icon,
+.swiper-slide:nth-child(8n + 8) .cat-icon {
+  background: none;
+  color: #2d2d2d;
+}
+
+/* ── Label ── */
 .cat-label {
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 600;
   text-align: center;
-  color: var(--text-mid);
+  color: #333;
+  line-height: 1.3;
+  width: 100%;
+  word-break: break-word;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
-.cat-count {
-  font-size: 0.72rem;
-  color: var(--green-500);
-  background: var(--green-100);
-  border-radius: 50px;
-  padding: 2px 8px;
-}
-
 /* ========= MAIN LAYOUT ========= */
 .main-layout {
   display: flex;

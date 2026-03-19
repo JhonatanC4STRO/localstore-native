@@ -1,7 +1,8 @@
 {
   "dependencies": {
-    "@tailwindcss/cli": "^4.2.1",
+    "@tailwindcss/cli": "^4.2.2",
+    "animate.css": "^4.1.1",
     "swiper": "^12.1.2",
-    "tailwindcss": "^4.2.1"
+    "tailwindcss": "^4.2.2"
   }
 }
