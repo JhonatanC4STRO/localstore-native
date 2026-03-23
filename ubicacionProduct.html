@@ -1,12 +1,66 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="./src/output.css">
+  <title>Mapa con botón de ubicación</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <style>
+    #map { height: 400px; width: 100%; margin-top: 10px; }
+    button {
+      padding: 10px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 5px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
 </head>
 <body>
-    <h1 class="bg-red-500 text-white p-2">Ubicación del Producto</h1>
+  <h3>Mapa con mi ubicación</h3>
+  <button onclick="verUbicacion()">Ver mi ubicación</button>
+  <div id="map"></div>
+
+  <script>
+    // Inicializamos el mapa en coordenadas genéricas
+    var map = L.map('map').setView([0, 0], 2);
+
+    // Capa base de OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    var marker; // Variable para guardar el marcador
+
+    function verUbicacion() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+          var lat = position.coords.latitude;
+          var lng = position.coords.longitude;
+
+          // Centrar mapa en la ubicación
+          map.setView([lat, lng], 15);
+
+          // Si ya existe un marcador, lo eliminamos
+          if (marker) {
+            map.removeLayer(marker);
+          }
+
+          // Añadir marcador en la ubicación
+          marker = L.marker([lat, lng]).addTo(map)
+            .bindPopup("Estás aquí")
+            .openPopup();
+        }, function(error) {
+          alert("No se pudo obtener tu ubicación: " + error.message);
+        });
+      } else {
+        alert("La geolocalización no está soportada en este navegador.");
+      }
+    }
+  </script>
 </body>
 </html>

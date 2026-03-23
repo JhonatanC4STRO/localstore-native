@@ -1,3 +1,5 @@
+    @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap");
+
     :root {
       --g900: #0b2e17;
       --g800: #103d1e;
@@ -28,13 +30,13 @@
     html, body { height: 100%; }
 
     body {
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Outfit', sans-serif;
       display: flex;
       min-height: 100vh;
       overflow: hidden;
     }
 
-    h1, h2, h3, h4 { font-family: 'Syne', sans-serif; }
+    h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
 
     /* ══════════════════════════════════════
        LEFT PANEL – Illustration

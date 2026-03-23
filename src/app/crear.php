@@ -30,7 +30,7 @@ $user_id = $_SESSION['user']['id'];
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
 
 
     <style>
@@ -110,11 +110,12 @@ $user_id = $_SESSION['user']['id'];
             <div class="sb-section-label">Principal</div>
 
             <a class="sb-link " href="./dashboard.php"><i class="bi bi-speedometer2"></i> Dashboard</a>
-            <a class="sb-link active" href="./crear.php"><i class="bi bi-plus-square-fill"></i> Publicar producto</a>
-            <a class="sb-link" href="#">
+            <a id="link-publicar" class="sb-link active" href="./crear.php"><i class="bi bi-plus-square-fill"></i> Publicar producto</a>
+            <a id="link-misproductos" class="sb-link" href="./dashboard.php#misproductos">
                 <i class="bi bi-box-seam"></i> Mis productos
                 <span class="sb-badge">1122</span>
             </a>
+
             <a class="sb-link" href="#">
                 <i class="bi bi-chat-dots"></i> Mensajes
                 <span class="sb-badge yellow">5</span>

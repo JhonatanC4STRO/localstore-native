@@ -19,7 +19,7 @@ $userName = $isLoggedIn ? explode(' ', $user['full_name'])[0] : ''; // First nam
   <title>ComercioLocal – Compra y vende en tu ciudad</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <link rel="stylesheet" href="../input.css">
   <link rel="stylesheet" href="../output.css">
@@ -54,6 +54,8 @@ $userName = $isLoggedIn ? explode(' ', $user['full_name'])[0] : ''; // First nam
       <i class="bi bi-chevron-down"></i>
     </div>
 
+    <a href="./chat.php">Chat</a>
+
     <div class="nav-spacer"></div>
 
     <div class="nav-links">
@@ -86,7 +88,7 @@ $userName = $isLoggedIn ? explode(' ', $user['full_name'])[0] : ''; // First nam
 
             <!-- Menu items -->
             <div class="ud-body">
-              <a class="ud-link" href="./app/dashboard.php">
+              <a class="ud-link" href="./dashboard.php">
                 <i class="bi bi-speedometer2"></i> Mi panel
               </a>
               <?php if ($isLoggedIn): ?>
@@ -438,24 +440,111 @@ $userName = $isLoggedIn ? explode(' ', $user['full_name'])[0] : ''; // First nam
               <div class="nearby-badge"><i class="bi bi-geo-alt-fill"></i> Tu zona</div>
               <h2 class="section-title">Productos cerca <span>de ti</span></h2>
             </div>
-            <a class="section-link" href="#">Ver más <i class="bi bi-arrow-right"></i></a>
+            <a class="section-link" href="./allProduct.php">Ver más <i class="bi bi-arrow-right"></i></a>
           </div>
+          <!-- /////////////////////////////// productos aleatorios -->
+          <?php
+          // Consulta para obtener 4 productos aleatorios
+          $sqlRandomProducts = "SELECT p.id, p.title, p.price, p.condition_type, p.created_at, u.full_name
+                                FROM products p
+                                LEFT JOIN users u ON p.user_id = u.id
+
+                                ORDER BY RAND()
+                                LIMIT 4";
+          $resultRandomProducts = $conn->query($sqlRandomProducts);
+          ?>
           <div class="product-grid">
-            <?php if ($resultProducts && $resultProducts->num_rows > 0): ?>
-              <?php while ($product = $resultProducts->fetch_assoc()):
-                $isBadge = strtolower($product['condition_type']) === 'nuevo' ? 'badge-new' : 'badge-used';
-                $badgeText = ucfirst($product['condition_type']);
-                $price = number_format($product['price'], 0, ',', '.');
-                $initials = getInitials($product['full_name']);
-                $timeString = 'Recientemente';
+            <?php if ($resultRandomProducts && $resultRandomProducts->num_rows > 0): ?>
+              <?php while ($randomProduct = $resultRandomProducts->fetch_assoc()):
+                $isBadge = strtolower($randomProduct['condition_type']) === 'nuevo' ? 'badge-new' : 'badge-used';
+                $badgeText = ucfirst($randomProduct['condition_type']);
+                $price = number_format($randomProduct['price'], 0, ',', '.');
+                $initials = getInitials($randomProduct['full_name']);
+                $timeString = timeAgo($randomProduct['created_at']);
                 $location = 'Bogotá';
               ?>
+                <a href="./actions/detalleProducto.php?id=<?php echo $randomProduct['id']; ?>" class="product-link">
+                  <div class="product-card">
+                    <div class="<?php echo $isBadge; ?>"><?php echo $badgeText; ?></div>
+                    <button class="btn-fav"><i class="bi bi-heart"></i></button>
+                    <div class="product-img-placeholder">
+                      <?php
+                      $pid = $randomProduct['id'];
+                      $img_q = "SELECT * FROM product_images WHERE product_id = '$pid' LIMIT 1";
+                      $img_r = mysqli_query($conn, $img_q);
+                      $img_row = mysqli_fetch_assoc($img_r);
+                      if ($img_row): ?>
+                        <img src="./productos/uploads/<?php echo htmlspecialchars($img_row['image_url']); ?>" alt="">
+                      <?php else: ?>
+                        <i class="bi bi-box-seam"></i>
+                      <?php endif; ?>
+                    </div>
+                    <div class="product-body">
+                      <div class="product-price">$<?php echo $price; ?></div>
+                      <div class="product-title"><?php echo htmlspecialchars($randomProduct['title']); ?></div>
+                      <div class="product-meta">
+                        <div class="product-meta-row"><i class="bi bi-geo-alt"></i> <?php echo htmlspecialchars($location); ?></div>
+                        <div class="product-meta-row"><i class="bi bi-clock"></i> <?php echo $timeString; ?></div>
+                      </div>
+                      <div class="product-seller">
+                        <div class="seller-avatar"><?php echo $initials; ?></div>
+                        <div class="seller-info">
+                          <div class="seller-name"><?php echo htmlspecialchars($randomProduct['full_name'] ?? 'Usuario'); ?></div>
+                          <div class="seller-rating">
+                            <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i>
+                            <span>4.5</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              <?php endwhile; ?>
+            <?php else: ?>
+              <p style="text-align: center; padding: 20px; color: var(--text-soft);">No hay productos disponibles.</p>
+            <?php endif; ?>
+          </div>
+          <!-- ///////// productos aleatorios -->
+        </div>
+      </div>
+      <!-- xxxxxxxxxxxxxxxx -->
+      <div class="content-section">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Productos <span>recientes</span></h2>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <span style="font-size:.82rem;color:var(--text-soft);">Ordenar por:</span>
+            <select style="border:1.5px solid #ddd;border-radius:8px;padding:6px 12px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none;color:var(--text-dark);cursor:pointer;">
+              <option>Más recientes</option>
+              <option>Menor precio</option>
+              <option>Mayor precio</option>
+              <option>Más cercanos</option>
+            </select>
+            <a class="section-link" href="./allProduct.php">Ver todos <i class="bi bi-arrow-right"></i></a>
+          </div>
+        </div>
+        <div class="divider-line"></div>
+        <!--  -->
+
+        <div class="product-grid animate__animated animate__fadeIn">
+          <?php if ($resultProducts && $resultProducts->num_rows > 0): ?>
+            <?php while ($product = $resultProducts->fetch_assoc()):
+              $isBadge = strtolower($product['condition_type']) === 'nuevo' ? 'badge-new' : 'badge-used';
+              $badgeText = ucfirst($product['condition_type']);
+              $price = number_format($product['price'], 0, ',', '.');
+              $initials = getInitials($product['full_name']);
+              $timeString = 'Recientemente';
+              $location = 'Bogotá';
+            ?>
+              <a href="./actions/detalleProducto.php?id=<?php echo $product['id']; ?>" class="product-link">
+
                 <div class="product-card">
                   <div class="<?php echo $isBadge; ?>"><?php echo $badgeText; ?></div>
                   <button class="btn-fav"><i class="bi bi-heart"></i></button>
                   <div class="product-img-placeholder">
                     <?php
-                    $pid = $row['id'];
+                    $pid = $product['id'];
                     $img_q = "SELECT * FROM product_images WHERE product_id = '$pid' LIMIT 1";
                     $img_r = mysqli_query($conn, $img_q);
                     $img_row = mysqli_fetch_assoc($img_r);
@@ -485,109 +574,14 @@ $userName = $isLoggedIn ? explode(' ', $user['full_name'])[0] : ''; // First nam
                     </div>
                   </div>
                 </div>
-              <?php endwhile; ?>
-            <?php else: ?>
-              <p style="text-align: center; padding: 20px; color: var(--text-soft);">No hay productos disponibles.</p>
-            <?php endif; ?>
-          </div>
-        </div>
-      </div>
+              </a>
 
-      <div class="content-section">
-        <div class="section-header">
-          <div>
-            <h2 class="section-title">Productos <span>recientes</span></h2>
-          </div>
-          <div style="display:flex;gap:10px;align-items:center;">
-            <span style="font-size:.82rem;color:var(--text-soft);">Ordenar por:</span>
-            <select style="border:1.5px solid #ddd;border-radius:8px;padding:6px 12px;font-family:'DM Sans',sans-serif;font-size:.84rem;outline:none;color:var(--text-dark);cursor:pointer;">
-              <option>Más recientes</option>
-              <option>Menor precio</option>
-              <option>Mayor precio</option>
-              <option>Más cercanos</option>
-            </select>
-            <a class="section-link" href="#">Ver todos <i class="bi bi-arrow-right"></i></a>
-          </div>
+            <?php endwhile; ?>
+          <?php else: ?>
+            <p style="text-align: center; padding: 20px; color: var(--text-soft);">No hay productos disponibles.</p>
+          <?php endif; ?>
         </div>
-        <div class="divider-line"></div>
-        <div class="product-grid">
-          <div class="product-card">
-            <div class="badge-new">Nuevo</div><button class="btn-fav"><i class="bi bi-heart"></i></button>
-            <div class="product-img-placeholder">🎧</div>
-            <div class="product-body">
-              <div class="product-price">$380.000</div>
-              <div class="product-title">Sony WH-1000XM4 Noise Cancelling</div>
-              <div class="product-meta">
-                <div class="product-meta-row"><i class="bi bi-geo-alt"></i> Teusaquillo, Bogotá</div>
-                <div class="product-meta-row"><i class="bi bi-clock"></i> Hace 20 min</div>
-              </div>
-              <div class="product-seller">
-                <div class="seller-avatar">MG</div>
-                <div class="seller-info">
-                  <div class="seller-name">Miguel García</div>
-                  <div class="seller-rating"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star"></i><span>4.3</span></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="product-card">
-            <div class="badge-used">Usado</div><button class="btn-fav"><i class="bi bi-heart"></i></button>
-            <div class="product-img-placeholder">🏋️</div>
-            <div class="product-body">
-              <div class="product-price">$450.000</div>
-              <div class="product-title">Set de mancuernas 5 a 30 kg ajustables</div>
-              <div class="product-meta">
-                <div class="product-meta-row"><i class="bi bi-geo-alt"></i> Fontibón, Bogotá</div>
-                <div class="product-meta-row"><i class="bi bi-clock"></i> Hace 45 min</div>
-              </div>
-              <div class="product-seller">
-                <div class="seller-avatar">AF</div>
-                <div class="seller-info">
-                  <div class="seller-name">Andrés Forero</div>
-                  <div class="seller-rating"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><span>5.0</span></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="product-card">
-            <div class="badge-new">Nuevo</div><button class="btn-fav"><i class="bi bi-heart"></i></button>
-            <div class="product-img-placeholder">🖨️</div>
-            <div class="product-body">
-              <div class="product-price">$290.000</div>
-              <div class="product-title">Impresora HP LaserJet Pro M15w WiFi</div>
-              <div class="product-meta">
-                <div class="product-meta-row"><i class="bi bi-geo-alt"></i> Barrios Unidos, Bogotá</div>
-                <div class="product-meta-row"><i class="bi bi-clock"></i> Hace 1 hora</div>
-              </div>
-              <div class="product-seller">
-                <div class="seller-avatar">VC</div>
-                <div class="seller-info">
-                  <div class="seller-name">Valentina Cruz</div>
-                  <div class="seller-rating"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i><span>4.7</span></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="product-card">
-            <div class="badge-used">Usado</div><button class="btn-fav active"><i class="bi bi-heart-fill"></i></button>
-            <div class="product-img-placeholder">🪴</div>
-            <div class="product-body">
-              <div class="product-price">$45.000</div>
-              <div class="product-title">Plantas suculentas variadas con maceta</div>
-              <div class="product-meta">
-                <div class="product-meta-row"><i class="bi bi-geo-alt"></i> La Candelaria, Bogotá</div>
-                <div class="product-meta-row"><i class="bi bi-clock"></i> Hace 2 horas</div>
-              </div>
-              <div class="product-seller">
-                <div class="seller-avatar">NB</div>
-                <div class="seller-info">
-                  <div class="seller-name">Natalia Bernal</div>
-                  <div class="seller-rating"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star"></i><span>4.1</span></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <!-- xxxxxxxxxxxxxxx -->
       </div>
     </div>
   </div>
@@ -624,7 +618,7 @@ $userName = $isLoggedIn ? explode(' ', $user['full_name'])[0] : ''; // First nam
         <h5>Cuenta</h5>
         <ul>
           <?php if ($isLoggedIn): ?>
-            <li><a href="./app/dashboard.php">Mi panel</a></li>
+            <li><a href="./dashboard.php">Mi panel</a></li>
             <li><a href="#">Mis anuncios</a></li>
             <li><a href="#">Mensajes</a></li>
             <li><a href="#">Favoritos</a></li>

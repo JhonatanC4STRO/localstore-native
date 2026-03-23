@@ -8,6 +8,7 @@
   --g500: #25883f;
   --g400: #34b357;
   --g300: #55d475;
+  --g200: #96e8b0;
   --g100: #c8f2d5;
   --g50: #edfaf3;
 
@@ -56,7 +57,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: "Syne", sans-serif;
+  font-family: "Outfit", sans-serif;
 }
 .sidebar {
   width: 228px;
@@ -159,7 +160,7 @@ h6 {
   color: var(--g900);
   padding: 7px;
   border-radius: 8px;
-  font-family: "Syne", sans-serif;
+  font-family: "Outfit", sans-serif;
   font-weight: 700;
   font-size: 0.76rem;
   transition: background 0.2s;
@@ -173,7 +174,7 @@ h6 {
 .topbar {
   background: var(--g900);
   border-bottom: 3px solid var(--y400);
-  height: 64px;
+  height: 88px;
   display: flex;
   align-items: center;
   padding: 0 28px;
@@ -200,7 +201,7 @@ h6 {
   border: none;
   outline: none;
   color: #fff;
-  font-family: "DM Sans", sans-serif;
+  font-family: "Outfit", sans-serif;
   font-size: 0.87rem;
   padding: 9px 16px;
 }
@@ -363,7 +364,7 @@ h6 {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: "Syne", sans-serif;
+  font-family: "Outfit", sans-serif;
   font-weight: 800;
   font-size: 1rem;
   color: var(--g900);
@@ -372,7 +373,7 @@ h6 {
 }
 
 .ud-name {
-  font-family: "Syne", sans-serif;
+  font-family: "Outfit", sans-serif;
   font-weight: 700;
   font-size: 0.88rem;
   color: #fff;
@@ -453,7 +454,7 @@ h6 {
 
 /* ── SIDEBAR ── */
 .sidebar {
-  width: 230px;
+  width: 228px;
   flex-shrink: 0;
   background: var(--g900);
   padding: 28px 0 40px;
@@ -545,7 +546,7 @@ h6 {
   border-radius: 50%;
   background: var(--g500);
   color: #fff;
-  font-family: "Syne", sans-serif;
+  font-family: "Outfit", sans-serif;
   font-weight: 700;
   font-size: 0.78rem;
   display: flex;
@@ -599,7 +600,7 @@ h6 {
   border: 1.5px solid var(--border);
   border-radius: 10px;
   padding: 11px 14px;
-  font-family: "DM Sans", sans-serif;
+  font-family: "Outfit", sans-serif;
   font-size: 0.9rem;
   color: var(--ink);
   background: #fff;
@@ -739,7 +740,7 @@ select.form-control {
 }
 
 .drop-title {
-  font-family: "Syne", sans-serif;
+  font-family: "Outfit", sans-serif;
   font-weight: 700;
   font-size: 1rem;
   color: var(--ink);
@@ -833,7 +834,7 @@ select.form-control {
   border: none;
   border-radius: 10px;
   padding: 10px 20px;
-  font-family: "Syne", sans-serif;
+  font-family: "Outfit", sans-serif;
   font-weight: 700;
   font-size: 0.87rem;
   cursor: pointer;
@@ -929,7 +930,7 @@ input[type="hidden"] {
 }
 
 .preview-price {
-  font-family: "Syne", sans-serif;
+  font-family: "Outfit", sans-serif;
   font-weight: 800;
   font-size: 1.35rem;
   color: var(--g600);
@@ -1041,7 +1042,7 @@ input[type="hidden"] {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: "Syne", sans-serif;
+  font-family: "Outfit", sans-serif;
   font-weight: 800;
   font-size: 0.72rem;
   color: var(--g900);
@@ -1122,7 +1123,7 @@ input[type="hidden"] {
   color: #fff;
   padding: 16px;
   border-radius: 14px;
-  font-family: "Syne", sans-serif;
+  font-family: "Outfit", sans-serif;
   font-weight: 800;
   font-size: 1.05rem;
   cursor: pointer;
@@ -1182,4 +1183,23 @@ input[type="hidden"] {
 
 .publish-layout > *:nth-child(2) {
   animation-delay: 0.15s;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--g200);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--g300);
 }
