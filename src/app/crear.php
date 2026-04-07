@@ -13,8 +13,16 @@ $user = $isLoggedIn ? $_SESSION['user'] : null;
 $userInitial = $isLoggedIn ? strtoupper(mb_substr($user['full_name'], 0, 1)) : '';
 $userName = $isLoggedIn ? explode(' ', $user['full_name'])[0] : ''; // First name only
 $user_id = $_SESSION['user']['id'];
-?>
 
+// contar productos totales para mostrar en el sidebar
+$totalProducts = 0;
+$sql_count = "SELECT COUNT(*) as total FROM products WHERE user_id = '$user_id'";
+$r = mysqli_query($conn, $sql_count);
+if ($r) {
+    $row_c = mysqli_fetch_assoc($r);
+    $totalProducts = $row_c['total'];
+}
+?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -24,117 +32,44 @@ $user_id = $_SESSION['user']['id'];
     <title>Publicar Producto – ComercioLocal</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="../output.css">
-    <link rel="stylesheet" href="../style/crear.css">
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
-
-
-    <style>
-
-    </style>
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../output.css">
+    <link rel="stylesheet" href="../style/crear.css">
 </head>
 
 <body>
 
-    <header class="topbar">
-        <a href="./inde.php" class="h-28 w-28"><img class="h-28 w-28" src="./Logo de Comercio Local.png" alt=""></a>
-
-        <div class="tb-search">
-            <input type="text" placeholder="Buscar productos, anuncios...">
-            <button><i class="bi bi-search"></i></button>
-        </div>
-
-        <div class="tb-spacer"></div>
-
-        <div class="tb-actions">
-
-            <div class="tb-icon-btn">
-                <i class="bi bi-bell"></i>
-                <div class="notif-dot"></div>
-            </div>
-            <div class="tb-icon-btn">
-                <i class="bi bi-chat-dots"></i>
-            </div>
-            <div class="tb-icon-btn">
-                <i class="bi bi-question-circle"></i>
-            </div>
-
-            <!-- User chip + dropdown — LOGIC PRESERVED -->
-            <?php if ($isLoggedIn): ?>
-                <div class="user-menu-wrap" id="userMenuWrap">
-                    <div class="user-chip" id="userChip">
-                        <div style="position:relative;">
-                            <div class="user-avatar"><?php echo $userInitial; ?></div>
-                            <div class="online-dot"></div>
-                        </div>
-                        <div class="uc-info">
-                            <div class="uc-greeting">Hola,</div>
-                            <div class="uc-name"><?php echo htmlspecialchars($userName); ?></div>
-                        </div>
-                        <i class="bi bi-chevron-down uc-arrow"></i>
-                    </div>
-
-                    <div class="user-dropdown" id="userDropdown">
-                        <div class="ud-head">
-                            <div class="ud-av"><?php echo $userInitial; ?></div>
-                            <div>
-                                <div class="ud-name"><?php echo htmlspecialchars($user['full_name']); ?></div>
-                                <div class="ud-email"><?php echo htmlspecialchars($user['email']); ?></div>
-                            </div>
-                        </div>
-                        <div class="ud-body">
-                            <a class="ud-lnk" href="./dashboard.php"><i class="bi bi-speedometer2"></i> Dashboard</a>
-                            <a class="ud-lnk" href="#"><i class="bi bi-plus-square"></i> Publicar producto</a>
-                            <a class="ud-lnk" href="./anuncios.php"><i class="bi bi-box-seam"></i> Mis anuncios</a>
-                            <a class="ud-lnk" href="./perfil.php"><i class="bi bi-person-circle"></i> Mi perfil</a>
-                            <div class="ud-sep"></div>
-                            <a class="ud-logout" href="../controller/logout.php"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</a>
-                        </div>
-                    </div>
-                </div>
-            <?php endif; ?>
-
-        </div>
-    </header>
-
+    <!-- header -->
+    <?php $basePath = '../'; include __DIR__ . '/../components/header.php'; ?>
 
     <div class="page-shell">
 
-        <!-- ── SIDEBAR ── -->
+        <!-- ══ SIDEBAR ══ -->
         <aside class="sidebar">
             <div class="sb-section-label">Principal</div>
-
-            <a class="sb-link " href="./dashboard.php"><i class="bi bi-speedometer2"></i> Dashboard</a>
-            <a id="link-publicar" class="sb-link active" href="./crear.php"><i class="bi bi-plus-square-fill"></i> Publicar producto</a>
-            <a id="link-misproductos" class="sb-link" href="./dashboard.php#misproductos">
+            <a class="sb-link" href="./dashboard.php"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a class="sb-link active" href="./crear.php"><i class="bi bi-plus-square-fill"></i> Publicar producto</a>
+            <a class="sb-link" href="./misProductos.php">
                 <i class="bi bi-box-seam"></i> Mis productos
-                <span class="sb-badge">1122</span>
+                <span class="sb-badge"><?php echo $totalProducts; ?></span>
             </a>
-
-            <a class="sb-link" href="#">
+            <a class="sb-link" href="./chat.php">
                 <i class="bi bi-chat-dots"></i> Mensajes
                 <span class="sb-badge yellow">5</span>
             </a>
-            <a class="sb-link" href="#"><i class="bi bi-graph-up-arrow"></i> Ventas</a>
             <a class="sb-link" href="#"><i class="bi bi-heart"></i> Favoritos</a>
-
             <div class="sb-divider"></div>
             <div class="sb-section-label">Cuenta</div>
-
-            <a class="sb-link" href="#"><i class="bi bi-person-circle"></i> Mi perfil</a>
+            <a class="sb-link" href="./perfil.php"><i class="bi bi-person-circle"></i> Mi perfil</a>
             <a class="sb-link" href="#"><i class="bi bi-star"></i> Reseñas</a>
             <a class="sb-link" href="#"><i class="bi bi-gear"></i> Configuración</a>
             <a class="sb-link" href="../controller/logout.php" style="color:rgba(239,68,68,.7);">
                 <i class="bi bi-box-arrow-right"></i> Cerrar sesión
             </a>
-
             <div class="sb-divider"></div>
-
             <div class="sb-promo">
                 <div class="sb-promo-icon">⭐</div>
                 <p>Destaca tu anuncio y llega a 10× más compradores hoy.</p>
@@ -152,6 +87,7 @@ $user_id = $_SESSION['user']['id'];
                 <!-- Hidden inputs (logic preserved) -->
                 <input type="hidden" name="latitude" id="latitude">
                 <input type="hidden" name="longitude" id="longitude">
+                <input type="hidden" name="condicion" id="condicionHidden" value="nuevo">
 
                 <div class="publish-layout">
 
@@ -423,162 +359,9 @@ $user_id = $_SESSION['user']['id'];
             </form><!-- /form -->
 
         </main>
-
     </div><!-- /page-shell -->
 
-    <script>
-        /* ── User dropdown toggle ── */
-        const wrap = document.getElementById('userMenuWrap');
-        const chip = document.getElementById('userChip');
-        if (chip) {
-            chip.addEventListener('click', e => {
-                e.stopPropagation();
-                wrap.classList.toggle('open');
-            });
-            document.addEventListener('click', e => {
-                if (!wrap.contains(e.target)) wrap.classList.remove('open');
-            });
-            document.addEventListener('keydown', e => {
-                if (e.key === 'Escape') wrap.classList.remove('open');
-            });
-        }
-
-        /* ── LOGIC PRESERVED: geolocation + Leaflet map ── */
-        const estado = document.getElementById("est");
-        const btn = document.getElementById("btnUbicacion");
-        let map;
-
-        btn.addEventListener("click", () => {
-            if (!navigator.geolocation) {
-                estado.textContent = "La geolocalización no es soportada por tu navegador.";
-                return;
-            }
-            estado.innerHTML = '<i class="bi bi-hourglass-split"></i> Obteniendo ubicación...';
-
-            navigator.geolocation.getCurrentPosition((pos) => {
-                const lat = pos.coords.latitude;
-                const lon = pos.coords.longitude;
-
-                document.getElementById("latitude").value = lat;
-                document.getElementById("longitude").value = lon;
-                estado.innerHTML = `<i class="bi bi-geo-alt-fill" style="color:var(--g500);"></i> Lat ${lat.toFixed(5)}, Lon ${lon.toFixed(5)}`;
-
-                /* LOGIC PRESERVED: remove old map before creating new */
-                if (map !== undefined && map !== null) {
-                    map.remove();
-                }
-
-                map = L.map('map').setView([lat, lon], 15);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; OpenStreetMap'
-                }).addTo(map);
-                L.marker([lat, lon]).addTo(map).bindPopup("📍 Estás aquí").openPopup();
-
-                /* checklist update */
-                markDone('chk-ubicacion');
-            }, (error) => {
-                estado.innerHTML = `<i class="bi bi-exclamation-circle" style="color:#dc2626;"></i> ${error.message}`;
-            });
-        });
-
-        /* ── LIVE PREVIEW ── */
-        const titleInput = document.getElementById('nombre');
-        const precioInput = document.getElementById('precio');
-        const previewTitle = document.getElementById('previewTitle');
-        const previewPrice = document.getElementById('previewPrice');
-        const previewImgSlot = document.getElementById('previewImgSlot');
-        const previewCond = document.getElementById('previewCond');
-
-        titleInput.addEventListener('input', () => {
-            previewTitle.textContent = titleInput.value || 'Título del producto...';
-            previewTitle.style.color = titleInput.value ? 'var(--ink)' : '#ccc';
-            toggle('chk-titulo', !!titleInput.value);
-        });
-
-        precioInput.addEventListener('input', () => {
-            const v = parseInt(precioInput.value) || 0;
-            previewPrice.innerHTML = v ?
-                `$${v.toLocaleString('es-CO')}` :
-                `<span class="preview-price-placeholder">$0</span>`;
-            toggle('chk-precio', v > 0);
-        });
-
-        document.getElementById('descripcion').addEventListener('input', function() {
-            toggle('chk-descripcion', this.value.length > 10);
-        });
-
-        document.querySelector('select[name="categoria"]').addEventListener('change', function() {
-            toggle('chk-categoria', !!this.value);
-        });
-
-        /* ── CONDITION TOGGLE ── */
-        function selectCondition(el, val) {
-            document.querySelectorAll('.cond-opt').forEach(o => o.classList.remove('active'));
-            el.classList.add('active');
-            previewCond.textContent = val === 'nuevo' ? 'Nuevo' : 'Usado';
-            previewCond.style.background = val === 'nuevo' ? 'var(--g500)' : 'var(--y400)';
-            previewCond.style.color = val === 'nuevo' ? '#fff' : 'var(--g900)';
-        }
-
-        /* ── DRAG & DROP VISUAL ── */
-        const dropZone = document.getElementById('dropZone');
-        const fotosInput = document.getElementById('fotos');
-        const gridEl = document.getElementById('imgPreviewGrid');
-
-        dropZone.addEventListener('dragover', e => {
-            e.preventDefault();
-            dropZone.classList.add('dragover');
-        });
-        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-        dropZone.addEventListener('drop', e => {
-            e.preventDefault();
-            dropZone.classList.remove('dragover');
-            handleFiles(e.dataTransfer.files);
-        });
-
-        fotosInput.addEventListener('change', () => handleFiles(fotosInput.files));
-
-        function handleFiles(files) {
-            if (!files.length) return;
-            gridEl.innerHTML = '';
-            Array.from(files).slice(0, 8).forEach((f, i) => {
-                const reader = new FileReader();
-                reader.onload = ev => {
-                    const div = document.createElement('div');
-                    div.className = 'img-thumb';
-                    div.innerHTML = `<img src="${ev.target.result}" alt="">` +
-                        (i === 0 ? '<div class="main-badge">Principal</div>' : '');
-                    gridEl.appendChild(div);
-                    if (i === 0) {
-                        previewImgSlot.innerHTML =
-                            `<img src="${ev.target.result}" alt=""><div class="preview-cond-badge" id="previewCond">${previewCond.textContent}</div>`;
-                    }
-                };
-                reader.readAsDataURL(f);
-            });
-            markDone('chk-fotos');
-        }
-
-        /* ── CHECKLIST HELPERS ── */
-        function markDone(id) {
-            const el = document.getElementById(id);
-            if (!el) return;
-            el.classList.add('done');
-            el.querySelector('i').className = 'bi bi-check-circle-fill';
-        }
-
-        function toggle(id, done) {
-            const el = document.getElementById(id);
-            if (!el) return;
-            if (done) {
-                el.classList.add('done');
-                el.querySelector('i').className = 'bi bi-check-circle-fill';
-            } else {
-                el.classList.remove('done');
-                el.querySelector('i').className = 'bi bi-circle';
-            }
-        }
-    </script>
+    <script src="../js/crear.js"></script>
 
 </body>
 

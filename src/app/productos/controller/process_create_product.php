@@ -1,5 +1,6 @@
 <?php
 include("../../../config/conexion.php");
+include("../../../config/role_sync.php");
 session_start();
 
 if (!isset($_SESSION['user'])) {
@@ -15,11 +16,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $longitude = $_POST['longitude'];
     $latitude = $_POST['latitude'];
     $estado = $_POST['estado'];
+    $condicion = $_POST['condicion'] ?? 'nuevo';
+
+    $allowedConditions = ['nuevo', 'usado', 'reacondicionado'];
+    if (!in_array($condicion, $allowedConditions, true)) {
+        $condicion = 'nuevo';
+    }
 
     // Insertar el producto en la base de datos
     $user_id = $_SESSION['user']['id'];
-    $query = "INSERT INTO products (title, price, description, longitude, latitude, category_id, status, user_id)
-          VALUES ('$nombre', '$precio', '$descripcion', '$longitude', '$latitude', '$categoria', '$estado', '$user_id')";
+    $query = "INSERT INTO products (title, price, description, longitude, latitude, category_id, status, condition_type, user_id)
+          VALUES ('$nombre', '$precio', '$descripcion', '$longitude', '$latitude', '$categoria', '$estado', '$condicion', '$user_id')";
 
     if (mysqli_query($conn, $query)) {
         $product_id = mysqli_insert_id($conn);
@@ -37,6 +44,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                 mysqli_query($conn, $image_query);
             }
+        }
+
+        /* Actualizar rol: si tenía 0 productos, ahora pasa a seller */
+        sync_user_role($conn, (int)$user_id);
+
+        /* Refrescar sesión para reflejar el nuevo rol */
+        $updated = mysqli_query($conn, "SELECT * FROM users WHERE id = $user_id LIMIT 1");
+        if ($updated && mysqli_num_rows($updated) > 0) {
+            $_SESSION['user'] = mysqli_fetch_assoc($updated);
         }
 
         header("Location: ../../crear.php");

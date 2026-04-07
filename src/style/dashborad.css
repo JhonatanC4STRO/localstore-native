@@ -424,18 +424,24 @@ a {
        SIDEBAR
     ══════════════════════════════════ */
 .sidebar {
-  width: 228px;
+  width: 260px;
   flex-shrink: 0;
   background: var(--g900);
+  padding: 24px 0 40px;
   display: flex;
   flex-direction: column;
-  padding: 24px 0 40px;
+  gap: 0;
   position: sticky;
-  top: 66px;
-  height: calc(100vh - 66px);
+  top: 64px;
+  height: calc(100vh - 64px);
   overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
 }
 
+.sidebar::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Opera */
+}
 .sb-section-label {
   font-size: 0.67rem;
   font-weight: 700;

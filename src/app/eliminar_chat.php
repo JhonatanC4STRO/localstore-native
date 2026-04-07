@@ -58,9 +58,9 @@ $conv = mysqli_fetch_assoc($res_auth);
 
 // ── 5. Determinar qué columna marcar ──
 if ((int) $conv['buyer_id'] === $user_id) {
-    $campo = 'deleted_by_buyer';
+    $campo = 'hidden_by_buyer';
 } else {
-    $campo = 'deleted_by_seller';
+    $campo = 'hidden_by_seller';
 }
 
 // ── 6. Soft-delete solo para este usuario ──
@@ -76,8 +76,8 @@ if (!$ok) {
 // ── 7. Si AMBOS la eliminaron → borrar definitivamente ──
 $res_both = mysqli_query($conn, "SELECT id FROM conversations
                                   WHERE id = $conversation_id
-                                    AND deleted_by_buyer  = 1
-                                    AND deleted_by_seller = 1 LIMIT 1");
+                                    AND hidden_by_buyer  = 1
+                                    AND hidden_by_seller = 1 LIMIT 1");
 
 if ($res_both && mysqli_num_rows($res_both) > 0) {
     mysqli_query($conn, "DELETE FROM messages      WHERE conversation_id = $conversation_id");

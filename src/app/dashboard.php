@@ -47,121 +47,34 @@ if ($r2) {
 <body>
 
   <!-- header -->
-  <header class="topbar">
-    <a href="./inde.php" class=""><img class="h-28 w-28" src="./Logo de Comercio Local.png" alt=""></a>
-
-
-    <div class="tb-search">
-      <input type="text" placeholder="Buscar productos, anuncios...">
-      <button><i class="bi bi-search"></i></button>
-    </div>
-
-    <div class="tb-spacer"></div>
-
-    <div class="tb-actions">
-
-      <div class="tb-icon-btn">
-        <i class="bi bi-bell"></i>
-        <div class="notif-dot"></div>
-      </div>
-      <div class="tb-icon-btn">
-        <i class="bi bi-chat-dots"></i>
-      </div>
-      <div class="tb-icon-btn">
-        <i class="bi bi-question-circle"></i>
-      </div>
-
-      <!-- User chip + dropdown — LOGIC PRESERVED -->
-      <?php if ($isLoggedIn): ?>
-        <div class="user-menu-wrap" id="userMenuWrap">
-          <div class="user-chip" id="userChip">
-            <div style="position:relative;">
-              <div class="user-avatar"><?php echo $userInitial; ?></div>
-              <div class="online-dot"></div>
-            </div>
-            <div class="uc-info">
-              <div class="uc-greeting">Hola,</div>
-              <div class="uc-name"><?php echo htmlspecialchars($userName); ?></div>
-            </div>
-            <i class="bi bi-chevron-down uc-arrow"></i>
-          </div>
-
-          <div class="user-dropdown" id="userDropdown">
-            <div class="ud-head">
-              <div class="ud-av"><?php echo $userInitial; ?></div>
-              <div>
-                <div class="ud-name"><?php echo htmlspecialchars($user['full_name']); ?></div>
-                <div class="ud-email"><?php echo htmlspecialchars($user['email']); ?></div>
-              </div>
-            </div>
-            <div class="ud-body">
-              <a class="ud-lnk" href="#"><i class="bi bi-speedometer2"></i> Dashboard</a>
-              <a class="ud-lnk" href="./crear.php"><i class="bi bi-plus-square"></i> Publicar producto</a>
-              <a class="ud-lnk" href="#"><i class="bi bi-box-seam"></i> Mis anuncios</a>
-              <a class="ud-lnk" href="#"><i class="bi bi-person-circle"></i> Mi perfil</a>
-              <div class="ud-sep"></div>
-              <a class="ud-logout" href="../controller/logout.php"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</a>
-            </div>
-          </div>
-        </div>
-      <?php endif; ?>
-
-    </div>
-  </header>
+  <?php $basePath = '../'; include __DIR__ . '/../components/header.php'; ?>
 
   <div class="page-shell">
 
     <!-- ══════════════════════════════════
        SIDEBAR
-  ══════════════════════════════════ -->
+    ══════════════════════════════════ -->
     <aside class="sidebar">
       <div class="sb-section-label">Principal</div>
 
-      <a id="link-dashboard" class="sb-link active" href="#"><i class="bi bi-speedometer2"></i> Dashboard</a>
-
-      <a id="link-publicar" class="sb-link" href="./crear.php">
-        <i class="bi bi-plus-square-fill"></i> Publicar producto
-      </a>
-
-      <a id="link-misproductos" class="sb-link" href="#misproductos">
+      <a class="sb-link active" href="./dashboard.php"><i class="bi bi-speedometer2"></i> Dashboard</a>
+      <a class="sb-link" href="./crear.php"><i class="bi bi-plus-square-fill"></i> Publicar producto</a>
+      <a class="sb-link" href="./misProductos.php">
         <i class="bi bi-box-seam"></i> Mis productos
         <span class="sb-badge"><?php echo $totalProducts; ?></span>
       </a>
-      <script>
-        const linkDashboard = document.getElementById('link-dashboard');
-        const linkPublicar = document.getElementById('link-publicar');
-        const linkMisProductos = document.getElementById('link-misproductos');
-
-        function setActiveLink() {
-          const hash = window.location.hash;
-
-          // Limpiar todos
-          linkDashboard.classList.remove('active');
-          linkPublicar.classList.remove('active');
-          linkMisProductos.classList.remove('active');
-
-          if (hash === "#misproductos") {
-            linkMisProductos.classList.add('active');
-          } else {
-            linkDashboard.classList.add('active');
-          }
-        }
-
-        window.addEventListener('load', setActiveLink);
-        window.addEventListener('hashchange', setActiveLink);
-      </script>
       <a class="sb-link" href="./chat.php">
         <i class="bi bi-chat-dots"></i> Mensajes
         <span class="sb-badge yellow">5</span>
       </a>
-      <a class="sb-link" href="#"><i class="bi bi-graph-up-arrow"></i> Ventas</a>
       <a class="sb-link" href="#"><i class="bi bi-heart"></i> Favoritos</a>
 
       <div class="sb-divider"></div>
       <div class="sb-section-label">Cuenta</div>
 
-      <a class="sb-link" href="#"><i class="bi bi-person-circle"></i> Mi perfil</a>
+      <a class="sb-link" href="./perfil.php"><i class="bi bi-person-circle"></i> Mi perfil</a>
       <a class="sb-link" href="#"><i class="bi bi-star"></i> Reseñas</a>
+      <a class="sb-link" href="./promociones.php"><i class="bi bi-rocket-takeoff-fill"></i> Promociones</a>
       <a class="sb-link" href="#"><i class="bi bi-gear"></i> Configuración</a>
       <a class="sb-link" href="../controller/logout.php" style="color:rgba(239,68,68,.7);">
         <i class="bi bi-box-arrow-right"></i> Cerrar sesión
@@ -170,15 +83,15 @@ if ($r2) {
       <div class="sb-divider"></div>
 
       <div class="sb-promo">
-        <div class="sb-promo-icon">⭐</div>
+        <div class="sb-promo-icon">🚀</div>
         <p>Destaca tu anuncio y llega a 10× más compradores hoy.</p>
-        <a href="#">Ver planes</a>
+        <a href="./promociones.php">Ver planes</a>
       </div>
     </aside>
 
     <!-- ══════════════════════════════════
-       MAIN
-  ══════════════════════════════════ -->
+       MAIN CONTENT
+    ══════════════════════════════════ -->
     <main class="main-content">
 
       <!-- Page header -->
@@ -210,7 +123,6 @@ if ($r2) {
             <div class="stat-icon si-green"><i class="bi bi-box-seam-fill"></i></div>
             <div class="stat-trend trend-up"><i class="bi bi-arrow-up"></i> +2</div>
           </div>
-          <!-- LOGIC PRESERVED: PHP count query -->
           <div class="stat-value"><?php echo $totalProducts; ?></div>
           <div class="stat-label">Total de productos</div>
           <div class="stat-bar-wrap">
@@ -245,7 +157,6 @@ if ($r2) {
         <div class="stat-card green-card">
           <div class="stat-top">
             <div class="stat-icon si-green"><i class="bi bi-check-circle-fill"></i></div>
-            <!-- LOGIC PRESERVED: active listings count -->
             <div class="stat-trend trend-flat"><i class="bi bi-dash"></i> estable</div>
           </div>
           <div class="stat-value"><?php echo $activeListings; ?></div>
@@ -266,7 +177,7 @@ if ($r2) {
             <div class="qc-sub">Publicar producto</div>
           </div>
         </a>
-        <a href="#" class="quick-card">
+        <a href="./chat.php" class="quick-card">
           <div class="qc-icon" style="background:var(--y100);color:var(--y600);"><i class="bi bi-chat-dots-fill"></i></div>
           <div>
             <div class="qc-label">Ver mensajes</div>
@@ -280,16 +191,16 @@ if ($r2) {
             <div class="qc-sub">Ver rendimiento</div>
           </div>
         </a>
-        <a href="#" class="quick-card">
-          <div class="qc-icon" style="background:#f3e8ff;color:#7c3aed;"><i class="bi bi-star-fill"></i></div>
-          <div id="misproductos">
-            <div class="qc-label">Destacar</div>
-            <div class="qc-sub">Planes premium</div>
+        <a href="./promociones.php" class="quick-card">
+          <div class="qc-icon" style="background:#fef9c3;color:#ca8a04;"><i class="bi bi-rocket-takeoff-fill"></i></div>
+          <div>
+            <div class="qc-label">Promociones</div>
+            <div class="qc-sub">Ver planes</div>
           </div>
         </a>
       </div>
 
-      <!-- ── MY PRODUCTS — LOGIC PRESERVED ── -->
+      <!-- ── MY PRODUCTS ── -->
       <div class="section-block">
         <div class="section-head">
           <div class="section-head-left">
@@ -309,7 +220,6 @@ if ($r2) {
         <div class="products-grid" id="productsGrid">
 
           <?php
-          /* ── LOGIC 100% PRESERVED: original query ── */
           $sql = "SELECT p.*, c.name as category_name
                 FROM products p
                 LEFT JOIN categories c ON p.category_id = c.id
@@ -340,7 +250,6 @@ if ($r2) {
                   <!-- Image slot -->
                   <div class="pc-img-slot">
                     <?php
-                    /* LOGIC PRESERVED: fetch product images */
                     $pid = $row['id'];
                     $img_q = "SELECT * FROM product_images WHERE product_id = '$pid' LIMIT 1";
                     $img_r = mysqli_query($conn, $img_q);
@@ -351,12 +260,10 @@ if ($r2) {
                       <i class="bi bi-box-seam"></i>
                     <?php endif; ?>
 
-                    <!-- Status badge -->
                     <div class="pc-status-badge <?php echo ($row['status'] == 1) ? 'status-active' : 'status-inactive'; ?>">
                       <?php echo ($row['status'] == 1) ? '● Activo' : '○ Inactivo'; ?>
                     </div>
 
-                    <!-- Quick action buttons on image -->
                     <div class="pc-actions-top">
                       <a href="./edit_product.php?id=<?php echo $row['id']; ?>" class="pc-action-btn edit" title="Editar">
                         <i class="bi bi-pencil-fill"></i>
@@ -416,81 +323,7 @@ if ($r2) {
         </div>
       </div>
 
-      <!-- ── RECENT ACTIVITY ──
-            <div class="activity-strip">
-                <div class="as-header">
-                    <div class="as-title">Actividad reciente</div>
-                    <a href="#" class="as-see-all">Ver todo <i class="bi bi-arrow-right"></i></a>
-                </div>
-                <div class="activity-list">
-                    <div class="act-item">
-                        <div class="act-icon ai-blue"><i class="bi bi-eye-fill"></i></div>
-                        <div class="act-text">
-                            <div class="act-title">Alguien vio tu anuncio "iPhone 13"</div>
-                            <div class="act-sub">Chapinero, Bogotá</div>
-                        </div>
-                        <div class="act-time">Hace 5 min</div>
-                    </div>
-                    <div class="act-item">
-                        <div class="act-icon ai-yellow"><i class="bi bi-chat-dots-fill"></i></div>
-                        <div class="act-text">
-                            <div class="act-title">Nuevo mensaje de Carlos A.</div>
-                            <div class="act-sub">"¿Está disponible el viernes?"</div>
-                        </div>
-                        <div class="act-time">Hace 23 min</div>
-                    </div>
-                    <div class="act-item">
-                        <div class="act-icon ai-green"><i class="bi bi-check-circle-fill"></i></div>
-                        <div class="act-text">
-                            <div class="act-title">Tu anuncio fue aprobado</div>
-                            <div class="act-sub">Bicicleta MTB Trek 29"</div>
-                        </div>
-                        <div class="act-time">Hace 1 hora</div>
-                    </div>
-                </div>
-            </div> -->
-
-    </main>
-  </div>
-
-  <script>
-    /* ── User dropdown toggle ── */
-    const wrap = document.getElementById('userMenuWrap');
-    const chip = document.getElementById('userChip');
-    if (chip) {
-      chip.addEventListener('click', e => {
-        e.stopPropagation();
-        wrap.classList.toggle('open');
-      });
-      document.addEventListener('click', e => {
-        if (!wrap.contains(e.target)) wrap.classList.remove('open');
-      });
-      document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') wrap.classList.remove('open');
-      });
-    }
-
-    /* ── View toggle ── */
-    document.querySelectorAll('.vt-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.vt-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        const grid = document.getElementById('productsGrid');
-        if (btn.querySelector('.bi-list-ul')) {
-          grid.style.gridTemplateColumns = '1fr';
-          grid.querySelectorAll('.product-card').forEach(c => {
-            c.style.display = 'flex';
-          });
-        } else {
-          grid.style.gridTemplateColumns = '';
-          grid.querySelectorAll('.product-card').forEach(c => {
-            c.style.display = '';
-          });
-        }
-      });
-    });
-  </script>
+  <script src="../js/dashboard.js"></script>
 
 </body>
-
 </html>

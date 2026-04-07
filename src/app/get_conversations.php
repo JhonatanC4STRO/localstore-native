@@ -29,6 +29,11 @@ $sql = "SELECT
             p.id     AS product_id,
             u.full_name AS other_user,
             u.id        AS other_user_id,
+            (SELECT image_url
+             FROM product_images
+             WHERE product_id = p.id AND p.id IS NOT NULL
+             ORDER BY id ASC
+             LIMIT 1) AS product_image,
             (SELECT m2.message
              FROM messages m2
              WHERE m2.conversation_id = c.id
@@ -43,7 +48,7 @@ $sql = "SELECT
                AND m4.sender_id != $user_id
                AND m4.is_read = 0) AS unread_count
         FROM conversations c
-        JOIN products p ON c.product_id = p.id
+        LEFT JOIN products p ON c.product_id = p.id
         JOIN users u ON (
             (c.buyer_id  = $user_id AND u.id = c.seller_id)
             OR
@@ -66,6 +71,7 @@ if ($res && mysqli_num_rows($res) > 0) {
             'product_name'    => $row['product_name'],
             'product_price'   => $row['product_price'],
             'product_id'      => (int) $row['product_id'],
+            'product_image'   => $row['product_image'] ?? '',
             'last_message'    => $row['last_message']    ?? '',
             'last_message_at' => $row['last_message_at'] ?? '',
             'unread_count'    => (int) ($row['unread_count'] ?? 0),

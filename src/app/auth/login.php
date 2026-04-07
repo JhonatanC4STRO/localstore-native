@@ -13,6 +13,7 @@ require_once "../../config/conexion.php";
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <link rel="stylesheet" href="../../style/login.css">
+  <link rel="stylesheet" href="../../output.css">
 </head>
 
 <body>
@@ -27,10 +28,8 @@ require_once "../../config/conexion.php";
     <div class="left-content">
 
       <!-- Logo -->
-      <div class="logo-wrap">
-        <div class="logo-icon"><i class="bi bi-shop-window"></i></div>
-        <a href="../inde.php" class="logo-text">Comercio<em>Local</em></a>
-      </div>
+       <a href="../inde.php" class=" flex justify-center" ><img class="h-40 w-40" src="../Logo de Comercio Local.png" alt=""></a>
+
 
       <!-- Scene -->
       <div class="scene">
@@ -197,43 +196,7 @@ require_once "../../config/conexion.php";
     </div>
   </div>
 
-  <script>
-    /* Password visibility toggle */
-    const pwToggle = document.getElementById('pwToggle');
-    const pwInput = document.getElementById('password');
-    const pwIcon = document.getElementById('pwIcon');
-
-    pwToggle.addEventListener('click', () => {
-      const isHidden = pwInput.type === 'password';
-      pwInput.type = isHidden ? 'text' : 'password';
-      pwIcon.className = isHidden ? 'bi bi-eye-slash' : 'bi bi-eye';
-    });
-
-    /* Ticker rotation */
-    const tickers = [{
-        name: 'Juanita M.',
-        action: 'acaba de publicar un artículo en Bogotá'
-      },
-      {
-        name: 'Carlos A.',
-        action: 'vendió una bicicleta en Medellín'
-      },
-      {
-        name: 'Sara R.',
-        action: 'está buscando muebles en Cali'
-      },
-      {
-        name: 'Andrés F.',
-        action: 'publicó un iPhone en Barranquilla'
-      },
-    ];
-    let ti = 0;
-    const tickerText = document.querySelector('.ticker-text');
-    setInterval(() => {
-      ti = (ti + 1) % tickers.length;
-      tickerText.innerHTML = `<strong>${tickers[ti].name}</strong> ${tickers[ti].action}`;
-    }, 3500);
-  </script>
+  <script src="../../js/login.js"></script>
 
 </body>
 

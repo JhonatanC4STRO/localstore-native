@@ -1,0 +1,428 @@
+/* ══════════════════════════════════════════
+   UNIFIED HEADER — ComercioLocal
+   ══════════════════════════════════════════ */
+
+/* ── Variables (inherited from page or defined here as fallback) ── */
+:root {
+  --header-bg: #0b2e17;
+  --header-bg2: #103d1e;
+  --header-accent: #f5a81c;
+  --header-accent-hover: #fcc034;
+  --header-text: #fff;
+  --header-text-soft: rgba(255, 255, 255, 0.55);
+  --header-border: rgba(255, 255, 255, 0.12);
+  --header-glass: rgba(255, 255, 255, 0.08);
+  --header-glass-hover: rgba(255, 255, 255, 0.16);
+  --header-h: 66px;
+}
+
+/* ── Base Layout ── */
+.cl-header {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: linear-gradient(135deg, var(--header-bg), var(--header-bg2));
+  border-bottom: 3px solid var(--header-accent);
+  height: var(--header-h);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+/* ── Logo ── */
+.cl-header .cl-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.cl-header .cl-logo img {
+  height: 52px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* ── Search Bar ── */
+.cl-header .cl-search {
+  flex: 1;
+  max-width: 480px;
+  display: flex;
+  align-items: center;
+  background: var(--header-glass);
+  border: 1.5px solid var(--header-border);
+  border-radius: 50px;
+  overflow: hidden;
+  transition: all 0.25s ease;
+}
+
+.cl-header .cl-search:focus-within {
+  background: var(--header-glass-hover);
+  border-color: var(--header-accent);
+  box-shadow: 0 0 0 3px rgba(245, 168, 28, 0.15);
+}
+
+.cl-header .cl-search input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--header-text);
+  font-family: inherit;
+  font-size: 0.88rem;
+  padding: 9px 16px;
+}
+
+.cl-header .cl-search input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.cl-header .cl-search button {
+  background: var(--header-accent);
+  border: none;
+  cursor: pointer;
+  padding: 9px 16px;
+  color: var(--header-bg);
+  font-size: 0.95rem;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.cl-header .cl-search button:hover {
+  background: var(--header-accent-hover);
+}
+
+/* ── Spacer ── */
+.cl-header .cl-spacer {
+  flex: 1;
+}
+
+/* ── Right Actions ── */
+.cl-header .cl-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Icon Buttons ── */
+.cl-header .cl-icon-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--header-glass);
+  border: 1.5px solid var(--header-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  text-decoration: none;
+}
+
+.cl-header .cl-icon-btn:hover {
+  background: var(--header-glass-hover);
+  color: var(--header-accent-hover);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.cl-header .cl-notif-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--header-accent);
+  border: 2px solid var(--header-bg);
+}
+
+/* ── User Chip ── */
+.cl-header .cl-user-wrap {
+  position: relative;
+}
+
+.cl-header .cl-user-chip {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--header-glass);
+  border: 1.5px solid var(--header-border);
+  border-radius: 50px;
+  padding: 4px 14px 4px 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.cl-header .cl-user-chip:hover {
+  background: var(--header-glass-hover);
+  border-color: var(--header-accent);
+}
+
+.cl-header .cl-user-av {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--header-accent), var(--header-accent-hover));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Syne', 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 0.88rem;
+  color: var(--header-bg);
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(245, 168, 28, 0.35);
+  position: relative;
+}
+
+.cl-header .cl-user-online {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #34b357;
+  border: 2.5px solid var(--header-bg);
+}
+
+.cl-header .cl-user-info {
+  line-height: 1.2;
+}
+
+.cl-header .cl-user-greet {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.cl-header .cl-user-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--header-text);
+}
+
+.cl-header .cl-user-arrow {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.4);
+  transition: transform 0.25s;
+}
+
+.cl-user-wrap.open .cl-user-arrow {
+  transform: rotate(180deg);
+}
+
+/* ── User Dropdown ── */
+.cl-header .cl-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 240px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 16px 48px rgba(10, 40, 20, 0.2), 0 2px 8px rgba(10, 40, 20, 0.08);
+  border: 1.5px solid #c8f2d5;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-8px) scale(0.97);
+  transition: all 0.25s cubic-bezier(0.22, 0.9, 0.36, 1);
+  z-index: 300;
+}
+
+.cl-user-wrap.open .cl-dropdown {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateY(0) scale(1);
+}
+
+.cl-header .cl-dd-head {
+  background: linear-gradient(135deg, #0b2e17, #103d1e);
+  padding: 18px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cl-header .cl-dd-av {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--header-accent), var(--header-accent-hover));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Syne', 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--header-bg);
+  flex-shrink: 0;
+}
+
+.cl-header .cl-dd-name {
+  font-family: 'Syne', 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #fff;
+}
+
+.cl-header .cl-dd-email {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.45);
+  margin-top: 2px;
+  max-width: 150px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.cl-header .cl-dd-body {
+  padding: 6px 0;
+}
+
+.cl-header .cl-dd-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  font-size: 0.84rem;
+  color: #2d4035;
+  cursor: pointer;
+  transition: background 0.15s;
+  text-decoration: none;
+}
+
+.cl-header .cl-dd-link:hover {
+  background: #edfaf3;
+  color: #185228;
+}
+
+.cl-header .cl-dd-link i {
+  width: 18px;
+  text-align: center;
+  color: #25883f;
+  font-size: 0.92rem;
+}
+
+.cl-header .cl-dd-sep {
+  height: 1px;
+  background: #c8f2d5;
+  margin: 4px 0;
+}
+
+.cl-header .cl-dd-logout {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  font-size: 0.84rem;
+  color: #dc2626;
+  cursor: pointer;
+  transition: background 0.15s;
+  text-decoration: none;
+}
+
+.cl-header .cl-dd-logout:hover {
+  background: #fef2f2;
+}
+
+.cl-header .cl-dd-logout i {
+  width: 18px;
+  text-align: center;
+}
+
+/* ── Ghost Button (Login/Register) ── */
+.cl-header .cl-btn-ghost {
+  background: transparent;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  color: var(--header-text);
+  border-radius: 50px;
+  padding: 7px 16px;
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.cl-header .cl-btn-ghost:hover {
+  border-color: var(--header-accent);
+  color: var(--header-accent);
+}
+
+/* ── Publish Button ── */
+.cl-header .cl-btn-publish {
+  background: var(--header-accent);
+  border: none;
+  color: var(--header-bg);
+  border-radius: 50px;
+  padding: 9px 18px;
+  font-family: 'Syne', 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  box-shadow: 0 3px 12px rgba(245, 168, 28, 0.35);
+  transition: all 0.2s;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.cl-header .cl-btn-publish:hover {
+  background: var(--header-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 16px rgba(245, 168, 28, 0.4);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .cl-header {
+    padding: 0 14px;
+    gap: 10px;
+    height: 58px;
+  }
+
+  .cl-header .cl-search {
+    max-width: 200px;
+  }
+
+  .cl-header .cl-icon-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 0.95rem;
+  }
+
+  .cl-header .cl-user-info {
+    display: none;
+  }
+
+  .cl-header .cl-btn-publish span {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .cl-header .cl-search {
+    display: none;
+  }
+
+  .cl-header .cl-icon-btn:nth-child(3) {
+    display: none;
+  }
+}
