@@ -6,9 +6,7 @@ node_modules/
 .env
 .env.local
 
-# Uploads (no subir imágenes al repo)
-public/uploads/products/*
-!public/uploads/products/.gitkeep
+# Uploads
 
 # Logs
 *.log
