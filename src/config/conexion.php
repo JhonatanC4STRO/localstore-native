@@ -1,11 +1,20 @@
 <?php
-// Railway MySQL plugin usa MYSQLHOST, MYSQLUSER, etc.
-// Fallback a DB_* para otros entornos y local
-$host = getenv('MYSQLHOST')     ?: getenv('DB_HOST') ?: 'localhost';
-$user = getenv('MYSQLUSER')     ?: getenv('DB_USER') ?: 'root';
-$pass = getenv('MYSQLPASSWORD') ?: getenv('DB_PASS') ?: '';
-$db   = getenv('MYSQLDATABASE') ?: getenv('DB_NAME') ?: 'tiendalocal';
-$port = (int)(getenv('MYSQLPORT') ?: getenv('DB_PORT') ?: 3306);
+$mysql_url = getenv('MYSQL_URL') ?: getenv('DATABASE_URL') ?: null;
+
+if ($mysql_url) {
+    $p    = parse_url($mysql_url);
+    $host = $p['host'];
+    $user = $p['user'];
+    $pass = $p['pass'] ?? '';
+    $db   = ltrim($p['path'], '/');
+    $port = (int)($p['port'] ?? 3306);
+} else {
+    $host = 'localhost';
+    $user = 'root';
+    $pass = '';
+    $db   = 'tiendalocal';
+    $port = 3306;
+}
 
 $conn = mysqli_connect($host, $user, $pass, $db, $port);
 
