@@ -1,0 +1,14 @@
+# Dependencias (Railway las instala solas)
+vendor/
+node_modules/
+
+# Variables de entorno
+.env
+.env.local
+
+# Uploads (no subir imágenes al repo)
+public/uploads/products/*
+!public/uploads/products/.gitkeep
+
+# Logs
+*.log
