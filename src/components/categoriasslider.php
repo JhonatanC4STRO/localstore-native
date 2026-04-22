@@ -6,7 +6,17 @@ $result = mysqli_query($conn, $sql);
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
-<div class="relative w-4/5 mx-auto py-10">
+<style>
+    .mySwiper .swiper-wrapper {
+        transition-timing-function: linear !important;
+    }
+    /* Ocultar flechas de navegación si swiper las inyecta o si existen */
+    .swiper-button-next, .swiper-button-prev {
+        display: none !important;
+    }
+</style>
+
+<div class="relative w-4/5 mx-auto py-10 select-none">
     <div class="swiper mySwiper">
         <h3 class="text-2xl font-bold mb-3">Todas las categorías</h3>
         <div class="swiper-wrapper">
@@ -19,7 +29,6 @@ $result = mysqli_query($conn, $sql);
                     </div>
                     <div class="flex justify-between items-center text-sm font-medium text-gray-800">
                         <span>Vehículos</span>
-                        <i class="bi bi-arrow-right text-gray-400"></i>
                     </div>
                 </a>
             </div>
@@ -32,7 +41,6 @@ $result = mysqli_query($conn, $sql);
                     </div>
                     <div class="flex justify-between items-center text-sm font-medium text-gray-800">
                         <span>Propiedades</span>
-                        <i class="bi bi-arrow-right text-gray-400"></i>
                     </div>
                 </a>
             </div>
@@ -45,7 +53,6 @@ $result = mysqli_query($conn, $sql);
                     </div>
                     <div class="flex justify-between items-center text-sm font-medium text-gray-800">
                         <span>Alquileres</span>
-                        <i class="bi bi-arrow-right text-gray-400"></i>
                     </div>
                 </a>
             </div>
@@ -58,7 +65,6 @@ $result = mysqli_query($conn, $sql);
                     </div>
                     <div class="flex justify-between items-center text-sm font-medium text-gray-800">
                         <span>Electrónica</span>
-                        <i class="bi bi-arrow-right text-gray-400"></i>
                     </div>
                 </a>
             </div>
@@ -71,7 +77,17 @@ $result = mysqli_query($conn, $sql);
                     </div>
                     <div class="flex justify-between items-center text-sm font-medium text-gray-800">
                         <span>Celulares</span>
-                        <i class="bi bi-arrow-right text-gray-400"></i>
+                    </div>
+                </a>
+            </div>
+            <!-- Repetidos para el efecto visual de loop infinito -->
+            <div class="swiper-slide !flex !items-center !justify-center">
+                <a href="#" class="flex flex-col gap-3 p-4 w-full border border-gray-200 rounded-xl bg-white hover:border-gray-400 transition-colors no-underline text-inherit">
+                    <div class="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-lg text-gray-600">
+                        <i class="bi bi-phone"></i>
+                    </div>
+                    <div class="flex justify-between items-center text-sm font-medium text-gray-800">
+                        <span>Celulares</span>
                     </div>
                 </a>
             </div>
@@ -82,7 +98,6 @@ $result = mysqli_query($conn, $sql);
                     </div>
                     <div class="flex justify-between items-center text-sm font-medium text-gray-800">
                         <span>Celulares</span>
-                        <i class="bi bi-arrow-right text-gray-400"></i>
                     </div>
                 </a>
             </div>
@@ -93,7 +108,6 @@ $result = mysqli_query($conn, $sql);
                     </div>
                     <div class="flex justify-between items-center text-sm font-medium text-gray-800">
                         <span>Celulares</span>
-                        <i class="bi bi-arrow-right text-gray-400"></i>
                     </div>
                 </a>
             </div>
@@ -104,7 +118,6 @@ $result = mysqli_query($conn, $sql);
                     </div>
                     <div class="flex justify-between items-center text-sm font-medium text-gray-800">
                         <span>Celulares</span>
-                        <i class="bi bi-arrow-right text-gray-400"></i>
                     </div>
                 </a>
             </div>
@@ -115,106 +128,6 @@ $result = mysqli_query($conn, $sql);
                     </div>
                     <div class="flex justify-between items-center text-sm font-medium text-gray-800">
                         <span>Celulares</span>
-                        <i class="bi bi-arrow-right text-gray-400"></i>
-                    </div>
-                </a>
-            </div>
-            <div class="swiper-slide !flex !items-center !justify-center">
-                <a href="#" class="flex flex-col gap-3 p-4 w-full border border-gray-200 rounded-xl bg-white hover:border-gray-400 transition-colors no-underline text-inherit">
-                    <div class="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-lg text-gray-600">
-                        <i class="bi bi-phone"></i>
-                    </div>
-                    <div class="flex justify-between items-center text-sm font-medium text-gray-800">
-                        <span>Celulares</span>
-                        <i class="bi bi-arrow-right text-gray-400"></i>
-                    </div>
-                </a>
-            </div>
-            <div class="swiper-slide !flex !items-center !justify-center">
-                <a href="#" class="flex flex-col gap-3 p-4 w-full border border-gray-200 rounded-xl bg-white hover:border-gray-400 transition-colors no-underline text-inherit">
-                    <div class="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-lg text-gray-600">
-                        <i class="bi bi-phone"></i>
-                    </div>
-                    <div class="flex justify-between items-center text-sm font-medium text-gray-800">
-                        <span>Celulares</span>
-                        <i class="bi bi-arrow-right text-gray-400"></i>
-                    </div>
-                </a>
-            </div>
-            <div class="swiper-slide !flex !items-center !justify-center">
-                <a href="#" class="flex flex-col gap-3 p-4 w-full border border-gray-200 rounded-xl bg-white hover:border-gray-400 transition-colors no-underline text-inherit">
-                    <div class="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-lg text-gray-600">
-                        <i class="bi bi-phone"></i>
-                    </div>
-                    <div class="flex justify-between items-center text-sm font-medium text-gray-800">
-                        <span>Celulares</span>
-                        <i class="bi bi-arrow-right text-gray-400"></i>
-                    </div>
-                </a>
-            </div>
-            <div class="swiper-slide !flex !items-center !justify-center">
-                <a href="#" class="flex flex-col gap-3 p-4 w-full border border-gray-200 rounded-xl bg-white hover:border-gray-400 transition-colors no-underline text-inherit">
-                    <div class="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-lg text-gray-600">
-                        <i class="bi bi-phone"></i>
-                    </div>
-                    <div class="flex justify-between items-center text-sm font-medium text-gray-800">
-                        <span>Celulares</span>
-                        <i class="bi bi-arrow-right text-gray-400"></i>
-                    </div>
-                </a>
-            </div>
-            <div class="swiper-slide !flex !items-center !justify-center">
-                <a href="#" class="flex flex-col gap-3 p-4 w-full border border-gray-200 rounded-xl bg-white hover:border-gray-400 transition-colors no-underline text-inherit">
-                    <div class="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-lg text-gray-600">
-                        <i class="bi bi-phone"></i>
-                    </div>
-                    <div class="flex justify-between items-center text-sm font-medium text-gray-800">
-                        <span>Celulares</span>
-                        <i class="bi bi-arrow-right text-gray-400"></i>
-                    </div>
-                </a>
-            </div>
-            <div class="swiper-slide !flex !items-center !justify-center">
-                <a href="#" class="flex flex-col gap-3 p-4 w-full border border-gray-200 rounded-xl bg-white hover:border-gray-400 transition-colors no-underline text-inherit">
-                    <div class="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-lg text-gray-600">
-                        <i class="bi bi-phone"></i>
-                    </div>
-                    <div class="flex justify-between items-center text-sm font-medium text-gray-800">
-                        <span>Celulares</span>
-                        <i class="bi bi-arrow-right text-gray-400"></i>
-                    </div>
-                </a>
-            </div>
-            <div class="swiper-slide !flex !items-center !justify-center">
-                <a href="#" class="flex flex-col gap-3 p-4 w-full border border-gray-200 rounded-xl bg-white hover:border-gray-400 transition-colors no-underline text-inherit">
-                    <div class="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-lg text-gray-600">
-                        <i class="bi bi-phone"></i>
-                    </div>
-                    <div class="flex justify-between items-center text-sm font-medium text-gray-800">
-                        <span>Celulares</span>
-                        <i class="bi bi-arrow-right text-gray-400"></i>
-                    </div>
-                </a>
-            </div>
-            <div class="swiper-slide !flex !items-center !justify-center">
-                <a href="#" class="flex flex-col gap-3 p-4 w-full border border-gray-200 rounded-xl bg-white hover:border-gray-400 transition-colors no-underline text-inherit">
-                    <div class="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-lg text-gray-600">
-                        <i class="bi bi-phone"></i>
-                    </div>
-                    <div class="flex justify-between items-center text-sm font-medium text-gray-800">
-                        <span>Celulares</span>
-                        <i class="bi bi-arrow-right text-gray-400"></i>
-                    </div>
-                </a>
-            </div>
-            <div class="swiper-slide !flex !items-center !justify-center">
-                <a href="#" class="flex flex-col gap-3 p-4 w-full border border-gray-200 rounded-xl bg-white hover:border-gray-400 transition-colors no-underline text-inherit">
-                    <div class="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-lg text-gray-600">
-                        <i class="bi bi-phone"></i>
-                    </div>
-                    <div class="flex justify-between items-center text-sm font-medium text-gray-800">
-                        <span>Celulares</span>
-                        <i class="bi bi-arrow-right text-gray-400"></i>
                     </div>
                 </a>
             </div>
@@ -233,12 +146,11 @@ $result = mysqli_query($conn, $sql);
             slidesPerView: 3,
             spaceBetween: 12,
             loop: true,
-            navigation: {
-                nextEl: ".swiper-button-next",
-                prevEl: ".swiper-button-prev",
-            },
+            freeMode: true,
+            allowTouchMove: false,
+            speed: 5000,
             autoplay: {
-                delay: 3000,
+                delay: 0,
                 disableOnInteraction: false,
             },
             breakpoints: {
@@ -254,3 +166,7 @@ $result = mysqli_query($conn, $sql);
         });
     });
 </script>
+
+
+
+

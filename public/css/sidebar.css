@@ -1,0 +1,152 @@
+/* ══════════════════════════════════
+   UNIFIED SIDEBAR — ComercioLocal
+   Matches the design from dashboard.php
+══════════════════════════════════ */
+
+.sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--g900, #0b2e17);
+  padding: 24px 0 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  z-index: 100;
+}
+
+.sidebar::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Opera */
+}
+
+.sb-section-label {
+  font-size: 0.67rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.28);
+  padding: 16px 20px 8px;
+}
+
+.sb-link {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 20px;
+  min-height: 43px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.86rem;
+  border-left: 3px solid transparent;
+  transition: all 0.2s;
+  cursor: pointer;
+  text-decoration: none;
+  position: relative;
+}
+
+.sb-link i {
+  font-size: 0.98rem;
+  width: 18px;
+  text-align: center;
+}
+
+.sb-link:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.sb-link.active {
+  color: var(--y300, #fcc034);
+  background: rgba(245, 168, 28, 0.08);
+  border-left-color: var(--y400, #f5a81c);
+}
+
+.sb-link.active i {
+  color: var(--y400, #f5a81c);
+}
+
+.sb-badge {
+  margin-left: auto;
+  background: var(--g500, #25883f);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 20px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.sb-badge.yellow {
+  background: var(--y400, #f5a81c);
+  color: var(--g900, #0b2e17);
+}
+
+.sb-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 16px 20px;
+  border: none;
+}
+
+/* ── Promo Card ── */
+.sb-promo {
+  margin: auto 20px 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.sb-promo-icon {
+  font-size: 1.4rem;
+  margin-bottom: 8px;
+}
+
+.sb-promo p {
+  font-size: 0.74rem;
+  color: rgba(255, 255, 255, 0.4);
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.sb-promo a {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--y400, #f5a81c);
+  text-decoration: none;
+  padding: 6px 14px;
+  background: rgba(245, 168, 28, 0.1);
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.sb-promo a:hover {
+  background: var(--y400, #f5a81c);
+  color: var(--g900, #0b2e17);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 70px;
+  }
+  .sb-section-label, .sb-link span, .sb-badge, .sb-promo {
+    display: none;
+  }
+  .sb-link {
+    padding: 15px;
+    justify-content: center;
+    border-left: none;
+    border-bottom: 3px solid transparent;
+  }
+  .sb-link.active {
+    border-bottom-color: var(--y400, #f5a81c);
+  }
+}

@@ -26,25 +26,28 @@ function ensure_verif_schema(mysqli $db): void
 {
     mysqli_query($db, "
         CREATE TABLE IF NOT EXISTS seller_verifications (
-            id               INT AUTO_INCREMENT PRIMARY KEY,
-            user_id          INT NOT NULL,
-            store_name       VARCHAR(255) NOT NULL,
-            category         VARCHAR(100) DEFAULT NULL,
-            city             VARCHAR(100) DEFAULT NULL,
-            phone            VARCHAR(30)  DEFAULT NULL,
-            document_type    VARCHAR(100) DEFAULT NULL,
-            document_path    VARCHAR(255) DEFAULT NULL,
-            description      TEXT         DEFAULT NULL,
-            status           ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
-            rejection_reason TEXT         DEFAULT NULL,
-            reviewed_by      INT          DEFAULT NULL,
-            reviewed_at      TIMESTAMP    DEFAULT NULL,
-            created_at       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
-            updated_at       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            id                INT AUTO_INCREMENT PRIMARY KEY,
+            user_id           INT NOT NULL,
+            verification_type VARCHAR(20)  NOT NULL DEFAULT 'negocio',
+            store_name        VARCHAR(255) NOT NULL,
+            category          VARCHAR(100) DEFAULT NULL,
+            city              VARCHAR(100) DEFAULT NULL,
+            phone             VARCHAR(30)  DEFAULT NULL,
+            document_type     VARCHAR(100) DEFAULT NULL,
+            document_path     VARCHAR(255) DEFAULT NULL,
+            description       TEXT         DEFAULT NULL,
+            status            ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+            rejection_reason  TEXT         DEFAULT NULL,
+            reviewed_by       INT          DEFAULT NULL,
+            reviewed_at       TIMESTAMP    DEFAULT NULL,
+            created_at        TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+            updated_at        TIMESTAMP    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             INDEX idx_user   (user_id),
             INDEX idx_status (status)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     ");
+    /* Ensure column exists for older tables */
+    try { mysqli_query($db, "ALTER TABLE seller_verifications ADD COLUMN verification_type VARCHAR(20) NOT NULL DEFAULT 'negocio' AFTER user_id"); } catch (mysqli_sql_exception $e) {}
 }
 
 ensure_verif_schema($conn);
@@ -123,7 +126,7 @@ function route_list(mysqli $db): void
 
     /* Rows */
     $stmt = mysqli_prepare($db, "
-        SELECT sv.id, sv.user_id, sv.store_name, sv.category, sv.city, sv.phone,
+        SELECT sv.id, sv.user_id, sv.verification_type, sv.store_name, sv.category, sv.city, sv.phone,
                sv.document_type, sv.document_path, sv.description,
                sv.status, sv.rejection_reason,
                sv.reviewed_by, sv.reviewed_at, sv.created_at,
@@ -184,7 +187,7 @@ function route_my_status(mysqli $db): void
 {
     global $sessionId;
     $stmt = mysqli_prepare($db, "
-        SELECT id, store_name, category, city, status, rejection_reason, created_at
+        SELECT id, verification_type, store_name, category, city, status, rejection_reason, created_at
         FROM seller_verifications
         WHERE user_id = ?
         ORDER BY created_at DESC LIMIT 1
@@ -217,16 +220,23 @@ function route_approve(mysqli $db, array $body): void
     mysqli_stmt_execute($stmt);
 
     if (mysqli_stmt_affected_rows($stmt) > 0) {
-        /* Promote user role to seller if currently 'user' */
-        $sv = mysqli_prepare($db, "SELECT user_id FROM seller_verifications WHERE id=?");
+        /* Fetch verification details */
+        $sv = mysqli_prepare($db, "SELECT user_id, verification_type FROM seller_verifications WHERE id=?");
         mysqli_stmt_bind_param($sv, 'i', $id);
         mysqli_stmt_execute($sv);
-        $uid = (int)(mysqli_fetch_assoc(mysqli_stmt_get_result($sv))['user_id'] ?? 0);
-        if ($uid > 0) {
+        $svRow = mysqli_fetch_assoc(mysqli_stmt_get_result($sv));
+        $uid       = (int)($svRow['user_id'] ?? 0);
+        $verifType = $svRow['verification_type'] ?? 'negocio';
+
+        /* Promote user role to seller only for business verifications */
+        if ($uid > 0 && $verifType === 'negocio') {
             mysqli_query($db, "UPDATE users SET role='seller' WHERE id=$uid AND role='user'");
         }
-        log_verif($db, "Verificación #{$id} aprobada");
-        echo json_encode(['ok' => true, 'message' => 'Solicitud aprobada. El vendedor ha sido verificado.']);
+        log_verif($db, "Verificación #{$id} aprobada (tipo: {$verifType})");
+        $msg = $verifType === 'persona'
+            ? 'Solicitud aprobada. La identidad del usuario ha sido verificada.'
+            : 'Solicitud aprobada. El vendedor ha sido verificado.';
+        echo json_encode(['ok' => true, 'message' => $msg]);
     } else {
         json_err('No se pudo aprobar la solicitud (ya no está pendiente)');
     }
@@ -290,8 +300,8 @@ function route_cancel(mysqli $db): void
 function log_verif(mysqli $db, string $msg): void
 {
     $admin_id = (int)($_SESSION['user']['id'] ?? 0);
-    @mysqli_query($db, "INSERT INTO activity_log (admin_id, action, created_at)
-        VALUES ($admin_id, '" . mysqli_real_escape_string($db, $msg) . "', NOW())");
+    try { mysqli_query($db, "INSERT INTO activity_log (admin_id, action, created_at)
+        VALUES ($admin_id, '" . mysqli_real_escape_string($db, $msg) . "', NOW())"); } catch (mysqli_sql_exception $e) {}
 }
 
 function json_err(string $msg, int $code = 400): void
@@ -300,3 +310,7 @@ function json_err(string $msg, int $code = 400): void
     echo json_encode(['ok' => false, 'error' => $msg]);
     exit();
 }
+
+
+
+

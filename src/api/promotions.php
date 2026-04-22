@@ -140,3 +140,7 @@ if ($method === 'POST') {
 }
 
 err('Método no permitido', 405);
+
+
+
+
