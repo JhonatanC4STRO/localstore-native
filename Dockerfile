@@ -1,39 +1,27 @@
 FROM php:8.2-apache
 
-# Dependencias del sistema
-RUN apt-get update && apt-get install -y \
-    supervisor \
-    curl \
-    unzip \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y curl unzip && rm -rf /var/lib/apt/lists/*
 
-# Extensiones PHP
 RUN docker-php-ext-install mysqli pdo pdo_mysql
 
-# Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Módulos Apache
 RUN a2enmod rewrite headers
 
-# Configuración Apache
 COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
 
-# Supervisord
-COPY docker/supervisord.conf /etc/supervisor/conf.d/app.conf
-
 WORKDIR /var/www/html
-
 COPY . .
 
-# Instalar dependencias PHP
 RUN composer install --no-dev --optimize-autoloader
 
-# Permisos de uploads
 RUN mkdir -p public/uploads/products && \
     chmod -R 777 public/uploads && \
     chown -R www-data:www-data /var/www/html
 
+# Script creado aqui dentro para garantizar LF (sin CRLF de Windows)
+RUN printf '#!/bin/sh\nPORT=${PORT:-80}\nsed -i "s/Listen 80/Listen $PORT/" /etc/apache2/ports.conf\nsed -i "s/\\*:80>/\\*:$PORT>/" /etc/apache2/sites-available/000-default.conf\nexec apache2-foreground\n' > /start.sh && chmod +x /start.sh
+
 EXPOSE 80
 
-CMD ["bash", "-c", "sed -i \"s/Listen 80/Listen ${PORT:-80}/\" /etc/apache2/ports.conf && sed -i \"s/<VirtualHost \\*:80>/<VirtualHost *:${PORT:-80}>/\" /etc/apache2/sites-available/000-default.conf && /usr/bin/supervisord -n -c /etc/supervisor/supervisord.conf"]
+CMD ["/bin/sh", "/start.sh"]
