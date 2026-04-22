@@ -43,6 +43,16 @@ if (!$product) {
 
 $isOwner = $isLoggedIn && (int)($product['user_id'] ?? 0) === (int)($user['id'] ?? 0);
 
+/* Contar vista (una vez por sesion por producto, no cuenta al dueño) */
+if (!isset($_SESSION['viewed_products'])) {
+    $_SESSION['viewed_products'] = [];
+}
+if (!$isOwner && !in_array($id, $_SESSION['viewed_products'], true)) {
+    mysqli_query($conn, "UPDATE products SET views = views + 1 WHERE id = $id");
+    $_SESSION['viewed_products'][] = $id;
+    $product['views'] = ($product['views'] ?? 0) + 1;
+}
+
 $img_sql    = "SELECT * FROM product_images WHERE product_id = '$id' ORDER BY id ASC";
 $img_result = mysqli_query($conn, $img_sql);
 $images = [];
@@ -340,7 +350,7 @@ $seller_since_fmt = $seller_since
             <span class="rating-text">
               <?php echo $total_reviews > 0 ? $avg_rating . ' (' . $total_reviews . ' reseña' . ($total_reviews !== 1 ? 's' : '') . ')' : 'Sin reseñas aún'; ?>
             </span>
-            <div class="views-badge"><i class="bi bi-eye"></i> 142 vistas</div>
+            <div class="views-badge"><i class="bi bi-eye"></i> <?= (int)($product['views'] ?? 0) ?> vista<?= (int)($product['views'] ?? 0) !== 1 ? 's' : '' ?></div>
           </div>
 
           <!-- LOGIC PRESERVED: info grid from product fields -->
