@@ -251,6 +251,11 @@ if ($stHero) {
       .product-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
       .section-header { flex-direction: column; align-items: flex-start; gap: 12px; }
 
+      /* Ocultar sidebar de filtros en móvil, contenido ocupa 100% */
+      .main-layout { display: block !important; padding: 0 16px; }
+      .sidebar { display: none !important; }
+      .content-area { width: 100% !important; max-width: 100% !important; }
+
       /* Cómo funciona / CTA */
       .how-header h2, .cta-banner h2 { font-size: 1.6rem !important; }
       .how-section, .cta-banner, .sponsored-section { padding: 32px 16px; }
