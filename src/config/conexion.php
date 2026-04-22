@@ -9,11 +9,11 @@ if ($mysql_url) {
     $db   = ltrim($p['path'], '/');
     $port = (int)($p['port'] ?? 3306);
 } else {
-    $host = 'localhost';
-    $user = 'root';
-    $pass = '';
-    $db   = 'tiendalocal';
-    $port = 3306;
+    $host = getenv('DB_HOST') ?: getenv('MYSQLHOST') ?: 'localhost';
+    $user = getenv('DB_USER') ?: getenv('MYSQLUSER') ?: 'root';
+    $pass = getenv('DB_PASS') ?: getenv('MYSQLPASSWORD') ?: '';
+    $db   = getenv('DB_NAME') ?: getenv('MYSQLDATABASE') ?: 'tiendalocal';
+    $port = (int)(getenv('DB_PORT') ?: getenv('MYSQLPORT') ?: 3306);
 }
 
 $conn = mysqli_connect($host, $user, $pass, $db, $port);
