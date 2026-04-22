@@ -190,6 +190,89 @@ if ($stHero) {
     .promo-badge-premium     { background: rgba(18,18,18,.82); color: #d4a017; border: 1px solid rgba(212,160,23,.4); }
     .promo-badge-recommended { background: rgba(22,163,74,.9);  color: #fff; }
     .promo-badge-basic       { background: rgba(30,41,59,.78);  color: #e2e8f0; }
+
+    /* ================================================================
+       RESPONSIVE — tablet y móvil
+       ================================================================ */
+    @media (max-width: 1024px) {
+      .hero { padding: 60px 24px 48px; gap: 32px; }
+      .hero-illustration { transform: scale(.9); }
+      .featured-ads-section { padding: 40px 20px; }
+      .content-section { padding: 0 20px; }
+      .how-section, .cta-banner, .sponsored-section { padding: 40px 20px; }
+    }
+
+    @media (max-width: 768px) {
+      /* Hero */
+      .hero {
+        flex-direction: column;
+        padding: 40px 20px 32px;
+        gap: 24px;
+        min-height: auto;
+        text-align: center;
+      }
+      .hero-content { width: 100%; }
+      .hero h1 { font-size: clamp(1.6rem, 6vw, 2.2rem); margin-bottom: 12px; }
+      .hero p { font-size: .95rem; margin-bottom: 20px; max-width: 100%; }
+      .hero-badge { margin-bottom: 14px; }
+      .hero-search {
+        flex-direction: column;
+        border-radius: 20px;
+        padding: 10px;
+        gap: 8px;
+        max-width: 100%;
+      }
+      .hero-search input,
+      .hero-search select {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+      }
+      .hero-search .sep { display: none; }
+      .hero-search .btn-hero-search {
+        width: 100%;
+        padding: 12px;
+        border-radius: 12px;
+        justify-content: center;
+      }
+      .hero-stats { flex-wrap: wrap; justify-content: center; gap: 20px; }
+      .hero-illustration { display: none; }
+
+      /* Categorías */
+      .categories-section { padding: 32px 20px; }
+
+      /* Featured grid → 2 columnas */
+      .featured-grid { grid-template-columns: 1fr 1fr !important; gap: 14px !important; }
+      .fc-img { height: 150px; }
+      .featured-ads-header { flex-direction: column; gap: 14px; align-items: flex-start; }
+
+      /* Productos cerca/recomendados */
+      .product-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+      .section-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+
+      /* Cómo funciona / CTA */
+      .how-header h2, .cta-banner h2 { font-size: 1.6rem !important; }
+      .how-section, .cta-banner, .sponsored-section { padding: 32px 16px; }
+
+      /* Secciones internas */
+      .nearby-section, .content-section { padding: 0 16px; margin-bottom: 32px; }
+    }
+
+    @media (max-width: 480px) {
+      .hero { padding: 28px 16px 24px; }
+      .hero h1 { font-size: 1.5rem; }
+      .hero p { font-size: .88rem; }
+      .hero-badge { font-size: .72rem; padding: 4px 11px; }
+
+      .featured-grid { grid-template-columns: 1fr !important; }
+      .fc-img { height: 200px; }
+
+      .product-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+
+      .categories-section { padding: 24px 14px; }
+      .featured-ads-section { padding: 28px 14px; }
+    }
   </style>
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
