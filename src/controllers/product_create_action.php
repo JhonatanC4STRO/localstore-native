@@ -82,15 +82,14 @@ if (!empty($chkRow['deleted_at'])) {
 }
 
 /* ── Insertar producto (prepared) ── */
-$sql = "INSERT INTO products (title, price, description, longitude, latitude, category_id, status, admin_status, condition_type, user_id, location)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+$sql = "INSERT INTO products (title, price, description, longitude, latitude, category_id, status, admin_status, condition_type, user_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 $stmt = mysqli_prepare($conn, $sql);
 mysqli_stmt_bind_param(
     $stmt,
-    'sdsddissssi',
-    $nombre, $precio, $descripcion, $longitude, $latitude, $categoria, $status, $adminStatus, $condicion, $user_id, $location
+    'sdsddisssi',
+    $nombre, $precio, $descripcion, $longitude, $latitude, $categoria, $status, $adminStatus, $condicion, $user_id
 );
-
 
 try {
     if (!mysqli_stmt_execute($stmt)) {
@@ -101,6 +100,17 @@ try {
 }
 
 $product_id = mysqli_insert_id($conn);
+
+/* ── Guardar location si la columna existe (silencioso si no existe) ── */
+if ($location !== '') {
+    $loc_stmt = @mysqli_prepare($conn,
+        "UPDATE products SET location = ? WHERE id = ?"
+    );
+    if ($loc_stmt) {
+        mysqli_stmt_bind_param($loc_stmt, 'si', $location, $product_id);
+        @mysqli_stmt_execute($loc_stmt);
+    }
+}
 
 /* ── Subida de imágenes ── */
 if (isset($_FILES['fotos']) && is_array($_FILES['fotos']['tmp_name'])) {
