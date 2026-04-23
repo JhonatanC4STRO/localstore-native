@@ -239,13 +239,7 @@ require_once "../../config/conexion.php";
 
 </body>
 
-</html>dy>
-
-</html>html>
-
-
-
-
+</html>
 
 
 
