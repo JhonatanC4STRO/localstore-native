@@ -316,6 +316,24 @@ $seller_since_fmt = $seller_since
                 <i class="bi bi-cursor-fill"></i> Clic en un pin para ver el producto
               </span>
             </div>
+            <?php
+              $lat = !empty($product['latitude'])  ? (float)$product['latitude']  : null;
+              $lon = !empty($product['longitude']) ? (float)$product['longitude'] : null;
+              if ($lat && $lon):
+                $gmaps_url = "https://www.google.com/maps?q={$lat},{$lon}&z=16";
+              else:
+                $loc_query = urlencode($product['location'] ?? ($seller_info['city'] ?? 'Colombia'));
+                $gmaps_url = "https://www.google.com/maps/search/?api=1&query={$loc_query}";
+              endif;
+            ?>
+            <a href="<?= htmlspecialchars($gmaps_url) ?>"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="btn-open-gmaps">
+              <i class="bi bi-map-fill"></i>
+              Abrir en Google Maps
+              <i class="bi bi-box-arrow-up-right" style="font-size:.75rem;opacity:.7;margin-left:auto;"></i>
+            </a>
           </div>
         <?php endif; ?>
       </div>

@@ -841,6 +841,34 @@ img {
   color: var(--g500);
 }
 
+.btn-open-gmaps {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 20px;
+  background: #fff;
+  border-top: 1.5px solid var(--border);
+  color: var(--g700);
+  font-size: 0.86rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.18s, color 0.18s;
+}
+
+.btn-open-gmaps i:first-child {
+  color: var(--g500);
+  font-size: 1rem;
+}
+
+.btn-open-gmaps:hover {
+  background: var(--g500);
+  color: #fff;
+}
+
+.btn-open-gmaps:hover i {
+  color: #fff !important;
+}
+
 /* ══ FLOATING CHAT ══ */
 .chat-fab {
   position: fixed;
