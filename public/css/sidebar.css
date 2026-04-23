@@ -135,18 +135,33 @@
 /* Responsive */
 @media (max-width: 1024px) {
   .sidebar {
-    width: 70px;
+    width: 72px;
   }
   .sb-section-label, .sb-link span, .sb-badge, .sb-promo {
     display: none;
   }
   .sb-link {
-    padding: 15px;
+    padding: 14px;
     justify-content: center;
     border-left: none;
     border-bottom: 3px solid transparent;
+    min-height: 46px;
+  }
+  .sb-link i {
+    font-size: 1.1rem;
+    width: auto;
   }
   .sb-link.active {
     border-bottom-color: var(--y400, #f5a81c);
+  }
+  .sb-divider {
+    margin: 8px 12px;
+  }
+}
+
+/* Mobile: oculta sidebar — la navegación está en el drawer del header */
+@media (max-width: 768px) {
+  .sidebar {
+    display: none !important;
   }
 }

@@ -1209,3 +1209,140 @@ input[type="hidden"] {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--g300);
 }
+
+/* ══════════════════════════════════
+   RESPONSIVE — Crear Producto
+   Breakpoints: 1100 → 900 → 768 → 480
+══════════════════════════════════ */
+
+/* ── Desktop pequeño ── */
+@media (max-width: 1100px) {
+  .publish-layout {
+    grid-template-columns: 1fr 300px;
+    gap: 18px;
+  }
+  .main-content { padding: 24px 24px 56px; }
+}
+
+/* ── Tablet landscape ── */
+@media (max-width: 900px) {
+  .publish-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .main-content { padding: 22px 20px 48px; }
+  #map { height: 260px; }
+  .image-preview-grid { grid-template-columns: repeat(3, 1fr); }
+  .pg-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+}
+
+/* ── Tablet portrait / Móvil grande ── */
+@media (max-width: 768px) {
+  body { overflow-x: hidden; }
+
+  /* Topbar */
+  .topbar { padding: 0 16px; gap: 10px; height: 60px; }
+  .tb-logo { font-size: 1.1rem; }
+  .tb-logo-box { width: 32px; height: 32px; font-size: 0.9rem; }
+  .tb-search { max-width: 220px; }
+  .tb-search input { font-size: 0.82rem; padding: 8px 12px; }
+  .uc-name, .uc-info { display: none; }
+  .user-chip { padding: 4px 8px 4px 4px; }
+  .user-avatar { width: 30px; height: 30px; font-size: 0.8rem; }
+
+  /* Sidebar oculto */
+  .sidebar { display: none !important; }
+  .page-shell { display: block; }
+
+  /* Layout principal */
+  .main-content { padding: 18px 14px 40px; }
+
+  /* Page header */
+  .pg-header { margin-bottom: 18px; gap: 10px; }
+  .pg-title { font-size: 1.4rem; }
+  .pg-subtitle { font-size: 0.82rem; }
+  .pg-breadcrumb { font-size: 0.72rem; }
+
+  /* Layout de publicar */
+  .publish-layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  /* Cards */
+  .card { margin-bottom: 16px; border-radius: 14px; }
+  .card-header { padding: 14px 18px; }
+  .card-header-icon { width: 34px; height: 34px; font-size: 1rem; border-radius: 9px; }
+  .card-header-text h3 { font-size: 0.9rem; }
+  .card-header-text p { font-size: 0.72rem; }
+  .card-body { padding: 18px; }
+
+  /* Formularios */
+  .form-row { grid-template-columns: 1fr; gap: 0; }
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 0.78rem; }
+  .form-control { padding: 10px 12px; font-size: 0.87rem; }
+
+  /* Condition toggle */
+  .condition-toggle { gap: 8px; }
+  .cond-opt { padding: 10px 8px; border-radius: 10px; }
+  .cond-opt i { font-size: 1.1rem; margin-bottom: 3px; }
+  .cond-opt span { font-size: 0.78rem; }
+  .cond-opt small { font-size: 0.66rem; }
+
+  /* Drop zone */
+  .drop-zone { padding: 28px 16px; }
+  .drop-icon { width: 52px; height: 52px; font-size: 1.4rem; margin-bottom: 10px; }
+  .drop-title { font-size: 0.92rem; }
+  .drop-sub { font-size: 0.76rem; }
+
+  /* Image preview grid */
+  .image-preview-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
+
+  /* Map */
+  #map { height: 220px; }
+  .map-action-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .btn-map-loc { padding: 9px 16px; font-size: 0.82rem; width: 100%; justify-content: center; }
+
+  /* Preview card y tips – ahora en columna única */
+  .preview-card, .tips-card, .checklist-card { margin-bottom: 14px; }
+  .preview-img-slot { height: 140px; }
+  .preview-price { font-size: 1.2rem; }
+  .preview-title { font-size: 0.88rem; }
+
+  /* Submit button */
+  .btn-publish { padding: 14px; font-size: 0.97rem; border-radius: 12px; }
+}
+
+/* ── Móvil pequeño ── */
+@media (max-width: 480px) {
+  .topbar { height: 54px; padding: 0 12px; gap: 8px; }
+  .tb-search { display: none; }
+  .tb-logo { font-size: 1rem; }
+
+  .main-content { padding: 14px 12px 36px; }
+
+  .pg-title { font-size: 1.2rem; }
+
+  .card-header { padding: 12px 14px; }
+  .card-body { padding: 14px; }
+
+  .form-control { padding: 9px 11px; font-size: 0.84rem; }
+  textarea.form-control { min-height: 90px; }
+
+  .image-preview-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+
+  #map { height: 190px; }
+
+  .condition-toggle { gap: 6px; }
+  .cond-opt { padding: 8px 6px; }
+
+  .btn-publish { font-size: 0.92rem; padding: 13px; }
+  .btn-publish .publish-icon { width: 26px; height: 26px; font-size: 0.9rem; }
+}
+

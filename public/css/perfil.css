@@ -917,18 +917,76 @@
             border-radius: 6px;
         }
 
+        @media(max-width:1100px) {
+            .profile-grid { grid-template-columns: 260px 1fr; gap: 18px; }
+            .main-content { padding: 24px 22px 56px; }
+        }
+
         @media(max-width:1024px) {
             .profile-grid {
                 grid-template-columns: 1fr;
             }
         }
 
-        @media(max-width:800px) {
-            .sidebar {
-                display: none;
-            }
-
-            .main-content {
-                padding: 20px 16px 60px;
-            }
+        @media(max-width:900px) {
+            .main-content { padding: 20px 18px 48px; }
         }
+
+        @media(max-width:800px) {
+            .sidebar { display: none; }
+            .page-shell { display: block; }
+            .main-content { padding: 18px 14px 48px; }
+        }
+
+        @media(max-width:768px) {
+            body { overflow-x: hidden; }
+
+            .main-content { padding: 16px 12px 40px; }
+
+            /* Page header */
+            .pg-title { font-size: 1.5rem; }
+            .pg-subtitle { font-size: 0.82rem; }
+
+            /* Profile grid - stack vertically */
+            .profile-grid { grid-template-columns: 1fr; gap: 16px; }
+
+            /* Cards */
+            .card { margin-bottom: 14px; border-radius: 14px; }
+            .card-header { padding: 14px 18px; }
+            .card-body { padding: 18px; }
+            .ch-icon { width: 32px; height: 32px; font-size: 0.9rem; border-radius: 9px; }
+            .card-header-text h3 { font-size: 0.9rem; }
+            .card-header-text p { font-size: 0.72rem; }
+
+            /* Avatar card */
+            .avatar-lg { width: 90px; height: 90px; font-size: 2rem; }
+            .profile-name { font-size: 1.05rem; }
+            .profile-email { font-size: 0.78rem; }
+
+            /* Form */
+            .form-row-2 { grid-template-columns: 1fr; gap: 0; }
+            .form-group { margin-bottom: 14px; }
+            .form-label { font-size: 0.78rem; }
+            .form-control { padding: 10px 12px 10px 36px; font-size: 0.87rem; }
+
+            /* Preferences */
+            .pref-info h4 { font-size: 0.83rem; }
+            .pref-info p { font-size: 0.72rem; }
+        }
+
+        @media(max-width:480px) {
+            .main-content { padding: 14px 10px 36px; }
+            .pg-title { font-size: 1.3rem; }
+
+            .avatar-lg { width: 80px; height: 80px; font-size: 1.8rem; }
+
+            .card-header { padding: 12px 14px; }
+            .card-body { padding: 14px; }
+
+            .form-control { padding: 9px 10px 9px 32px; font-size: 0.84rem; }
+            textarea.form-control { min-height: 80px; }
+
+            .profile-stats { flex-wrap: wrap; }
+            .ps-item { min-width: 33%; border-bottom: 1px solid var(--border); }
+        }
+

@@ -1335,7 +1335,38 @@
             .breadcrumb-bar {
                 padding: 0 16px;
             }
+
+            /* Topbar/Navbar en tablet */
+            .navbar { padding: 0 16px; height: 64px; gap: 12px; }
+            .nav-logo { font-size: 1.1rem; }
+            .logo-box { width: 32px; height: 32px; }
+            .nav-search { max-width: 280px; }
         }
+
+        @media(max-width:768px) {
+            body { overflow-x: hidden; }
+
+            /* Navbar */
+            .navbar { padding: 0 14px; height: 58px; gap: 10px; }
+            .nav-logo { font-size: 1rem; }
+            .logo-box { width: 30px; height: 30px; font-size: 0.9rem; }
+            .nav-search { max-width: 180px; }
+            .nav-search input { font-size: 0.82rem; padding: 8px 14px; }
+            .uc-name, .uc-info { display: none; }
+            .user-chip { padding: 4px 8px 4px 4px; }
+
+            /* Breadcrumb */
+            .breadcrumb { font-size: 0.72rem; }
+            .breadcrumb-bar { padding: 0 12px; }
+
+            /* Quick bar */
+            .quick-bar { padding: 0 12px; height: 48px; }
+            .qf-chip { padding: 5px 10px; font-size: 0.74rem; }
+
+            /* Page shell */
+            .page-shell { padding: 14px 12px 48px; }
+        }
+
 
         @media(max-width:600px) {
             .product-grid {
