@@ -32,16 +32,16 @@
   margin: 0;
   padding: 0;
 }
-html,
-body {
-  height: 100%;
+html {
+  min-height: 100%;
 }
 
 body {
-    font-family: "Outfit", sans-serif;
+  font-family: "Outfit", sans-serif;
   display: flex;
   min-height: 100vh;
   background: var(--bg);
+  overflow-x: hidden;
 }
 
 @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap");
@@ -61,7 +61,9 @@ h5 {
   width: 420px;
   flex-shrink: 0;
   background: var(--g900);
-  position: relative;
+  position: sticky;
+  top: 0;
+  height: 100vh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -283,8 +285,8 @@ h5 {
   align-items: flex-start;
   justify-content: center;
   padding: 40px 44px 60px;
-  overflow-y: auto;
   position: relative;
+  overflow: visible;
 }
 
 .rp-deco-tl,

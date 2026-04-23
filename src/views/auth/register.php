@@ -25,7 +25,9 @@ require_once "../../config/conexion.php";
 
     <div class="lp-content">
 
-       <a href="../home.php" class=" flex justify-center" ><img class="h-40 w-40" src="../Logo de Comercio Local.png" alt=""></a>
+       <a href="../home.php" class="flex justify-center" >
+         <img class="h-32 w-32 object-contain" src="../../../public/img/logo.png" alt="ComercioLocal Logo">
+       </a>
 
       <h2 class="lp-headline">Únete a la<br>comunidad <em>local</em><br>más grande</h2>
       <p class="lp-sub">Más de 120.000 personas ya compran y venden en su ciudad con ComercioLocal. ¡Sé parte hoy!</p>
