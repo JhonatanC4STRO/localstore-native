@@ -54,11 +54,198 @@ if ($r) {
         <main class="main-content">
 
             <?php if (isset($_GET['success'])): ?>
-                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 animate__animated animate__fadeInDown" role="alert">
-                    <p class="font-bold"><i class="bi bi-check-circle-fill"></i> ¡Éxito!</p>
-                    <p>Anuncio publicado correctamente.</p>
+            <div class="success-toast-banner" id="successBanner">
+                <div class="stb-glow"></div>
+                <div class="stb-inner">
+                    <div class="stb-icon-wrap">
+                        <div class="stb-icon-ring"></div>
+                        <div class="stb-icon-ring stb-ring2"></div>
+                        <div class="stb-icon">
+                            <i class="bi bi-rocket-takeoff-fill"></i>
+                        </div>
+                    </div>
+                    <div class="stb-content">
+                        <div class="stb-label">¡Publicado con éxito!</div>
+                        <div class="stb-title">Tu anuncio ya está en línea 🎉</div>
+                        <div class="stb-sub">Los compradores de tu ciudad ya pueden ver tu producto. ¡Buena suerte con la venta!</div>
+                        <div class="stb-actions">
+                            <a href="mis_productos.php" class="stb-btn stb-btn-primary">
+                                <i class="bi bi-grid-fill"></i> Ver mis productos
+                            </a>
+                            <a href="crear.php" class="stb-btn stb-btn-ghost">
+                                <i class="bi bi-plus-circle-fill"></i> Publicar otro
+                            </a>
+                        </div>
+                    </div>
+                    <button class="stb-close" onclick="document.getElementById('successBanner').style.display='none'" title="Cerrar">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
                 </div>
+                <div class="stb-progress"></div>
+            </div>
+            <style>
+            .success-toast-banner {
+                position: relative;
+                background: linear-gradient(135deg, #0b2e17 0%, #103d1e 50%, #185228 100%);
+                border-radius: 20px;
+                margin-bottom: 28px;
+                overflow: hidden;
+                box-shadow: 0 8px 40px rgba(37,136,63,.35), 0 2px 12px rgba(37,136,63,.18);
+                animation: stbSlideIn .55s cubic-bezier(.22,.9,.36,1) both;
+                border: 1.5px solid rgba(52,179,87,.35);
+            }
+            @keyframes stbSlideIn {
+                from { opacity:0; transform:translateY(-28px) scale(.97); }
+                to   { opacity:1; transform:translateY(0)   scale(1);    }
+            }
+            .stb-glow {
+                position: absolute;
+                top: -60px; left: 50%;
+                transform: translateX(-50%);
+                width: 320px; height: 160px;
+                background: radial-gradient(ellipse, rgba(52,179,87,.28) 0%, transparent 70%);
+                pointer-events: none;
+            }
+            .stb-inner {
+                display: flex;
+                align-items: center;
+                gap: 22px;
+                padding: 24px 28px;
+                position: relative;
+                z-index: 1;
+            }
+            .stb-icon-wrap {
+                position: relative;
+                flex-shrink: 0;
+                width: 72px;
+                height: 72px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .stb-icon-ring {
+                position: absolute;
+                inset: 0;
+                border-radius: 50%;
+                border: 2px solid rgba(52,179,87,.5);
+                animation: stbRing 2.4s ease-in-out infinite;
+            }
+            .stb-ring2 {
+                inset: -8px;
+                border-color: rgba(52,179,87,.2);
+                animation-delay: .4s;
+            }
+            @keyframes stbRing {
+                0%,100% { transform: scale(1);   opacity:.8; }
+                50%      { transform: scale(1.08); opacity:.3; }
+            }
+            .stb-icon {
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, var(--g400,#34b357), var(--g500,#25883f));
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.6rem;
+                color: #fff;
+                box-shadow: 0 4px 20px rgba(52,179,87,.5);
+                animation: stbIconPop .6s .2s cubic-bezier(.34,1.56,.64,1) both;
+            }
+            @keyframes stbIconPop {
+                from { transform: scale(0) rotate(-20deg); }
+                to   { transform: scale(1) rotate(0deg);   }
+            }
+            .stb-content { flex: 1; min-width: 0; }
+            .stb-label {
+                font-size: .72rem;
+                font-weight: 700;
+                letter-spacing: .1em;
+                text-transform: uppercase;
+                color: var(--g300,#55d475);
+                margin-bottom: 4px;
+            }
+            .stb-title {
+                font-family: 'Outfit', sans-serif;
+                font-weight: 800;
+                font-size: 1.25rem;
+                color: #fff;
+                margin-bottom: 5px;
+                line-height: 1.2;
+            }
+            .stb-sub {
+                font-size: .84rem;
+                color: rgba(255,255,255,.6);
+                line-height: 1.5;
+                margin-bottom: 16px;
+            }
+            .stb-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+            .stb-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 7px;
+                padding: 9px 18px;
+                border-radius: 50px;
+                font-family: 'Outfit', sans-serif;
+                font-weight: 700;
+                font-size: .84rem;
+                text-decoration: none;
+                transition: all .2s;
+                white-space: nowrap;
+            }
+            .stb-btn-primary {
+                background: linear-gradient(135deg, var(--g400,#34b357), var(--g300,#55d475));
+                color: #0b2e17;
+                box-shadow: 0 3px 14px rgba(52,179,87,.45);
+            }
+            .stb-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(52,179,87,.55); }
+            .stb-btn-ghost {
+                background: rgba(255,255,255,.1);
+                border: 1.5px solid rgba(255,255,255,.25);
+                color: #fff;
+            }
+            .stb-btn-ghost:hover { background: rgba(255,255,255,.18); }
+            .stb-close {
+                flex-shrink: 0;
+                width: 32px; height: 32px;
+                border-radius: 50%;
+                border: none;
+                background: rgba(255,255,255,.1);
+                color: rgba(255,255,255,.6);
+                display: flex; align-items: center; justify-content: center;
+                cursor: pointer;
+                font-size: .85rem;
+                transition: all .2s;
+                align-self: flex-start;
+            }
+            .stb-close:hover { background: rgba(255,255,255,.2); color: #fff; }
+            .stb-progress {
+                height: 3px;
+                background: linear-gradient(90deg, var(--g300,#55d475), var(--g400,#34b357));
+                animation: stbBar 6s linear forwards;
+                transform-origin: left;
+            }
+            @keyframes stbBar {
+                from { transform: scaleX(1); }
+                to   { transform: scaleX(0); }
+            }
+            @media (max-width: 600px) {
+                .stb-inner { flex-direction: column; align-items: flex-start; padding: 20px 18px; gap: 14px; }
+                .stb-title { font-size: 1.05rem; }
+                .stb-actions { width: 100%; }
+                .stb-btn { flex: 1; justify-content: center; }
+                .stb-close { position: absolute; top: 14px; right: 14px; }
+            }
+            </style>
+            <script>
+            // Auto-cerrar después de 6s (coincide con la barra de progreso)
+            setTimeout(() => {
+                const b = document.getElementById('successBanner');
+                if (b) { b.style.transition = 'opacity .5s, transform .5s'; b.style.opacity = '0'; b.style.transform = 'translateY(-12px)'; setTimeout(() => b.style.display = 'none', 500); }
+            }, 6000);
+            </script>
             <?php endif; ?>
+
 
             <?php if (isset($_GET['error'])): ?>
                 <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 animate__animated animate__shakeX" role="alert">
