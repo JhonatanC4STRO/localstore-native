@@ -765,3 +765,56 @@
       }
     }
 
+
+    /* -- MOBILE NAVIGATION --
+       En movil (<=700px) el chat ocupa la pantalla completa.
+       openChat() oculta la lista; closeChat() la restaura.
+    ===================================================== */
+    const _isMobile = () => window.innerWidth <= 700;
+
+    const _origOpenChatFn = openChat;
+    openChat = function(...args) {
+      _origOpenChatFn(...args);
+      if (_isMobile()) {
+        const cs = document.querySelector('.conv-sidebar');
+        if (cs) { cs.classList.remove('mobile-open'); cs.style.display = 'none'; }
+      }
+    };
+
+    const _origCloseChatFn = closeChat;
+    closeChat = function() {
+      _origCloseChatFn();
+      if (_isMobile()) {
+        const cs = document.querySelector('.conv-sidebar');
+        if (cs) {
+          cs.style.display = 'flex';
+          cs.style.flexDirection = 'column';
+          cs.classList.add('mobile-open');
+        }
+      }
+    };
+
+    /* Mostrar lista al cargar si no hay chat activo en movil */
+    document.addEventListener('DOMContentLoaded', () => {
+      if (_isMobile()) {
+        const cs = document.querySelector('.conv-sidebar');
+        const active = document.getElementById('chatActive');
+        if (cs && !(active && active.style.display === 'flex')) {
+          cs.style.display = 'flex';
+          cs.style.flexDirection = 'column';
+          cs.classList.add('mobile-open');
+        }
+      }
+    });
+
+    /* Restaurar layout al redimensionar a desktop */
+    window.addEventListener('resize', () => {
+      const cs = document.querySelector('.conv-sidebar');
+      if (!cs) return;
+      if (!_isMobile()) {
+        cs.style.display = '';
+        cs.style.position = '';
+        cs.style.width = '';
+        cs.classList.remove('mobile-open');
+      }
+    });

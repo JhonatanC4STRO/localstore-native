@@ -1579,22 +1579,165 @@
       border-radius: 5px;
     }
 
-    @media(max-width:1100px) {
-      .seller-sidebar {
-        display: none;
-      }
+    /* ══ RESPONSIVE CHAT ══ */
 
+    /* ── Ensure seller-sidebar never bleeds through when grid col = 0 ── */
+    .seller-sidebar {
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    /* ── Tablet grande / Desktop pequeño ── */
+    @media (max-width: 1200px) {
       .app {
-        grid-template-columns: 320px 1fr;
+        grid-template-columns: 300px 1fr 0px;
+      }
+      .app.sidebar-open {
+        grid-template-columns: 300px 1fr 280px;
       }
     }
 
-    @media(max-width:700px) {
-      .conv-sidebar {
-        display: none;
+    /* ── Tablet ── */
+    @media (max-width: 1100px) {
+      .seller-sidebar {
+        display: none !important;
+      }
+      .ss-floating-tab { display: none !important; }
+
+      .app {
+        grid-template-columns: 300px 1fr;
+      }
+      .app.sidebar-open {
+        grid-template-columns: 300px 1fr;
       }
 
+      /* Header del chat */
+      .cl-header {
+        height: 58px !important;
+      }
+      .app,
+      .conv-sidebar,
+      .chat-window {
+        height: calc(100vh - 58px) !important;
+      }
+    }
+
+    /* ── Tablet portrait ── */
+    @media (max-width: 900px) {
+      /* El sidebar de navegación lateral debe estar oculto */
+      .sidebar { display: none !important; }
+      .page-shell { display: block !important; overflow: hidden; }
+
+      .app {
+        grid-template-columns: 280px 1fr;
+        height: calc(100vh - 58px);
+        width: 100vw;
+        overflow: hidden;
+      }
+
+      /* Cuando no hay chat activo, la conv-sidebar toma el 100% */
+      .conv-sidebar {
+        height: calc(100vh - 58px);
+      }
+      .chat-window {
+        height: calc(100vh - 58px);
+      }
+
+      /* chat-header más compacto */
+      .chat-header { height: 72px; padding: 0 14px; gap: 10px; }
+      .cs-topbar   { height: 72px; padding: 0 14px; }
+
+      /* header global en tablet */
+      .cl-header { height: 58px; }
+    }
+
+    /* ── Móvil – chat en modo pantalla completa ── */
+    @media (max-width: 700px) {
+      body { overflow: hidden; }
+
+      /* El nav sidebar del dashboard no debe aparecer en el chat */
+      .sidebar { display: none !important; }
+      .page-shell {
+        display: block !important;
+        width: 100vw;
+        overflow: hidden;
+      }
+
+      /* En móvil el header puede ser 54px */
+      .cl-header { height: 54px; }
+
+      /* App ocupa toda la pantalla menos el header */
       .app {
         grid-template-columns: 1fr;
+        width: 100vw;
+        height: calc(100vh - 54px);
+        overflow: hidden;
       }
+      .app.sidebar-open {
+        grid-template-columns: 1fr;
+      }
+
+      /* Conversaciones ocultas por defecto en móvil — JS las muestra/oculta */
+      .conv-sidebar {
+        display: none;
+        width: 100vw;
+        height: calc(100vh - 54px);
+        position: fixed;
+        top: 54px;
+        left: 0;
+        z-index: 300;
+        background: #fff;
+      }
+      .conv-sidebar.mobile-open {
+        display: flex;
+      }
+
+      /* Chat window: pantalla completa */
+      .chat-window {
+        width: 100vw;
+        height: calc(100vh - 54px);
+        grid-column: 1;
+      }
+
+      /* Chat header compacto */
+      .chat-header {
+        height: 64px;
+        padding: 0 12px;
+        gap: 8px;
+      }
+
+      /* Seller sidebar nunca en móvil */
+      .seller-sidebar    { display: none !important; }
+      .ss-floating-tab   { display: none !important; }
+
+      /* Botones del chat-header más pequeños */
+      .ch-action-btn { width: 30px; height: 30px; font-size: .88rem; }
+      .ch-sold-pill  { height: 28px; padding: 0 10px; font-size: .72rem; }
+
+      /* Ocultar algunos botones de acción que no caben */
+      .ch-actions .ch-action-btn:nth-child(n+3) { display: none; }
+
+      /* Input bar */
+      .msg-input-bar { padding: 8px 10px; gap: 6px; }
+      .input-btn     { width: 34px; height: 34px; font-size: .95rem; }
+      .btn-send      { width: 40px; height: 40px; }
+
+      /* Product pin */
+      .product-pin { padding: 8px 12px; gap: 8px; }
+      .pp-img      { width: 36px; height: 36px; }
+      .pp-btn      { padding: 6px 10px; font-size: .78rem; }
+
+      /* cs-topbar */
+      .cs-topbar { height: 64px; padding: 0 12px; }
     }
+
+    /* ── Móvil muy pequeño ── */
+    @media (max-width: 380px) {
+      .chat-header { height: 58px; padding: 0 10px; gap: 6px; }
+      .ch-name     { font-size: .85rem; }
+      .ch-status   { font-size: .65rem; }
+      .ch-actions .ch-action-btn:nth-child(n+2) { display: none; }
+      .msg-input-bar { padding: 6px 8px; }
+    }
+
+
