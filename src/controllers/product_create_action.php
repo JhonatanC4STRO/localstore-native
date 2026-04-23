@@ -22,6 +22,7 @@ $nombre       = trim($_POST['nombre'] ?? '');
 $precio       = (float)($_POST['precio'] ?? 0);
 $descripcion  = trim($_POST['descripcion'] ?? '');
 $categoria    = (int)($_POST['categoria'] ?? 0);
+$location     = trim($_POST['location'] ?? '');
 $longitude    = isset($_POST['longitude']) && $_POST['longitude'] !== '' ? (float)$_POST['longitude'] : null;
 $latitude     = isset($_POST['latitude'])  && $_POST['latitude']  !== '' ? (float)$_POST['latitude']  : null;
 $estadoRaw    = (int)($_POST['estado'] ?? 1);
@@ -31,20 +32,21 @@ $condicion    = $_POST['condicion'] ?? 'nuevo';
 $allowed      = ['nuevo', 'usado', 'reacondicionado'];
 if (!in_array($condicion, $allowed, true)) $condicion = 'nuevo';
 
+
 /* ── Validaciones básicas ── */
 if ($nombre === '')                    redirect_error('El título es obligatorio');
 if ($precio <= 0)                      redirect_error('Ingresa un precio válido');
 if ($categoria <= 0)                   redirect_error('Selecciona una categoría');
 
-/* ── Ubicación obligatoria y dentro de rango ── */
-if ($latitude === null || $longitude === null) {
-    redirect_error('Debes marcar la ubicación del producto en el mapa antes de publicar');
-}
-if ($latitude < -90 || $latitude > 90 || $longitude < -180 || $longitude > 180) {
-    redirect_error('La ubicación indicada no es válida. Vuelve a marcar el punto en el mapa');
-}
-if ((float)$latitude === 0.0 && (float)$longitude === 0.0) {
-    redirect_error('La ubicación no se registró correctamente. Intenta de nuevo');
+/* ── Ubicación: opcional — si no se marcó, se guarda como NULL ── */
+if ($latitude !== null && $longitude !== null) {
+    if ($latitude < -90 || $latitude > 90 || $longitude < -180 || $longitude > 180) {
+        redirect_error('La ubicación indicada no es válida. Vuelve a marcar el punto en el mapa');
+    }
+    if ((float)$latitude === 0.0 && (float)$longitude === 0.0) {
+        $latitude  = null;
+        $longitude = null;
+    }
 }
 
 /* ── Resolver user_id real (auto-repara sesiones admin legacy con id=0) ── */
@@ -80,14 +82,15 @@ if (!empty($chkRow['deleted_at'])) {
 }
 
 /* ── Insertar producto (prepared) ── */
-$sql = "INSERT INTO products (title, price, description, longitude, latitude, category_id, status, admin_status, condition_type, user_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+$sql = "INSERT INTO products (title, price, description, longitude, latitude, category_id, status, admin_status, condition_type, user_id, location)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 $stmt = mysqli_prepare($conn, $sql);
 mysqli_stmt_bind_param(
     $stmt,
-    'sdsddisssi',
-    $nombre, $precio, $descripcion, $longitude, $latitude, $categoria, $status, $adminStatus, $condicion, $user_id
+    'sdsddissssi',
+    $nombre, $precio, $descripcion, $longitude, $latitude, $categoria, $status, $adminStatus, $condicion, $user_id, $location
 );
+
 
 try {
     if (!mysqli_stmt_execute($stmt)) {

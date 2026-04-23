@@ -230,7 +230,8 @@ if ($r) {
                             <div class="card-body">
                                 <div class="form-group">
                                     <label class="form-label"><i class="bi bi-signpost-split"></i> Sector / Barrio</label>
-                                    <input type="text" class="form-control" placeholder="Ej: Chapinero, Bogotá">
+                                    <input type="text" class="form-control" name="location" placeholder="Ej: Chapinero, Bogotá">
+
                                 </div>
 
                                 <!-- LOGIC PRESERVED: map div with id="map" -->

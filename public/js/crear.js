@@ -153,20 +153,22 @@
             });
         });
 
-        // Bloquear el envío si falta ubicación válida
+        // Validar ubicación: advertencia suave (no bloquear — el campo es opcional)
         if (mainForm) {
             mainForm.addEventListener('submit', (e) => {
                 const lat = parseFloat(latInput.value);
                 const lon = parseFloat(lonInput.value);
-                const valid = !isNaN(lat) && !isNaN(lon) && (lat !== 0 || lon !== 0)
-                           && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
-                if (!valid) {
-                    e.preventDefault();
-                    setStatus('error', '<i class="bi bi-exclamation-triangle-fill"></i> <strong>Falta la ubicación.</strong> Usa el botón o marca un punto en el mapa antes de publicar.');
-                    document.getElementById('map')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const hasLocation = !isNaN(lat) && !isNaN(lon) && (lat !== 0 || lon !== 0)
+                               && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
+
+                if (!hasLocation) {
+                    // Solo avisar, no bloquear
+                    setStatus('warn', '<i class="bi bi-exclamation-triangle-fill"></i> <strong>Sin ubicación.</strong> Tu anuncio se publicará sin coordenadas de mapa. Puedes agregarla editando el producto.');
                 }
+                // Siempre permite el envío
             });
         }
+
 
         /* ── LIVE PREVIEW ── */
         const titleInput = document.getElementById('nombre');
