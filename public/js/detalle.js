@@ -62,15 +62,46 @@
                 </div>`;
       };
 
-      /* Agrupar productos por coordenada (5 decimales ≈ 1m) */
-      const groups = new Map();
+      /* Agrupar productos por proximidad (haversine, umbral ~30m).
+         Cubre tanto coincidencias exactas como pines cercanos por drift de GPS. */
+      const PROXIMITY_M = 30;
+      function distanceMeters(lat1, lon1, lat2, lon2) {
+        const R = 6371000;
+        const toRad = d => d * Math.PI / 180;
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+        const a = Math.sin(dLat / 2) ** 2 +
+                  Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                  Math.sin(dLon / 2) ** 2;
+        return 2 * R * Math.asin(Math.sqrt(a));
+      }
+
+      const groupList = [];
       products.forEach(p => {
-        const key = `${p.lat.toFixed(5)}|${p.lon.toFixed(5)}`;
-        if (!groups.has(key)) groups.set(key, { lat: p.lat, lon: p.lon, items: [] });
-        groups.get(key).items.push(p);
+        // Busca el primer grupo cuyo centroide esté dentro del umbral
+        let g = null;
+        for (const c of groupList) {
+          if (distanceMeters(p.lat, p.lon, c.lat, c.lon) <= PROXIMITY_M) { g = c; break; }
+        }
+        if (g) {
+          g.items.push(p);
+          // Actualiza centroide como promedio acumulado
+          const n = g.items.length;
+          g.lat = (g.lat * (n - 1) + p.lat) / n;
+          g.lon = (g.lon * (n - 1) + p.lon) / n;
+        } else {
+          groupList.push({ lat: p.lat, lon: p.lon, items: [p] });
+        }
       });
 
-      groups.forEach(g => {
+      // Si el producto actual está en un grupo, centra el pin en su coord exacta
+      // (que el "Aquí" siempre apunte al lugar real publicado)
+      groupList.forEach(g => {
+        const cur = g.items.find(it => it.id === window.PRODUCT_CURRENT_ID);
+        if (cur) { g.lat = cur.lat; g.lon = cur.lon; }
+      });
+
+      groupList.forEach(g => {
         const isCurrent = g.items.some(it => it.id === window.PRODUCT_CURRENT_ID);
         const count     = g.items.length;
         const variant   = isCurrent ? 'current' : 'other';
