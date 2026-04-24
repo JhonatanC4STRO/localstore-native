@@ -831,6 +831,46 @@ select.form-control {
   margin-top: 14px;
 }
 
+/* Chip de ciudad detectada (auto reverse-geocoding) */
+.city-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 9px 14px;
+  background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+  border: 1.5px solid #86efac;
+  border-radius: 10px;
+  font-size: 0.84rem;
+  color: #15803d;
+  animation: city-chip-in .25s ease;
+}
+.city-chip i {
+  color: #16a34a;
+  font-size: 0.95rem;
+}
+.city-chip strong {
+  color: #064e3b;
+  font-weight: 700;
+}
+.city-chip.loading {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+.city-chip.loading i { color: #64748b; animation: city-spin .9s linear infinite; }
+.city-chip.error {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+.city-chip.error i { color: #dc2626; }
+@keyframes city-chip-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes city-spin { to { transform: rotate(360deg); } }
+
 .btn-map-loc {
   display: flex;
   align-items: center;

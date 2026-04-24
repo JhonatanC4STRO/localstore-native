@@ -20,7 +20,67 @@
         const mainForm = document.getElementById("mainForm");
         const latInput = document.getElementById("latitude");
         const lonInput = document.getElementById("longitude");
+        const cityInput = document.getElementById("city");
+        const cityChip = document.getElementById("cityChip");
+        const cityNameEl = document.getElementById("cityName");
         let map, marker;
+        let cityAbort = null;
+        let cityFetchTimer = null;
+
+        /* ── Reverse geocoding: lat/lon → ciudad (Nominatim / OpenStreetMap) ──
+           Debounce 600ms para no spamear el servicio si el usuario arrastra el pin. */
+        function setCityChip(state, label) {
+          if (!cityChip) return;
+          cityChip.classList.remove('loading', 'error');
+          if (state === 'loading') {
+            cityChip.classList.add('loading');
+            cityNameEl.textContent = label || 'Detectando ciudad…';
+            cityChip.querySelector('i').className = 'bi bi-arrow-clockwise';
+            cityChip.style.display = 'flex';
+          } else if (state === 'ok') {
+            cityNameEl.textContent = label || '—';
+            cityChip.querySelector('i').className = 'bi bi-geo-fill';
+            cityChip.style.display = 'flex';
+          } else if (state === 'error') {
+            cityChip.classList.add('error');
+            cityNameEl.textContent = label || 'No pudimos detectar la ciudad';
+            cityChip.querySelector('i').className = 'bi bi-exclamation-triangle-fill';
+            cityChip.style.display = 'flex';
+          } else {
+            cityChip.style.display = 'none';
+          }
+        }
+        function fetchCity(lat, lon) {
+          clearTimeout(cityFetchTimer);
+          cityFetchTimer = setTimeout(() => {
+            if (cityAbort) cityAbort.abort();
+            cityAbort = new AbortController();
+            setCityChip('loading');
+            const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1&accept-language=es`;
+            fetch(url, {
+              signal: cityAbort.signal,
+              headers: { 'Accept': 'application/json' }
+            })
+              .then(r => r.json())
+              .then(data => {
+                const a = data.address || {};
+                const city = a.city || a.town || a.village || a.municipality
+                          || a.county || a.state_district || a.state || '';
+                if (city) {
+                  cityInput.value = city;
+                  setCityChip('ok', city);
+                } else {
+                  cityInput.value = '';
+                  setCityChip('error', 'No identificamos la ciudad — el producto se guardará sin ciudad');
+                }
+              })
+              .catch(err => {
+                if (err.name === 'AbortError') return;
+                cityInput.value = '';
+                setCityChip('error');
+              });
+          }, 600);
+        }
 
         function setStatus(kind, html) {
             const colors = {
@@ -48,6 +108,7 @@
                 latInput.value = p.lat;
                 lonInput.value = p.lng;
                 setStatus('ok', `<i class="bi bi-geo-alt-fill"></i> Lat ${p.lat.toFixed(5)}, Lon ${p.lng.toFixed(5)} <span style="color:var(--ink3);">· ajustado manualmente</span>`);
+                fetchCity(p.lat, p.lng);
             });
 
             // Clic en el mapa reubica el pin
@@ -57,6 +118,7 @@
                 lonInput.value = e.latlng.lng;
                 setStatus('ok', `<i class="bi bi-geo-alt-fill"></i> Lat ${e.latlng.lat.toFixed(5)}, Lon ${e.latlng.lng.toFixed(5)} <span style="color:var(--ink3);">· ajustado manualmente</span>`);
                 markDone('chk-ubicacion');
+                fetchCity(e.latlng.lat, e.latlng.lng);
             });
         }
 
@@ -96,6 +158,7 @@
                             const p = ev.target.getLatLng();
                             latInput.value = p.lat; lonInput.value = p.lng;
                             setStatus('ok', `<i class="bi bi-geo-alt-fill"></i> Lat ${p.lat.toFixed(5)}, Lon ${p.lng.toFixed(5)} <span style="color:var(--ink3);">· ajustado manualmente</span>`);
+                            fetchCity(p.lat, p.lng);
                         });
                     } else {
                         marker.setLatLng(e.latlng);
@@ -104,6 +167,7 @@
                     lonInput.value = e.latlng.lng;
                     setStatus('ok', `<i class="bi bi-geo-alt-fill"></i> Lat ${e.latlng.lat.toFixed(5)}, Lon ${e.latlng.lng.toFixed(5)} <span style="color:var(--ink3);">· ajustado manualmente</span>`);
                     markDone('chk-ubicacion');
+                    fetchCity(e.latlng.lat, e.latlng.lng);
                 });
             }
         }
@@ -138,6 +202,7 @@
 
                 renderMap(lat, lon, "📍 Estás aquí");
                 markDone('chk-ubicacion');
+                fetchCity(lat, lon);
 
                 btn.disabled = false;
                 btn.innerHTML = '<i class="bi bi-crosshair"></i> Actualizar mi ubicación';

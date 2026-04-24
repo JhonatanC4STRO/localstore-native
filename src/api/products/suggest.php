@@ -44,10 +44,10 @@ if ($uid > 0) {
 if ($q !== '') {
     $qsafe = mysqli_real_escape_string($conn, $q);
 
-    /* Top 5 productos por relevancia */
+    /* Top 5 productos por relevancia. Ciudad: preferimos la del producto, fallback a la del vendedor. */
     $psql = "SELECT p.id, p.title, p.price,
                     cat.name AS category_name,
-                    u.city,
+                    COALESCE(NULLIF(p.city,''), u.city) AS city,
                     (SELECT pi.image_url FROM product_images pi
                      WHERE pi.product_id = p.id ORDER BY pi.id ASC LIMIT 1) AS thumb
              FROM products p
@@ -59,6 +59,7 @@ if ($q !== '') {
                   p.title       LIKE '%$qsafe%'
                   OR p.description LIKE '%$qsafe%'
                   OR cat.name   LIKE '%$qsafe%'
+                  OR p.city     LIKE '%$qsafe%'
                   OR u.city     LIKE '%$qsafe%'
                )
              ORDER BY
@@ -66,6 +67,7 @@ if ($q !== '') {
                   WHEN p.title  LIKE '$qsafe%'  THEN 5
                   WHEN p.title  LIKE '%$qsafe%' THEN 4
                   WHEN cat.name LIKE '%$qsafe%' THEN 3
+                  WHEN p.city   LIKE '%$qsafe%' THEN 2
                   WHEN u.city   LIKE '%$qsafe%' THEN 2
                   WHEN p.description LIKE '%$qsafe%' THEN 1
                   ELSE 0
@@ -95,11 +97,15 @@ if ($q !== '') {
         $response['categories'][] = ['id' => (int)$row['id'], 'name' => $row['name']];
     }
 
-    /* Ciudades distintas que matcheen */
+    /* Ciudades distintas que matcheen — UNION de ciudades de productos y vendedores */
     $tr = mysqli_query($conn,
-        "SELECT DISTINCT city
-         FROM users
-         WHERE city IS NOT NULL AND city != '' AND city LIKE '%$qsafe%'
+        "SELECT city FROM (
+            SELECT DISTINCT city FROM products
+              WHERE city IS NOT NULL AND city != '' AND city LIKE '%$qsafe%'
+            UNION
+            SELECT DISTINCT city FROM users
+              WHERE city IS NOT NULL AND city != '' AND city LIKE '%$qsafe%'
+         ) AS t
          ORDER BY (CASE WHEN city LIKE '$qsafe%' THEN 1 ELSE 2 END), city ASC
          LIMIT 4");
     if ($tr) while ($row = mysqli_fetch_assoc($tr)) {

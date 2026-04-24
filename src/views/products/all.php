@@ -16,7 +16,7 @@ if ($isLoggedIn) {
     $where_parts[] = "p.user_id != " . (int)$user['id'];
 }
 
-// Búsqueda inteligente: matchea título, descripción, categoría y ciudad
+// Búsqueda inteligente: matchea título, descripción, categoría y ciudad (producto + vendedor como fallback)
 $search = '';
 if (!empty($_GET['search'])) {
     $search = mysqli_real_escape_string($conn, trim($_GET['search']));
@@ -24,6 +24,7 @@ if (!empty($_GET['search'])) {
         p.title       LIKE '%$search%'
         OR p.description LIKE '%$search%'
         OR cat.name   LIKE '%$search%'
+        OR p.city     LIKE '%$search%'
         OR u.city     LIKE '%$search%'
     )";
 
@@ -67,10 +68,10 @@ if (!empty($_GET['condition']) && $_GET['condition'] !== 'all') {
     $where_parts[] = "LOWER(p.condition_type) = LOWER('$cond')";
 }
 
-// Ubicación
+// Ubicación: matchea contra ciudad del producto (preferida) o del vendedor
 if (!empty($_GET['location'])) {
     $loc = mysqli_real_escape_string($conn, $_GET['location']);
-    $where_parts[] = "u.city = '$loc'";
+    $where_parts[] = "(p.city = '$loc' OR (p.city IS NULL AND u.city = '$loc'))";
 }
 
 $where_sql = "WHERE " . implode(" AND ", $where_parts);
@@ -107,6 +108,7 @@ ORDER BY
         WHEN p.title    LIKE '$search%'  THEN 5
         WHEN p.title    LIKE '%$search%' THEN 4
         WHEN cat.name   LIKE '%$search%' THEN 3
+        WHEN p.city     LIKE '%$search%' THEN 2
         WHEN u.city     LIKE '%$search%' THEN 2
         WHEN p.description LIKE '%$search%' THEN 1
         ELSE 0

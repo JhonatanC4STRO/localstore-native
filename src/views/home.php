@@ -1045,7 +1045,7 @@ $iconMap = [
       <?php
       // Consulta para obtener los primeros 4 productos con información del usuario
       $excludeSeller = $isLoggedIn ? " AND p.user_id != " . (int)$user['id'] : '';
-      $sqlProducts = "SELECT p.id, p.title, p.price, p.condition_type, p.created_at, u.city, u.full_name, p.user_id,
+      $sqlProducts = "SELECT p.id, p.title, p.price, p.condition_type, p.created_at, COALESCE(NULLIF(p.city,''), u.city) AS city, u.full_name, p.user_id,
                       cat.name AS category_name,
                       (SELECT pp.plan_type FROM product_promotions pp
                        WHERE pp.product_id = p.id AND pp.status = 'active' AND pp.end_date > NOW()
@@ -1100,7 +1100,7 @@ $iconMap = [
           <!-- /////////////////////////////// productos aleatorios -->
           <?php
           // Consulta para obtener 4 productos aleatorios (solo disponibles)
-          $sqlRandomProducts = "SELECT p.id, p.title, p.price, p.condition_type, p.created_at, u.city, u.full_name, p.user_id,
+          $sqlRandomProducts = "SELECT p.id, p.title, p.price, p.condition_type, p.created_at, COALESCE(NULLIF(p.city,''), u.city) AS city, u.full_name, p.user_id,
                                 cat.name AS category_name,
                                 (SELECT pp.plan_type FROM product_promotions pp
                                  WHERE pp.product_id = p.id AND pp.status = 'active' AND pp.end_date > NOW()

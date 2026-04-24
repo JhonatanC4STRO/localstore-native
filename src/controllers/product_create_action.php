@@ -23,6 +23,8 @@ $precio       = (float)($_POST['precio'] ?? 0);
 $descripcion  = trim($_POST['descripcion'] ?? '');
 $categoria    = (int)($_POST['categoria'] ?? 0);
 $location     = trim($_POST['location'] ?? '');
+$city         = trim($_POST['city'] ?? '');
+if ($city !== '') $city = mb_substr($city, 0, 100);
 $longitude    = isset($_POST['longitude']) && $_POST['longitude'] !== '' ? (float)$_POST['longitude'] : null;
 $latitude     = isset($_POST['latitude'])  && $_POST['latitude']  !== '' ? (float)$_POST['latitude']  : null;
 $estadoRaw    = (int)($_POST['estado'] ?? 1);
@@ -82,13 +84,14 @@ if (!empty($chkRow['deleted_at'])) {
 }
 
 /* ── Insertar producto (prepared) ── */
-$sql = "INSERT INTO products (title, price, description, longitude, latitude, category_id, status, admin_status, condition_type, user_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+$cityVal = ($city !== '') ? $city : null;
+$sql = "INSERT INTO products (title, price, description, longitude, latitude, city, category_id, status, admin_status, condition_type, user_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 $stmt = mysqli_prepare($conn, $sql);
 mysqli_stmt_bind_param(
     $stmt,
-    'sdsddisssi',
-    $nombre, $precio, $descripcion, $longitude, $latitude, $categoria, $status, $adminStatus, $condicion, $user_id
+    'sdsddsisssi',
+    $nombre, $precio, $descripcion, $longitude, $latitude, $cityVal, $categoria, $status, $adminStatus, $condicion, $user_id
 );
 
 try {

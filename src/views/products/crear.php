@@ -261,6 +261,7 @@ if ($r) {
                 <!-- Hidden inputs (logic preserved) -->
                 <input type="hidden" name="latitude" id="latitude">
                 <input type="hidden" name="longitude" id="longitude">
+                <input type="hidden" name="city" id="city">
                 <input type="hidden" name="condicion" id="condicionHidden" value="nuevo">
 
                 <div class="publish-layout">
@@ -433,6 +434,13 @@ if ($r) {
                                     </button>
                                     <!-- LOGIC PRESERVED: id="est" -->
                                     <p id="est"></p>
+                                </div>
+
+                                <!-- Ciudad detectada (auto, reverse geocoding) -->
+                                <div id="cityChip" class="city-chip" style="display:none;">
+                                    <i class="bi bi-geo-fill"></i>
+                                    <span>Ciudad detectada:</span>
+                                    <strong id="cityName">—</strong>
                                 </div>
                             </div>
                         </div>
