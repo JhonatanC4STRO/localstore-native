@@ -36,66 +36,64 @@
         maxZoom: 19
       }).addTo(map);
 
-      /* Iconos */
+      /* Iconos: pin estilo "tag" con color */
       const currentIcon = L.divIcon({
-        html: `<div style="background:#16a34a;width:34px;height:34px;border-radius:50%;
-                display:flex;align-items:center;justify-content:center;
-                border:3px solid #fff;box-shadow:0 3px 14px rgba(0,0,0,.35);
-                font-size:1.05rem;">📍</div>`,
-        iconSize: [34, 34], iconAnchor: [17, 34], className: ''
+        html: `<div class="map-pin map-pin--current" aria-label="Producto actual">
+                 <i class="bi bi-geo-alt-fill"></i>
+               </div>`,
+        iconSize: [38, 46], iconAnchor: [19, 46], popupAnchor: [0, -42], className: ''
       });
       const otherIcon = L.divIcon({
-        html: `<div style="background:#3b82f6;width:24px;height:24px;border-radius:50%;
-                display:flex;align-items:center;justify-content:center;
-                border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.25);
-                font-size:.75rem;">🏷</div>`,
-        iconSize: [24, 24], iconAnchor: [12, 24], className: ''
-      });
-
-      /* Cluster group */
-      const cluster = L.markerClusterGroup({
-        maxClusterRadius: 50,
-        spiderfyOnMaxZoom: true,
-        showCoverageOnHover: false,
-        zoomToBoundsOnClick: true
+        html: `<div class="map-pin map-pin--other">
+                 <i class="bi bi-tag-fill"></i>
+               </div>`,
+        iconSize: [30, 38], iconAnchor: [15, 38], popupAnchor: [0, -34], className: ''
       });
 
       products.forEach(p => {
         const isCurrent = p.id === window.PRODUCT_CURRENT_ID;
         const thumbHtml = p.thumb
           ? `<img src="../../../public/uploads/products/${p.thumb}"
-               style="width:100%;height:82px;object-fit:cover;border-radius:7px;margin-bottom:7px;display:block;">`
-          : '';
+                  alt="${(p.title || '').replace(/"/g,'&quot;')}"
+                  class="mp-img">`
+          : `<div class="mp-img mp-img-ph"><i class="bi bi-box-seam"></i></div>`;
+
         const popup = `
-          <div style="min-width:160px;max-width:200px;font-family:'DM Sans',sans-serif;padding:2px;">
-            ${thumbHtml}
-            <div style="font-weight:700;font-size:.84rem;line-height:1.3;margin-bottom:3px;color:#0f172a;">
-              ${p.title}
+          <div class="mp-card${isCurrent ? ' is-current' : ''}">
+            <div class="mp-img-wrap">
+              ${thumbHtml}
+              ${isCurrent ? '<div class="mp-current-badge"><i class="bi bi-geo-alt-fill"></i> Aquí</div>' : ''}
             </div>
-            <div style="color:#16a34a;font-weight:800;font-size:.95rem;margin-bottom:9px;">
-              $${p.price}
+            <div class="mp-body">
+              <div class="mp-price">$${p.price}</div>
+              <div class="mp-title">${p.title}</div>
+              ${isCurrent
+                ? '<div class="mp-current-tag"><i class="bi bi-eye-fill"></i> Estás viendo este</div>'
+                : `<a href="detalle.php?id=${p.id}" class="mp-btn">
+                     Ver producto <i class="bi bi-arrow-right"></i>
+                   </a>`}
             </div>
-            <a href="detalleProducto.php?id=${p.id}"
-               style="display:block;text-align:center;background:#16a34a;color:#fff;
-                      padding:6px 10px;border-radius:7px;font-size:.78rem;
-                      text-decoration:none;font-weight:700;">
-              Ver producto →
-            </a>
           </div>`;
 
         const marker = L.marker([p.lat, p.lon], {
           icon: isCurrent ? currentIcon : otherIcon,
-          zIndexOffset: isCurrent ? 1000 : 0
-        }).bindPopup(popup, { maxWidth: 210 });
+          zIndexOffset: isCurrent ? 1000 : 0,
+          riseOnHover: true
+        }).bindPopup(popup, {
+          maxWidth: 230,
+          minWidth: 210,
+          className: 'mp-popup',
+          closeButton: true,
+          autoPan: true
+        });
 
-        cluster.addLayer(marker);
+        marker.addTo(map);
 
         /* Abrir popup del producto actual automáticamente */
         if (isCurrent) {
           marker.on('add', () => marker.openPopup());
+          marker.openPopup();
         }
       });
-
-      map.addLayer(cluster);
     });
 
