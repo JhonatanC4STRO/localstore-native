@@ -853,7 +853,15 @@ h5 {
 
 /* ══ RESPONSIVE ══════════════════════════════════════ */
 
-/* Tablet grande: left-panel más estrecho, scroll libre */
+  @media (max-width: 1300px) {
+    .left-panel {
+      width: 380px;
+    }
+    .right-panel {
+      padding: 34px 28px 55px;
+    }
+  }
+
 @media (max-width: 1100px) {
   .left-panel {
     width: 360px;
@@ -863,7 +871,7 @@ h5 {
     min-height: 100vh;
   }
   .right-panel {
-    padding: 36px 32px 60px;
+    padding: 36px 32px 30px;
   }
 }
 
@@ -908,7 +916,7 @@ h5 {
 
   .right-panel {
     width: 100%;
-    padding: 32px 24px 60px;
+    padding: 32px 24px 30px;
     overflow: visible;
   }
 
@@ -928,7 +936,7 @@ h5 {
   }
 
   .right-panel {
-    padding: 24px 16px 60px;
+    padding: 24px 16px 30px;
   }
 
   .form-title {
