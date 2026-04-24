@@ -53,8 +53,8 @@ if ($stHero) {
   <link rel="icon" href="../../public/img/logo.png" type="image/x-icon" id="icon-title">
   <style>
     #icon-title{
-      width: 20px;
-      height: 20px;
+      width: 64px;
+      height: 64px;
     }
     /* ── Anuncios Destacados ── */
     .featured-ads-section {
