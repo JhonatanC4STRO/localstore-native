@@ -50,6 +50,7 @@ if ($stHero) {
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <link rel="stylesheet" href="../../public/css/input.css">
   <link rel="stylesheet" href="../../public/css/output.css">
+  <link rel="icon" href="../../public/img/logo.png" type="image/x-icon">
   <style>
     /* ── Anuncios Destacados ── */
     .featured-ads-section {

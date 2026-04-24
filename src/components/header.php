@@ -249,8 +249,8 @@ $ctrlPath    = $basePath . 'src/controllers/';
           <i class="bi bi-shield-lock-fill" aria-hidden="true"></i> Panel admin
         </a>
       <?php endif; ?>
-      <a class="cl-drawer-link" href="<?= $viewsPath ?>home.php">
-        <i class="bi bi-speedometer2" aria-hidden="true"></i> Inicio
+      <a class="cl-drawer-link" href="<?= $viewsPath ?>dashboard.php">
+        <i class="bi bi-speedometer2" aria-hidden="true"></i> Dashboard
       </a>
       <a class="cl-drawer-link" href="<?= $viewsPath ?>products/crear.php">
         <i class="bi bi-plus-square" aria-hidden="true"></i> Publicar anuncio
@@ -263,6 +263,19 @@ $ctrlPath    = $basePath . 'src/controllers/';
       </a>
       <a class="cl-drawer-link" href="<?= $viewsPath ?>favoritos.php">
         <i class="bi bi-heart" aria-hidden="true"></i> Favoritos
+      </a>
+      <div class="cl-drawer-sep"></div>
+      <a class="cl-drawer-link" href="<?= $viewsPath ?>solicitar_verificacion.php">
+        <i class="bi bi-patch-check-fill" aria-hidden="true"></i> Verificación
+      </a>
+      <a class="cl-drawer-link" href="<?= $viewsPath ?>resenas.php">
+        <i class="bi bi-star" aria-hidden="true"></i> Reseñas
+      </a>
+      <a class="cl-drawer-link" href="<?= $viewsPath ?>promociones.php">
+        <i class="bi bi-rocket-takeoff-fill" aria-hidden="true"></i> Promociones
+      </a>
+      <a class="cl-drawer-link" href="<?= $viewsPath ?>configuracion.php">
+        <i class="bi bi-gear" aria-hidden="true"></i> Configuración
       </a>
       <div class="cl-drawer-sep"></div>
       <a class="cl-drawer-link" href="<?= $viewsPath ?>perfil.php">
