@@ -50,8 +50,12 @@ if ($stHero) {
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <link rel="stylesheet" href="../../public/css/input.css">
   <link rel="stylesheet" href="../../public/css/output.css">
-  <link rel="icon" href="../../public/img/logo.png" type="image/x-icon">
+  <link rel="icon" href="../../public/img/logo.png" type="image/x-icon" id="icon-title">
   <style>
+    #icon-title{
+      width: 20px;
+      height: 20px;
+    }
     /* ── Anuncios Destacados ── */
     .featured-ads-section {
       padding: 56px 24px 48px;
