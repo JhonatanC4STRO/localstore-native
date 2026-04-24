@@ -32,6 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
     $categoria = intval($_POST['categoria'] ?? 0);
     $latitude = trim($_POST['latitude'] ?? '');
     $longitude = trim($_POST['longitude'] ?? '');
+    $cityPost = trim($_POST['city'] ?? '');
+    $cityVal  = ($cityPost !== '') ? mb_substr($cityPost, 0, 100) : null;
     $estadoRaw = (int)($_POST['estado'] ?? 1);
     $adminStatus = ($estadoRaw === 0) ? 'inactive' : 'active';
 
@@ -39,14 +41,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
     $update_stmt = mysqli_prepare($conn,
         "UPDATE products
          SET title=?, description=?, price=?, condition_type=?, category_id=?,
-             latitude=?, longitude=?, admin_status=?
+             latitude=?, longitude=?, city=?, admin_status=?
          WHERE id=? AND user_id=?"
     );
     mysqli_stmt_bind_param(
         $update_stmt,
-        'ssdsisssii',
+        'ssdsissssii',
         $nombre, $descripcion, $precio, $condicion, $categoria,
-        $latitude, $longitude, $adminStatus, $product_id, $user_id
+        $latitude, $longitude, $cityVal, $adminStatus, $product_id, $user_id
     );
 
     if (mysqli_stmt_execute($update_stmt)) {
@@ -209,6 +211,7 @@ $userName    = $isLoggedIn ? explode(' ', $user['full_name'])[0] : '';
                 <input type="hidden" name="product_id" value="<?php echo htmlspecialchars($id); ?>">
                 <input type="hidden" name="latitude" id="latitude" value="<?php echo htmlspecialchars($product['latitude'] ?? ''); ?>">
                 <input type="hidden" name="longitude" id="longitude" value="<?php echo htmlspecialchars($product['longitude'] ?? ''); ?>">
+                <input type="hidden" name="city" id="city" value="<?php echo htmlspecialchars($product['city'] ?? ''); ?>">
 
                 <div class="edit-layout">
 
@@ -414,6 +417,13 @@ $userName    = $isLoggedIn ? explode(' ', $user['full_name'])[0] : '';
                                     </button>
                                     <!-- LOGIC PRESERVED: id="est" -->
                                     <p id="est"></p>
+                                </div>
+
+                                <!-- Ciudad detectada (auto, reverse geocoding) -->
+                                <div id="cityChip" class="city-chip" style="<?php echo !empty($product['city']) ? '' : 'display:none;'; ?>">
+                                    <i class="bi bi-geo-fill"></i>
+                                    <span>Ciudad detectada:</span>
+                                    <strong id="cityName"><?php echo htmlspecialchars($product['city'] ?? '—'); ?></strong>
                                 </div>
                             </div>
                         </div>

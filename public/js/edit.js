@@ -25,7 +25,62 @@
         /* ── LOGIC PRESERVED: geolocation + Leaflet ── */
         const estado = document.getElementById("est");
         const btn = document.getElementById("btnUbicacion");
+        const cityInput  = document.getElementById("city");
+        const cityChip   = document.getElementById("cityChip");
+        const cityNameEl = document.getElementById("cityName");
         let map;
+        let cityAbort = null;
+        let cityFetchTimer = null;
+
+        /* ── Reverse geocoding: lat/lon → ciudad (Nominatim / OpenStreetMap) ── */
+        function setCityChip(state, label) {
+          if (!cityChip) return;
+          cityChip.classList.remove('loading', 'error');
+          if (state === 'loading') {
+            cityChip.classList.add('loading');
+            cityNameEl.textContent = label || 'Detectando ciudad…';
+            cityChip.querySelector('i').className = 'bi bi-arrow-clockwise';
+            cityChip.style.display = 'flex';
+          } else if (state === 'ok') {
+            cityNameEl.textContent = label || '—';
+            cityChip.querySelector('i').className = 'bi bi-geo-fill';
+            cityChip.style.display = 'flex';
+          } else if (state === 'error') {
+            cityChip.classList.add('error');
+            cityNameEl.textContent = label || 'No pudimos detectar la ciudad';
+            cityChip.querySelector('i').className = 'bi bi-exclamation-triangle-fill';
+            cityChip.style.display = 'flex';
+          } else {
+            cityChip.style.display = 'none';
+          }
+        }
+        function fetchCity(lat, lon) {
+          clearTimeout(cityFetchTimer);
+          cityFetchTimer = setTimeout(() => {
+            if (cityAbort) cityAbort.abort();
+            cityAbort = new AbortController();
+            setCityChip('loading');
+            const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1&accept-language=es`;
+            fetch(url, { signal: cityAbort.signal, headers: { 'Accept': 'application/json' } })
+              .then(r => r.json())
+              .then(data => {
+                const a = data.address || {};
+                const city = a.city || a.town || a.village || a.municipality
+                          || a.county || a.state_district || a.state || '';
+                if (city) {
+                  if (cityInput) cityInput.value = city;
+                  setCityChip('ok', city);
+                } else {
+                  if (cityInput) cityInput.value = '';
+                  setCityChip('error', 'No identificamos la ciudad — el producto se guardará sin ciudad');
+                }
+              })
+              .catch(err => {
+                if (err.name === 'AbortError') return;
+                setCityChip('error');
+              });
+          }, 600);
+        }
 
         /* usa window.PRODUCT_LAT/LON inyectados desde PHP */
         document.addEventListener('DOMContentLoaded', function() {
@@ -66,6 +121,7 @@
                 }).addTo(map);
                 L.marker([lat, lon]).addTo(map).bindPopup("📍 Estás aquí").openPopup();
                 markDone('chk-ubicacion');
+                fetchCity(lat, lon);
             }, (err) => {
                 estado.innerHTML = `<i class="bi bi-exclamation-circle" style="color:#dc2626;"></i> ${err.message}`;
             });
