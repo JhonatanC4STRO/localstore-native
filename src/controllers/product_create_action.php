@@ -40,15 +40,15 @@ if ($nombre === '')                    redirect_error('El título es obligatorio
 if ($precio <= 0)                      redirect_error('Ingresa un precio válido');
 if ($categoria <= 0)                   redirect_error('Selecciona una categoría');
 
-/* ── Ubicación: opcional — si no se marcó, se guarda como NULL ── */
-if ($latitude !== null && $longitude !== null) {
-    if ($latitude < -90 || $latitude > 90 || $longitude < -180 || $longitude > 180) {
-        redirect_error('La ubicación indicada no es válida. Vuelve a marcar el punto en el mapa');
-    }
-    if ((float)$latitude === 0.0 && (float)$longitude === 0.0) {
-        $latitude  = null;
-        $longitude = null;
-    }
+/* ── Ubicación: OBLIGATORIA. Sin coords no se publica. ── */
+if ($latitude === null || $longitude === null) {
+    redirect_error('La ubicación es obligatoria. Marca el punto en el mapa antes de publicar.');
+}
+if ($latitude < -90 || $latitude > 90 || $longitude < -180 || $longitude > 180) {
+    redirect_error('La ubicación indicada no es válida. Vuelve a marcar el punto en el mapa.');
+}
+if ((float)$latitude === 0.0 && (float)$longitude === 0.0) {
+    redirect_error('La ubicación es obligatoria. Marca el punto en el mapa antes de publicar.');
 }
 
 /* ── Resolver user_id real (auto-repara sesiones admin legacy con id=0) ── */

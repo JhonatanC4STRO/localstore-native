@@ -411,8 +411,8 @@ if ($r) {
                             <div class="card-header">
                                 <div class="card-header-icon icon-blue"><i class="bi bi-geo-alt-fill"></i></div>
                                 <div class="card-header-text">
-                                    <h3>Ubicación del producto</h3>
-                                    <p>Indica dónde está disponible para el comprador.</p>
+                                    <h3>Ubicación del producto <span class="required">*</span></h3>
+                                    <p>Marcá el punto en el mapa o usá tu ubicación actual. Es obligatorio para publicar.</p>
                                 </div>
                                 <div class="card-step-badge">3</div>
                             </div>

@@ -219,7 +219,7 @@
             });
         });
 
-        // Validar ubicación: advertencia suave (no bloquear — el campo es opcional)
+        // Validar ubicación: ahora es OBLIGATORIA — bloqueamos el submit si falta.
         if (mainForm) {
             mainForm.addEventListener('submit', (e) => {
                 // Quitar separadores de miles del precio antes de enviar
@@ -232,10 +232,16 @@
                                && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
 
                 if (!hasLocation) {
-                    // Solo avisar, no bloquear
-                    setStatus('warn', '<i class="bi bi-exclamation-triangle-fill"></i> <strong>Sin ubicación.</strong> Tu anuncio se publicará sin coordenadas de mapa. Puedes agregarla editando el producto.');
+                    e.preventDefault();
+                    setStatus('error', '<i class="bi bi-exclamation-circle-fill"></i> <strong>Falta marcar la ubicación.</strong> Tocá el mapa o usá "Usar mi ubicación actual".');
+                    const mapEl = document.getElementById('map');
+                    if (mapEl) mapEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    if (btn) {
+                        btn.classList.add('btn-required-pulse');
+                        setTimeout(() => btn.classList.remove('btn-required-pulse'), 2000);
+                    }
+                    return;
                 }
-                // Siempre permite el envío
             });
         }
 

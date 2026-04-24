@@ -892,6 +892,17 @@ select.form-control {
   transform: translateY(-1px);
 }
 
+/* Pulse para resaltar el botón cuando falta marcar ubicación */
+@keyframes btn-required-pulse {
+  0%   { box-shadow: 0 0 0 0   rgba(220, 38, 38, .55); }
+  70%  { box-shadow: 0 0 0 14px rgba(220, 38, 38, 0); }
+  100% { box-shadow: 0 0 0 0   rgba(220, 38, 38, 0); }
+}
+.btn-required-pulse {
+  background: #dc2626 !important;
+  animation: btn-required-pulse 1s ease-out 2;
+}
+
 #est {
   font-size: 0.82rem;
   color: var(--ink3);
