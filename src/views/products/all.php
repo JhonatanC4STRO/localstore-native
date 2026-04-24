@@ -16,10 +16,27 @@ if ($isLoggedIn) {
     $where_parts[] = "p.user_id != " . (int)$user['id'];
 }
 
-// Búsqueda
+// Búsqueda inteligente: matchea título, descripción, categoría y ciudad
+$search = '';
 if (!empty($_GET['search'])) {
-    $search = mysqli_real_escape_string($conn, $_GET['search']);
-    $where_parts[] = "(p.title LIKE '%$search%' OR p.description LIKE '%$search%')";
+    $search = mysqli_real_escape_string($conn, trim($_GET['search']));
+    $where_parts[] = "(
+        p.title       LIKE '%$search%'
+        OR p.description LIKE '%$search%'
+        OR cat.name   LIKE '%$search%'
+        OR u.city     LIKE '%$search%'
+    )";
+
+    // Guardar en historial si hay sesión y el término no es duplicado del último
+    if ($isLoggedIn && $search !== '') {
+        $uid = (int)$user['id'];
+        $last = mysqli_fetch_assoc(mysqli_query($conn,
+            "SELECT query FROM search_history WHERE user_id = $uid ORDER BY id DESC LIMIT 1"));
+        if (!$last || strcasecmp($last['query'], $_GET['search']) !== 0) {
+            $qInsert = mysqli_real_escape_string($conn, mb_substr(trim($_GET['search']), 0, 150));
+            mysqli_query($conn, "INSERT INTO search_history (user_id, query) VALUES ($uid, '$qInsert')");
+        }
+    }
 }
 
 // Categoría única (desde slider)
@@ -78,10 +95,26 @@ $sql = "SELECT
     (SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id) AS total_reviews,
     (SELECT sv.id FROM seller_verifications sv WHERE sv.user_id = p.user_id AND sv.status = 'approved' LIMIT 1) AS seller_verified
 FROM products p
-LEFT JOIN users u ON p.user_id = u.id  
+LEFT JOIN users u ON p.user_id = u.id
 LEFT JOIN categories cat ON p.category_id = cat.id
-$where_sql
-ORDER BY p.id DESC";
+$where_sql";
+
+// Cuando hay search, ordenar por relevancia (título prefix > título contains > categoría > ciudad > descripción)
+if ($search !== '') {
+    $sql .= "
+ORDER BY
+    (CASE
+        WHEN p.title    LIKE '$search%'  THEN 5
+        WHEN p.title    LIKE '%$search%' THEN 4
+        WHEN cat.name   LIKE '%$search%' THEN 3
+        WHEN u.city     LIKE '%$search%' THEN 2
+        WHEN p.description LIKE '%$search%' THEN 1
+        ELSE 0
+     END) DESC,
+    p.id DESC";
+} else {
+    $sql .= " ORDER BY p.id DESC";
+}
 
 $result     = mysqli_query($conn, $sql);
 $totalCount = mysqli_num_rows($result);

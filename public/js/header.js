@@ -317,4 +317,270 @@
     // Poll count every 10 seconds
     setInterval(fetchUnreadCount, 10000);
   }
+
+  /* ════════════════════════════════════════
+     Autocomplete (smart search)
+     ════════════════════════════════════════ */
+  (function () {
+    if (!window.__CL) return;
+    const apiBase     = window.__CL.apiPath + 'products/';
+    const viewsBase   = window.__CL.viewsPath;
+    const allUrl      = viewsBase + 'products/all.php';
+    // Resolver URL absoluta de uploads/products a partir de viewsBase
+    const uploadsBase = new URL('../../public/uploads/products/',
+                                new URL(viewsBase, window.location.href)).href;
+
+    /* Helpers */
+    function escHtml(s) {
+      const d = document.createElement('div');
+      d.textContent = s == null ? '' : String(s);
+      return d.innerHTML;
+    }
+    function highlight(text, q) {
+      if (!q) return escHtml(text);
+      const safe = escHtml(text);
+      const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig');
+      return safe.replace(re, '<mark>$1</mark>');
+    }
+    function debounce(fn, ms) {
+      let t;
+      return function () {
+        const args = arguments;
+        clearTimeout(t);
+        t = setTimeout(() => fn.apply(this, args), ms);
+      };
+    }
+    function buildUrl(params) {
+      const url = new URL(allUrl, window.location.href);
+      Object.entries(params).forEach(([k, v]) => {
+        if (v != null && v !== '') url.searchParams.set(k, v);
+      });
+      return url.toString();
+    }
+
+    /* Render del dropdown completo a partir del JSON */
+    function render(panel, data, q) {
+      const sections = [];
+      const items    = []; // referencia plana para navegar con teclado
+
+      // Búsquedas recientes (solo si hay)
+      if (data.history && data.history.length) {
+        const rows = data.history.map(h => {
+          const url = buildUrl({ search: h });
+          return `<a class="cl-sg-item cl-sg-history" role="option" href="${escHtml(url)}" data-q="${escHtml(h)}">
+                    <div class="cl-sg-ico"><i class="bi bi-clock-history"></i></div>
+                    <div class="cl-sg-text"><div class="cl-sg-primary">${highlight(h, q)}</div></div>
+                    <i class="cl-sg-arrow bi bi-arrow-up-left"></i>
+                  </a>`;
+        }).join('');
+        const clearBtn = window.__CL.isLoggedIn
+          ? '<button type="button" class="cl-sg-clear" data-action="clear-history">Limpiar</button>'
+          : '';
+        sections.push(`<div class="cl-sg-section">
+                         <span class="cl-sg-section-title"><i class="bi bi-clock-history"></i> Búsquedas recientes</span>
+                         ${clearBtn}
+                       </div>${rows}`);
+      }
+
+      // Productos
+      if (data.products && data.products.length) {
+        const rows = data.products.map(p => {
+          const href = viewsBase + 'products/detalle.php?id=' + p.id;
+          const thumb = p.thumb
+            ? `<img src="${uploadsBase}${escHtml(p.thumb)}" alt="">`
+            : '<i class="bi bi-box-seam"></i>';
+          const sub = [p.category, p.city].filter(Boolean).map(escHtml).join(' · ');
+          return `<a class="cl-sg-item cl-sg-product" role="option" href="${escHtml(href)}">
+                    <div class="cl-sg-ico">${thumb}</div>
+                    <div class="cl-sg-text">
+                      <div class="cl-sg-primary">${highlight(p.title, q)}</div>
+                      ${sub ? `<div class="cl-sg-secondary">${sub}</div>` : ''}
+                    </div>
+                    <span class="cl-sg-price">${escHtml(p.price)}</span>
+                  </a>`;
+        }).join('');
+        sections.push(`<div class="cl-sg-section">
+                         <span class="cl-sg-section-title"><i class="bi bi-box-seam"></i> Productos</span>
+                       </div>${rows}`);
+      }
+
+      // Categorías
+      if (data.categories && data.categories.length) {
+        const rows = data.categories.map(c => {
+          const url = buildUrl({ category: c.id });
+          return `<a class="cl-sg-item cl-sg-cat" role="option" href="${escHtml(url)}">
+                    <div class="cl-sg-ico"><i class="bi bi-tag-fill"></i></div>
+                    <div class="cl-sg-text">
+                      <div class="cl-sg-primary">${highlight(c.name, q)}</div>
+                      <div class="cl-sg-secondary">Categoría</div>
+                    </div>
+                    <i class="cl-sg-arrow bi bi-arrow-right"></i>
+                  </a>`;
+        }).join('');
+        sections.push(`<div class="cl-sg-section">
+                         <span class="cl-sg-section-title"><i class="bi bi-tag-fill"></i> Categorías</span>
+                       </div>${rows}`);
+      }
+
+      // Ciudades
+      if (data.cities && data.cities.length) {
+        const rows = data.cities.map(city => {
+          const url = buildUrl({ location: city });
+          return `<a class="cl-sg-item cl-sg-city" role="option" href="${escHtml(url)}">
+                    <div class="cl-sg-ico"><i class="bi bi-geo-alt-fill"></i></div>
+                    <div class="cl-sg-text">
+                      <div class="cl-sg-primary">${highlight(city, q)}</div>
+                      <div class="cl-sg-secondary">Productos en esta ciudad</div>
+                    </div>
+                    <i class="cl-sg-arrow bi bi-arrow-right"></i>
+                  </a>`;
+        }).join('');
+        sections.push(`<div class="cl-sg-section">
+                         <span class="cl-sg-section-title"><i class="bi bi-geo-alt-fill"></i> Ciudades</span>
+                       </div>${rows}`);
+      }
+
+      if (!sections.length) {
+        if (q) {
+          panel.innerHTML = `<div class="cl-sg-empty">
+                               <i class="bi bi-search"></i>
+                               Sin sugerencias para "<strong>${escHtml(q)}</strong>"
+                             </div>`;
+        } else {
+          panel.innerHTML = `<div class="cl-sg-empty">
+                               <i class="bi bi-lightbulb"></i>
+                               Empezá a escribir para ver sugerencias
+                             </div>`;
+        }
+      } else {
+        panel.innerHTML = sections.join('');
+      }
+
+      // Indexar items para navegación con teclado
+      panel.querySelectorAll('.cl-sg-item').forEach(el => items.push(el));
+      panel._items = items;
+      panel._activeIdx = -1;
+    }
+
+    /* Wire-up para un par input + panel */
+    function attach(input, panel) {
+      if (!input || !panel) return;
+
+      let lastQ      = null;
+      let abortCtl   = null;
+      let opened     = false;
+
+      function open() {
+        if (opened) return;
+        panel.hidden = false;
+        opened = true;
+        input.setAttribute('aria-expanded', 'true');
+      }
+      function close() {
+        if (!opened) return;
+        panel.hidden = true;
+        opened = false;
+        input.setAttribute('aria-expanded', 'false');
+        clearActive();
+      }
+      function clearActive() {
+        if (!panel._items) return;
+        panel._items.forEach(el => el.classList.remove('is-active'));
+        panel._activeIdx = -1;
+      }
+      function setActive(idx) {
+        if (!panel._items || !panel._items.length) return;
+        clearActive();
+        const i = ((idx % panel._items.length) + panel._items.length) % panel._items.length;
+        panel._activeIdx = i;
+        panel._items[i].classList.add('is-active');
+        panel._items[i].scrollIntoView({ block: 'nearest' });
+      }
+
+      const fetchSuggest = debounce(function (q) {
+        if (abortCtl) abortCtl.abort();
+        abortCtl = new AbortController();
+
+        // Estado loading suave (solo si hay query)
+        if (q) {
+          panel.innerHTML = '<div class="cl-sg-loading"><i class="bi bi-arrow-clockwise"></i> Buscando…</div>';
+          open();
+        }
+
+        fetch(apiBase + 'suggest.php?q=' + encodeURIComponent(q), { signal: abortCtl.signal })
+          .then(r => r.json())
+          .then(data => {
+            // Si el usuario cambió el query, descartar
+            if (input.value.trim() !== q) return;
+            const hasAny = (data.history && data.history.length)
+                       || (data.products && data.products.length)
+                       || (data.categories && data.categories.length)
+                       || (data.cities && data.cities.length);
+            if (!hasAny && !q) { close(); return; }
+            render(panel, data, q);
+            open();
+          })
+          .catch(() => {});
+      }, 200);
+
+      input.addEventListener('input', () => {
+        const q = input.value.trim();
+        if (q === lastQ) return;
+        lastQ = q;
+        fetchSuggest(q);
+      });
+
+      input.addEventListener('focus', () => {
+        const q = input.value.trim();
+        if (q || window.__CL.isLoggedIn) {
+          fetchSuggest(q);
+        }
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (!opened) return;
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          setActive((panel._activeIdx ?? -1) + 1);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          setActive((panel._activeIdx ?? 0) - 1);
+        } else if (e.key === 'Enter') {
+          if (panel._activeIdx >= 0 && panel._items[panel._activeIdx]) {
+            e.preventDefault();
+            panel._items[panel._activeIdx].click();
+          }
+        } else if (e.key === 'Escape') {
+          close();
+          input.blur();
+        }
+      });
+
+      // Click fuera cierra
+      document.addEventListener('click', (e) => {
+        if (!opened) return;
+        if (e.target === input || panel.contains(e.target)) return;
+        close();
+      });
+
+      // Limpiar historial
+      panel.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action="clear-history"]');
+        if (!btn) return;
+        e.preventDefault();
+        e.stopPropagation();
+        fetch(apiBase + 'clear_history.php', { method: 'POST' })
+          .then(r => r.json())
+          .then(() => {
+            lastQ = null;
+            fetchSuggest(input.value.trim());
+            input.focus();
+          })
+          .catch(() => {});
+      });
+    }
+
+    attach(document.getElementById('clSearchInput'),       document.getElementById('clSuggest'));
+    attach(document.getElementById('clMobileSearchInput'), document.getElementById('clMobileSuggest'));
+  })();
 })();

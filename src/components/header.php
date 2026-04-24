@@ -39,14 +39,19 @@ $ctrlPath    = $basePath . 'src/controllers/';
   </a>
 
   <!-- Search (desktop) -->
-  <form class="cl-search" role="search" aria-label="Buscar productos" action="<?= $viewsPath ?>products/all.php" method="get" id="clSearchForm">
-    <label for="clSearchInput" class="sr-only">Buscar productos</label>
-    <input type="text" id="clSearchInput" name="search" placeholder="Buscar productos, servicios..."
-           value="<?= htmlspecialchars($_GET['search'] ?? '') ?>" autocomplete="off">
-    <button type="submit" aria-label="Buscar">
-      <i class="bi bi-search" aria-hidden="true"></i>
-    </button>
-  </form>
+  <div class="cl-search-wrap" id="clSearchWrap">
+    <form class="cl-search" role="search" aria-label="Buscar productos" action="<?= $viewsPath ?>products/all.php" method="get" id="clSearchForm">
+      <label for="clSearchInput" class="sr-only">Buscar productos</label>
+      <input type="text" id="clSearchInput" name="search" placeholder="Buscar productos, servicios..."
+             value="<?= htmlspecialchars($_GET['search'] ?? '') ?>" autocomplete="off"
+             aria-autocomplete="list" aria-controls="clSuggest" aria-expanded="false">
+      <button type="submit" aria-label="Buscar">
+        <i class="bi bi-search" aria-hidden="true"></i>
+      </button>
+    </form>
+    <!-- Autocomplete dropdown -->
+    <div class="cl-suggest" id="clSuggest" role="listbox" hidden></div>
+  </div>
 
   <!-- Browse all products (desktop) -->
   <a href="<?= $viewsPath ?>products/all.php" class="cl-nav-link">
@@ -216,14 +221,17 @@ $ctrlPath    = $basePath . 'src/controllers/';
 
 <!-- Mobile search overlay -->
 <div class="cl-mobile-search" id="clMobileSearch" aria-hidden="true">
-  <form class="cl-mobile-search-inner" role="search" aria-label="Buscar productos" action="<?= $viewsPath ?>products/all.php" method="get">
+  <form class="cl-mobile-search-inner" role="search" aria-label="Buscar productos" action="<?= $viewsPath ?>products/all.php" method="get" id="clMobileSearchForm">
     <label for="clMobileSearchInput" class="sr-only">Buscar productos</label>
-    <input type="text" id="clMobileSearchInput" name="search" placeholder="Buscar productos, servicios..." autocomplete="off">
+    <input type="text" id="clMobileSearchInput" name="search" placeholder="Buscar productos, servicios..." autocomplete="off"
+           aria-autocomplete="list" aria-controls="clMobileSuggest" aria-expanded="false">
     <button type="submit" aria-label="Buscar"><i class="bi bi-search" aria-hidden="true"></i></button>
     <button type="button" class="cl-mobile-search-close" id="clMobileSearchClose" aria-label="Cerrar buscador">
       <i class="bi bi-x-lg" aria-hidden="true"></i>
     </button>
   </form>
+  <!-- Mobile autocomplete dropdown -->
+  <div class="cl-suggest cl-suggest--mobile" id="clMobileSuggest" role="listbox" hidden></div>
 </div>
 
 <!-- Mobile drawer overlay -->
@@ -326,13 +334,12 @@ $ctrlPath    = $basePath . 'src/controllers/';
   <?php endif; ?>
 </aside>
 
-<?php if ($isLoggedIn): ?>
 <script>
   window.__CL = {
-    apiPath: '<?= $apiPath ?>',
+    apiPath:   '<?= $apiPath ?>',
     viewsPath: '<?= $viewsPath ?>',
-    userId: <?= (int)($user['id'] ?? 0) ?>
+    userId:    <?= (int)($user['id'] ?? 0) ?>,
+    isLoggedIn: <?= $isLoggedIn ? 'true' : 'false' ?>
   };
 </script>
-<?php endif; ?>
 <script src="<?= $publicPath ?>js/header.js" defer></script>
