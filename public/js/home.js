@@ -215,7 +215,7 @@ function updateProductGrid(products, grid) {
     const imgPath   = p.image_url ? '../../public/uploads/products/' + p.image_url : null;
     const imgHTML   = imgPath
       ? `<img src="${imgPath}" alt="${p.title.replace(/"/g,'&quot;')}">`
-      : '<i class="bi bi-box-seam" style="font-size:2rem;color:#ccc;"></i>';
+      : '<div class="pc-img-ph"><i class="bi bi-box-seam"></i></div>';
 
     /* Promo badge overlay */
     const pb = p.promotion_type ? PROMO_BADGE[p.promotion_type] : null;
@@ -223,43 +223,46 @@ function updateProductGrid(products, grid) {
       ? `<div class="promo-pill ${pb.cls}">${pb.icon} ${pb.label}</div>`
       : '';
 
+    const catHTML = p.category_name
+      ? `<div class="pc-cat"><i class="bi bi-tag-fill"></i> ${p.category_name}</div>`
+      : '';
+
     return `
-      <a href="products/detalle.php?id=${p.id}" class="product-link">
+      <a href="products/detalle.php?id=${p.id}" style="display:contents;">
         <div class="product-card">
-          <div class="${badge}">${badgeTxt}</div>
-          <button class="btn-fav" data-product-id="${p.id}">
-            <i class="bi ${Favorites.has(p.id) ? 'bi-heart-fill' : 'bi-heart'}"></i>
-          </button>
-          <div class="product-img-placeholder promo-pill-wrap">
-            ${promoBadgeHTML}
+          <div class="pc-img">
             ${imgHTML}
+            <div class="badge ${badge}">${badgeTxt}</div>
+            ${promoBadgeHTML}
+            <button class="fav-btn" data-product-id="${p.id}">
+              <i class="bi ${Favorites.has(p.id) ? 'bi-heart-fill' : 'bi-heart'}"></i>
+            </button>
           </div>
-          <div class="product-body">
-            <div class="product-price">$${p.price}</div>
-            <div class="product-title">${p.title}</div>
-            <div class="product-meta">
-              <div class="product-meta-row"><i class="bi bi-geo-alt"></i> Bogotá</div>
-              <div class="product-meta-row"><i class="bi bi-clock"></i> ${p.time_label}</div>
+          <div class="pc-body">
+            ${catHTML}
+            <div class="pc-title">${p.title}</div>
+            <div class="pc-price">$${p.price}</div>
+            <div class="pc-meta">
+              <div class="pc-meta-row"><i class="bi bi-geo-alt-fill"></i> Bogotá</div>
+              <div class="pc-meta-row"><i class="bi bi-clock-fill"></i> ${p.time_label}</div>
             </div>
-            <div class="product-seller">
-              <div class="seller-avatar">${p.seller_initials}</div>
-              <div class="seller-info">
-                <div class="seller-name">${p.seller_name}</div>
-                <div class="seller-rating">
-                  ${(() => {
-                    const rating = parseFloat(p.avg_rating) || 0;
-                    const total = p.total_reviews || 0;
-                    const fullStars = Math.floor(rating);
-                    const halfStar = (rating - fullStars) >= 0.5;
-                    const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
-                    let html = '';
-                    for (let i = 0; i < fullStars; i++) html += '<i class="bi bi-star-fill"></i>';
-                    if (halfStar) html += '<i class="bi bi-star-half"></i>';
-                    for (let i = 0; i < emptyStars; i++) html += '<i class="bi bi-star"></i>';
-                    html += `<span>${rating.toFixed(1)} (${total})</span>`;
-                    return html;
-                  })()}
-                </div>
+            <div class="pc-seller">
+              <div class="seller-av">${p.seller_initials}</div>
+              <div class="seller-name-txt">${p.seller_name}</div>
+              <div class="seller-stars">
+                ${(() => {
+                  const rating = parseFloat(p.avg_rating) || 0;
+                  const total = p.total_reviews || 0;
+                  const fullStars = Math.floor(rating);
+                  const halfStar = (rating - fullStars) >= 0.5;
+                  const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+                  let html = '';
+                  for (let i = 0; i < fullStars; i++) html += '<i class="bi bi-star-fill"></i>';
+                  if (halfStar) html += '<i class="bi bi-star-half"></i>';
+                  for (let i = 0; i < emptyStars; i++) html += '<i class="bi bi-star"></i>';
+                  html += `<span>${rating.toFixed(1)} (${total})</span>`;
+                  return html;
+                })()}
               </div>
             </div>
           </div>
@@ -275,8 +278,8 @@ function updateProductGrid(products, grid) {
 
   // Re-vincular botones de favorito en las tarjetas nuevas
   if (typeof Favorites !== 'undefined') {
-    Favorites.applyToButtons('.btn-fav');
-    Favorites.bindButtons('.btn-fav', '../../');
+    Favorites.applyToButtons('.fav-btn');
+    Favorites.bindButtons('.fav-btn', '../../');
   }
 }
 

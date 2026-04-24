@@ -196,6 +196,145 @@ if ($stHero) {
     .promo-badge-recommended { background: rgba(22,163,74,.9);  color: #fff; }
     .promo-badge-basic       { background: rgba(30,41,59,.78);  color: #e2e8f0; }
 
+    /* ════════════════════════════════════════════════════════════
+       Uniform product cards — same structure as all.php
+       ════════════════════════════════════════════════════════════ */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 18px;
+    }
+    .product-card {
+      background: #fff;
+      border-radius: 14px;
+      border: 1.5px solid #d4e8da;
+      box-shadow: 0 2px 14px rgba(10,40,20,.08), 0 1px 3px rgba(10,40,20,.05);
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      transition: transform .3s cubic-bezier(.175,.885,.32,1.275),
+                  box-shadow .3s cubic-bezier(.175,.885,.32,1.275),
+                  border-color .3s cubic-bezier(.175,.885,.32,1.275);
+      display: flex;
+      flex-direction: column;
+    }
+    .product-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 8px 32px rgba(10,40,20,.14), 0 2px 8px rgba(10,40,20,.06);
+      border-color: #96e8b0;
+    }
+    /* Image */
+    .pc-img {
+      height: 178px;
+      position: relative;
+      background: linear-gradient(135deg, #edfaf3, #f8fdf9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .pc-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform .4s ease;
+      display: block;
+    }
+    .product-card:hover .pc-img img { transform: scale(1.06); }
+    .pc-img-ph { font-size: 3rem; color: #96e8b0; }
+    /* Badges on image */
+    .pc-img .badge {
+      position: absolute;
+      top: 10px; left: 10px; z-index: 2;
+      font-size: .63rem; font-weight: 700;
+      padding: 3px 9px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: .04em;
+    }
+    .pc-img .badge-new { background: #25883f; color: #fff; }
+    .pc-img .badge-used { background: #f5a81c; color: #0b2e17; }
+    .pc-img .badge-refurbished { background: #6366f1; color: #fff; }
+    .pc-img .promo-pill {
+      position: absolute;
+      top: 38px; left: 10px; z-index: 2;
+      font-size: .63rem; font-weight: 800;
+      padding: 3px 9px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: .06em;
+      display: flex; align-items: center; gap: 4px;
+      backdrop-filter: blur(3px);
+    }
+    .pc-img .fav-btn {
+      position: absolute;
+      top: 10px; right: 10px; z-index: 2;
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.88);
+      border: none;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: .85rem; color: #ccc;
+      transition: color .2s, transform .2s;
+      backdrop-filter: blur(4px);
+    }
+    .pc-img .fav-btn:hover { color: #ef4444; transform: scale(1.12); }
+    .pc-img .fav-btn.active { color: #ef4444; }
+    /* Body */
+    .pc-body {
+      padding: 14px 16px 16px;
+      display: flex; flex-direction: column;
+      flex: 1;
+    }
+    .pc-cat {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: #c8f2d5; color: #185228;
+      font-size: .65rem; font-weight: 700;
+      padding: 2px 8px; border-radius: 20px;
+      margin-bottom: 7px; width: fit-content;
+    }
+    .pc-title {
+      font-size: .88rem; font-weight: 600; color: #0d1f13;
+      margin-bottom: 8px; line-height: 1.35;
+      display: -webkit-box; -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical; overflow: hidden;
+      flex: 1;
+    }
+    .pc-price {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 1.1rem;
+      color: #1e6b33; margin-bottom: 10px;
+    }
+    .pc-meta {
+      display: flex; flex-direction: column; gap: 3px;
+      margin-bottom: 12px;
+    }
+    .pc-meta-row {
+      display: flex; align-items: center; gap: 5px;
+      font-size: .74rem; color: #5a7065;
+    }
+    .pc-meta-row i { color: #34b357; font-size: .78rem; }
+    .pc-seller {
+      display: flex; align-items: center; gap: 8px;
+      padding-top: 11px;
+      border-top: 1.5px solid #d4e8da;
+    }
+    .pc-seller .seller-av {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: #c8f2d5; color: #185228;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .65rem; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .pc-seller .seller-name-txt {
+      font-size: .76rem; font-weight: 600; color: #0d1f13;
+      flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+    }
+    .pc-seller .seller-stars {
+      display: flex; align-items: center; gap: 2px;
+      font-size: .65rem; color: #f5a81c;
+    }
+    .pc-seller .seller-stars span {
+      color: #5a7065; margin-left: 2px; font-size: .68rem;
+    }
+
     /* ================================================================
        RESPONSIVE — home.php
        Breakpoints: 1200 (desktop pequeño) → 1024 (tablet landscape)
@@ -394,26 +533,29 @@ if ($stHero) {
         grid-template-columns: 1fr 1fr;
         gap: 12px;
       }
-      .product-img, .product-img-placeholder { height: 130px; }
-      .product-body { padding: 10px 12px 12px; }
-      .product-price { font-size: 1rem; }
-      .product-title { font-size: .82rem; margin-bottom: 8px; }
-      .product-meta-row { font-size: .7rem; }
-      .product-card .badge-new,
-      .product-card .badge-used,
-      .product-card .badge-refurbished {
-        font-size: .6rem;
-        padding: 2px 7px;
+      .pc-img { height: 130px; }
+      .pc-body { padding: 10px 12px 12px; }
+      .pc-price { font-size: 1rem; }
+      .pc-title { font-size: .82rem; margin-bottom: 8px; }
+      .pc-meta-row { font-size: .7rem; }
+      .pc-cat { font-size: .58rem; padding: 2px 7px; }
+      .pc-img .badge {
+        font-size: .58rem; padding: 2px 7px;
         top: 8px; left: 8px;
       }
-      .product-card .btn-fav {
+      .pc-img .promo-pill {
+        font-size: .58rem; padding: 2px 7px;
+        top: 30px; left: 8px;
+      }
+      .pc-img .fav-btn {
         width: 28px; height: 28px;
         top: 8px; right: 8px;
         font-size: .8rem;
       }
-      .seller-avatar { width: 22px; height: 22px; font-size: .62rem; }
-      .seller-name { font-size: .7rem; }
-      .seller-rating { font-size: .62rem; }
+      .pc-seller .seller-av { width: 22px; height: 22px; font-size: .62rem; }
+      .pc-seller .seller-name-txt { font-size: .7rem; }
+      .pc-seller .seller-stars { font-size: .62rem; }
+      .pc-seller .seller-stars span { font-size: .65rem; }
 
       /* Cómo funciona */
       .how-section { padding: 40px 16px; }
@@ -481,10 +623,10 @@ if ($stHero) {
       .nearby-section { padding: 16px 12px; border-radius: 16px; }
 
       .product-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-      .product-img, .product-img-placeholder { height: 120px; }
-      .product-body { padding: 8px 10px 10px; }
-      .product-price { font-size: .95rem; }
-      .product-title { font-size: .78rem; }
+      .pc-img { height: 120px; }
+      .pc-body { padding: 8px 10px 10px; }
+      .pc-price { font-size: .95rem; }
+      .pc-title { font-size: .78rem; }
 
       .how-section { padding: 32px 14px; }
       .how-step { padding: 22px 18px; }
@@ -500,9 +642,9 @@ if ($stHero) {
       .hero-stat .num { font-size: 1rem; }
       .hero-stat .lbl { font-size: .66rem; }
       .product-grid { gap: 8px; }
-      .product-img, .product-img-placeholder { height: 105px; }
-      .product-title { font-size: .75rem; }
-      .product-price { font-size: .9rem; }
+      .pc-img { height: 105px; }
+      .pc-title { font-size: .75rem; }
+      .pc-price { font-size: .9rem; }
       .fc-img { height: 160px; }
     }
   </style>
@@ -904,6 +1046,7 @@ $iconMap = [
       // Consulta para obtener los primeros 4 productos con información del usuario
       $excludeSeller = $isLoggedIn ? " AND p.user_id != " . (int)$user['id'] : '';
       $sqlProducts = "SELECT p.id, p.title, p.price, p.condition_type, p.created_at, u.city, u.full_name, p.user_id,
+                      cat.name AS category_name,
                       (SELECT pp.plan_type FROM product_promotions pp
                        WHERE pp.product_id = p.id AND pp.status = 'active' AND pp.end_date > NOW()
                        ORDER BY FIELD(pp.plan_type,'premium','recommended','basic') ASC LIMIT 1) AS promotion_type,
@@ -912,6 +1055,7 @@ $iconMap = [
                       (SELECT sv.id FROM seller_verifications sv WHERE sv.user_id = p.user_id AND sv.status = 'approved' LIMIT 1) AS seller_verified
                       FROM products p
                       LEFT JOIN users u ON p.user_id = u.id
+                      LEFT JOIN categories cat ON p.category_id = cat.id
                       WHERE p.status = 'disponible' AND p.admin_status = 'active'$excludeSeller
                       ORDER BY p.id DESC
                       LIMIT 4";
@@ -957,6 +1101,7 @@ $iconMap = [
           <?php
           // Consulta para obtener 4 productos aleatorios (solo disponibles)
           $sqlRandomProducts = "SELECT p.id, p.title, p.price, p.condition_type, p.created_at, u.city, u.full_name, p.user_id,
+                                cat.name AS category_name,
                                 (SELECT pp.plan_type FROM product_promotions pp
                                  WHERE pp.product_id = p.id AND pp.status = 'active' AND pp.end_date > NOW()
                                  ORDER BY FIELD(pp.plan_type,'premium','recommended','basic') ASC LIMIT 1) AS promotion_type,
@@ -965,6 +1110,7 @@ $iconMap = [
                                 (SELECT sv.id FROM seller_verifications sv WHERE sv.user_id = p.user_id AND sv.status = 'approved' LIMIT 1) AS seller_verified
                                 FROM products p
                                 LEFT JOIN users u ON p.user_id = u.id
+                                LEFT JOIN categories cat ON p.category_id = cat.id
                                 WHERE p.status = 'disponible' AND p.admin_status = 'active'$excludeSeller
                                 ORDER BY RAND()
                                 LIMIT 4";
@@ -996,43 +1142,44 @@ $iconMap = [
                 $img_res = mysqli_stmt_get_result($img_st);
                 $img_row = mysqli_fetch_assoc($img_res);
               ?>
-                <a href="products/detalle.php?id=<?= (int)$randomProduct['id'] ?>" class="product-link">
+                <a href="products/detalle.php?id=<?= (int)$randomProduct['id'] ?>" style="display:contents;">
                   <div class="product-card">
-                    <div class="<?= $isBadge ?>"><?= $badgeText ?></div>
-                    <button class="btn-fav" data-product-id="<?= (int)$randomProduct['id'] ?>"><i class="bi bi-heart"></i></button>
-                    <div class="product-img-placeholder promo-pill-wrap">
+                    <div class="pc-img">
+                      <?php if ($img_row): ?>
+                        <img src="../../public/uploads/products/<?= htmlspecialchars($img_row['image_url']) ?>" alt="<?= htmlspecialchars($randomProduct['title']) ?>">
+                      <?php else: ?>
+                        <div class="pc-img-ph"><i class="bi bi-box-seam"></i></div>
+                      <?php endif; ?>
+                      <div class="badge <?= $isBadge ?>"><?= $badgeText ?></div>
                       <?php if ($rp_badge): ?>
                         <div class="promo-pill <?= $rp_badge['css'] ?>"><?= $rp_badge['icon'] ?> <?= $rp_badge['label'] ?></div>
                       <?php endif; ?>
-                      <?php if ($img_row): ?>
-                        <img src="../../public/uploads/products/<?= htmlspecialchars($img_row['image_url']) ?>" alt="">
-                      <?php else: ?>
-                        <i class="bi bi-box-seam"></i>
-                      <?php endif; ?>
+                      <button class="fav-btn" data-product-id="<?= (int)$randomProduct['id'] ?>"><i class="bi bi-heart"></i></button>
                     </div>
-                    <div class="product-body">
-                      <div class="product-price">$<?= $price ?></div>
-                      <div class="product-title"><?= htmlspecialchars($randomProduct['title']) ?></div>
-                      <div class="product-meta">
-                        <div class="product-meta-row"><i class="bi bi-geo-alt"></i> <?= htmlspecialchars($location) ?></div>
-                        <div class="product-meta-row"><i class="bi bi-clock"></i> <?= $timeString ?></div>
+                    <div class="pc-body">
+                      <?php if (!empty($randomProduct['category_name'])): ?>
+                        <div class="pc-cat"><i class="bi bi-tag-fill"></i> <?= htmlspecialchars($randomProduct['category_name']) ?></div>
+                      <?php endif; ?>
+                      <div class="pc-title"><?= htmlspecialchars($randomProduct['title']) ?></div>
+                      <div class="pc-price">$<?= $price ?></div>
+                      <div class="pc-meta">
+                        <div class="pc-meta-row"><i class="bi bi-geo-alt-fill"></i> <?= htmlspecialchars($location) ?></div>
+                        <div class="pc-meta-row"><i class="bi bi-clock-fill"></i> <?= $timeString ?></div>
                       </div>
-                      <div class="product-seller">
-                        <div class="seller-avatar"><?= $initials ?></div>
-                        <div class="seller-info">
-                          <div class="seller-name"><?= htmlspecialchars($randomProduct['full_name'] ?? 'Usuario') ?><?php if (!empty($randomProduct['seller_verified'])): ?> <i class="bi bi-patch-check-fill" style="color:#25883f;font-size:.75rem;" title="Verificado"></i><?php endif; ?></div>
-                          <div class="seller-rating">
-                            <?php 
-                            $rating = isset($randomProduct['avg_rating']) ? (float)$randomProduct['avg_rating'] : 0;
-                            $fullStars = floor($rating);
-                            $halfStar = ($rating - $fullStars) >= 0.5;
-                            $emptyStars = 5 - $fullStars - ($halfStar ? 1 : 0);
-                            for ($i = 0; $i < $fullStars; $i++) echo '<i class="bi bi-star-fill"></i>';
-                            if ($halfStar) echo '<i class="bi bi-star-half"></i>';
-                            for ($i = 0; $i < $emptyStars; $i++) echo '<i class="bi bi-star"></i>';
-                            ?>
-                            <span><?= number_format($rating, 1) ?> (<?= isset($randomProduct['total_reviews']) ? $randomProduct['total_reviews'] : 0 ?>)</span>
-                          </div>
+                      <div class="pc-seller">
+                        <div class="seller-av"><?= $initials ?></div>
+                        <div class="seller-name-txt"><?= htmlspecialchars($randomProduct['full_name'] ?? 'Usuario') ?><?php if (!empty($randomProduct['seller_verified'])): ?> <i class="bi bi-patch-check-fill" style="color:#25883f;font-size:.75rem;" title="Verificado"></i><?php endif; ?></div>
+                        <div class="seller-stars">
+                          <?php
+                          $rating = isset($randomProduct['avg_rating']) ? (float)$randomProduct['avg_rating'] : 0;
+                          $fullStars = floor($rating);
+                          $halfStar = ($rating - $fullStars) >= 0.5;
+                          $emptyStars = 5 - $fullStars - ($halfStar ? 1 : 0);
+                          for ($i = 0; $i < $fullStars; $i++) echo '<i class="bi bi-star-fill"></i>';
+                          if ($halfStar) echo '<i class="bi bi-star-half"></i>';
+                          for ($i = 0; $i < $emptyStars; $i++) echo '<i class="bi bi-star"></i>';
+                          ?>
+                          <span><?= number_format($rating, 1) ?> (<?= isset($randomProduct['total_reviews']) ? $randomProduct['total_reviews'] : 0 ?>)</span>
                         </div>
                       </div>
                     </div>
@@ -1083,43 +1230,44 @@ $iconMap = [
               $img_res2 = mysqli_stmt_get_result($img_st2);
               $img_row2 = mysqli_fetch_assoc($img_res2);
             ?>
-              <a href="products/detalle.php?id=<?= (int)$product['id'] ?>" class="product-link">
+              <a href="products/detalle.php?id=<?= (int)$product['id'] ?>" style="display:contents;">
                 <div class="product-card">
-                  <div class="<?= $isBadge ?>"><?= $badgeText ?></div>
-                  <button class="btn-fav" data-product-id="<?= (int)$product['id'] ?>"><i class="bi bi-heart"></i></button>
-                  <div class="product-img-placeholder promo-pill-wrap">
+                  <div class="pc-img">
+                    <?php if ($img_row2): ?>
+                      <img src="../../public/uploads/products/<?= htmlspecialchars($img_row2['image_url']) ?>" alt="<?= htmlspecialchars($product['title']) ?>">
+                    <?php else: ?>
+                      <div class="pc-img-ph"><i class="bi bi-box-seam"></i></div>
+                    <?php endif; ?>
+                    <div class="badge <?= $isBadge ?>"><?= $badgeText ?></div>
                     <?php if ($rp_badge): ?>
                       <div class="promo-pill <?= $rp_badge['css'] ?>"><?= $rp_badge['icon'] ?> <?= $rp_badge['label'] ?></div>
                     <?php endif; ?>
-                    <?php if ($img_row2): ?>
-                      <img src="../../public/uploads/products/<?= htmlspecialchars($img_row2['image_url']) ?>" alt="">
-                    <?php else: ?>
-                      <i class="bi bi-box-seam"></i>
-                    <?php endif; ?>
+                    <button class="fav-btn" data-product-id="<?= (int)$product['id'] ?>"><i class="bi bi-heart"></i></button>
                   </div>
-                  <div class="product-body">
-                    <div class="product-price">$<?= $price ?></div>
-                    <div class="product-title"><?= htmlspecialchars($product['title']) ?></div>
-                    <div class="product-meta">
-                      <div class="product-meta-row"><i class="bi bi-geo-alt"></i> <?= htmlspecialchars($location) ?></div>
-                      <div class="product-meta-row"><i class="bi bi-clock"></i> <?= $timeString ?></div>
+                  <div class="pc-body">
+                    <?php if (!empty($product['category_name'])): ?>
+                      <div class="pc-cat"><i class="bi bi-tag-fill"></i> <?= htmlspecialchars($product['category_name']) ?></div>
+                    <?php endif; ?>
+                    <div class="pc-title"><?= htmlspecialchars($product['title']) ?></div>
+                    <div class="pc-price">$<?= $price ?></div>
+                    <div class="pc-meta">
+                      <div class="pc-meta-row"><i class="bi bi-geo-alt-fill"></i> <?= htmlspecialchars($location) ?></div>
+                      <div class="pc-meta-row"><i class="bi bi-clock-fill"></i> <?= $timeString ?></div>
                     </div>
-                    <div class="product-seller">
-                      <div class="seller-avatar"><?= $initials ?></div>
-                      <div class="seller-info">
-                        <div class="seller-name"><?= htmlspecialchars($product['full_name'] ?? 'Usuario') ?><?php if (!empty($product['seller_verified'])): ?> <i class="bi bi-patch-check-fill" style="color:#25883f;font-size:.75rem;" title="Verificado"></i><?php endif; ?></div>
-                        <div class="seller-rating">
-                          <?php 
-                            $rating = isset($product['avg_rating']) ? (float)$product['avg_rating'] : 0;
-                            $fullStars = floor($rating);
-                            $halfStar = ($rating - $fullStars) >= 0.5;
-                            $emptyStars = 5 - $fullStars - ($halfStar ? 1 : 0);
-                            for ($i = 0; $i < $fullStars; $i++) echo '<i class="bi bi-star-fill"></i>';
-                            if ($halfStar) echo '<i class="bi bi-star-half"></i>';
-                            for ($i = 0; $i < $emptyStars; $i++) echo '<i class="bi bi-star"></i>';
-                          ?>
-                          <span><?= number_format($rating, 1) ?> (<?= isset($product['total_reviews']) ? $product['total_reviews'] : 0 ?>)</span>
-                        </div>
+                    <div class="pc-seller">
+                      <div class="seller-av"><?= $initials ?></div>
+                      <div class="seller-name-txt"><?= htmlspecialchars($product['full_name'] ?? 'Usuario') ?><?php if (!empty($product['seller_verified'])): ?> <i class="bi bi-patch-check-fill" style="color:#25883f;font-size:.75rem;" title="Verificado"></i><?php endif; ?></div>
+                      <div class="seller-stars">
+                        <?php
+                          $rating = isset($product['avg_rating']) ? (float)$product['avg_rating'] : 0;
+                          $fullStars = floor($rating);
+                          $halfStar = ($rating - $fullStars) >= 0.5;
+                          $emptyStars = 5 - $fullStars - ($halfStar ? 1 : 0);
+                          for ($i = 0; $i < $fullStars; $i++) echo '<i class="bi bi-star-fill"></i>';
+                          if ($halfStar) echo '<i class="bi bi-star-half"></i>';
+                          for ($i = 0; $i < $emptyStars; $i++) echo '<i class="bi bi-star"></i>';
+                        ?>
+                        <span><?= number_format($rating, 1) ?> (<?= isset($product['total_reviews']) ? $product['total_reviews'] : 0 ?>)</span>
                       </div>
                     </div>
                   </div>
@@ -1295,8 +1443,8 @@ $iconMap = [
     (async () => {
       const base = '../../';
       await Favorites.load(base);
-      Favorites.applyToButtons('.btn-fav');
-      Favorites.bindButtons('.btn-fav', base);
+      Favorites.applyToButtons('.fav-btn');
+      Favorites.bindButtons('.fav-btn', base);
     })();
   </script>
   <script src="../../public/js/home.js"></script>
