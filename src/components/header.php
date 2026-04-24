@@ -132,7 +132,10 @@ $ctrlPath    = $basePath . 'src/controllers/';
               <div class="cl-dd-sep" role="separator"></div>
             <?php endif; ?>
             <a class="cl-dd-link" href="<?= $viewsPath ?>home.php" role="menuitem">
-              <i class="bi bi-speedometer2" aria-hidden="true"></i> Inicio
+              <i class="bi bi-house-door" aria-hidden="true"></i> Inicio
+            </a>
+            <a class="cl-dd-link" href="<?= $viewsPath ?>dashboard.php" role="menuitem">
+              <i class="bi bi-speedometer2" aria-hidden="true"></i> Dashboard
             </a>
             <a class="cl-dd-link" href="<?= $viewsPath ?>products/crear.php" role="menuitem">
               <i class="bi bi-plus-square" aria-hidden="true"></i> Publicar anuncio
@@ -145,6 +148,19 @@ $ctrlPath    = $basePath . 'src/controllers/';
             </a>
             <a class="cl-dd-link" href="<?= $viewsPath ?>favoritos.php" role="menuitem">
               <i class="bi bi-heart" aria-hidden="true"></i> Favoritos
+            </a>
+            <div class="cl-dd-sep" role="separator"></div>
+            <a class="cl-dd-link" href="<?= $viewsPath ?>solicitar_verificacion.php" role="menuitem">
+              <i class="bi bi-patch-check-fill" aria-hidden="true"></i> Verificación
+            </a>
+            <a class="cl-dd-link" href="<?= $viewsPath ?>resenas.php" role="menuitem">
+              <i class="bi bi-star" aria-hidden="true"></i> Reseñas
+            </a>
+            <a class="cl-dd-link" href="<?= $viewsPath ?>promociones.php" role="menuitem">
+              <i class="bi bi-rocket-takeoff-fill" aria-hidden="true"></i> Promociones
+            </a>
+            <a class="cl-dd-link" href="<?= $viewsPath ?>configuracion.php" role="menuitem">
+              <i class="bi bi-gear" aria-hidden="true"></i> Configuración
             </a>
             <div class="cl-dd-sep" role="separator"></div>
             <a class="cl-dd-link" href="<?= $viewsPath ?>perfil.php" role="menuitem">
