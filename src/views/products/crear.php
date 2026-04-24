@@ -339,7 +339,8 @@ if ($r) {
                                         <div class="price-wrapper">
                                             <span class="price-prefix">$</span>
                                             <!-- LOGIC PRESERVED: name="precio" -->
-                                            <input type="number" id="precio" name="precio" class="form-control"
+                                            <input type="text" id="precio" name="precio" class="form-control"
+                                                inputmode="numeric" autocomplete="off"
                                                 placeholder="0" required>
                                         </div>
                                     </div>

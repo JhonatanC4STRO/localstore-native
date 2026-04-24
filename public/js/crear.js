@@ -156,6 +156,10 @@
         // Validar ubicación: advertencia suave (no bloquear — el campo es opcional)
         if (mainForm) {
             mainForm.addEventListener('submit', (e) => {
+                // Quitar separadores de miles del precio antes de enviar
+                const precioEl = document.getElementById('precio');
+                if (precioEl) precioEl.value = precioEl.value.replace(/\./g, '');
+
                 const lat = parseFloat(latInput.value);
                 const lon = parseFloat(lonInput.value);
                 const hasLocation = !isNaN(lat) && !isNaN(lon) && (lat !== 0 || lon !== 0)
@@ -185,10 +189,25 @@
         });
 
         precioInput.addEventListener('input', () => {
-            const v = parseInt(precioInput.value) || 0;
-            previewPrice.innerHTML = v ?
-                `$${v.toLocaleString('es-CO')}` :
-                `<span class="preview-price-placeholder">$0</span>`;
+            // Posición del cursor antes del reformat
+            const prevLen = precioInput.value.length;
+            const caret   = precioInput.selectionStart;
+
+            // Solo dígitos → formato con punto miles
+            const raw = precioInput.value.replace(/\D/g, '');
+            precioInput.value = raw ? Number(raw).toLocaleString('es-CO') : '';
+
+            // Restaurar cursor compensando los puntos añadidos/quitados
+            const diff = precioInput.value.length - prevLen;
+            if (caret !== null) {
+                const pos = Math.max(0, caret + diff);
+                precioInput.setSelectionRange(pos, pos);
+            }
+
+            const v = parseInt(raw) || 0;
+            previewPrice.innerHTML = v
+                ? `$${v.toLocaleString('es-CO')}`
+                : `<span class="preview-price-placeholder">$0</span>`;
             toggle('chk-precio', v > 0);
         });
 
