@@ -28,7 +28,8 @@ $condition  = isset($_GET['condition'])  ? trim($_GET['condition'])           : 
 $order      = isset($_GET['order'])      ? trim($_GET['order'])               : 'recent';
 $limit      = isset($_GET['limit'])      ? min((int) $_GET['limit'], 100)    : 12;
 $offset     = isset($_GET['offset'])     ? max(0,   (int) $_GET['offset'])   : 0;
-$location   = isset($_GET['location'])   ? trim($_GET['location'])            : '';
+// Acepta ?city=... (preferido) y ?location=... (alias legacy)
+$location   = trim($_GET['city'] ?? $_GET['location'] ?? '');
 
 if ($price_max < $price_min) $price_max = $price_min + 1;
 
@@ -49,11 +50,14 @@ if (isset($_SESSION['user'])) {
     $bind_values[] = (int) $_SESSION['user']['id'];
 }
 
-/* Búsqueda por texto */
+/* Búsqueda por texto: ahora también matchea categoría y ciudad (producto/vendedor) */
 if ($search !== '') {
-    $where_parts[] = '(p.title LIKE ? OR p.description LIKE ?)';
+    $where_parts[] = '(p.title LIKE ? OR p.description LIKE ? OR c.name LIKE ? OR p.city LIKE ? OR u.city LIKE ?)';
     $like          = '%' . $search . '%';
-    $bind_types   .= 'ss';
+    $bind_types   .= 'sssss';
+    $bind_values[] = $like;
+    $bind_values[] = $like;
+    $bind_values[] = $like;
     $bind_values[] = $like;
     $bind_values[] = $like;
 }
@@ -78,11 +82,16 @@ if ($condition !== 'all' && $condition !== '') {
     $bind_values[] = $condition;
 }
 
-/* Ubicación */
+/* Ciudad: prioriza p.city, fallback a u.city. Tolerante a espacios via TRIM + LIKE. */
 if ($location !== '') {
-    $where_parts[] = 'u.city = ?';
-    $bind_types   .= 's';
-    $bind_values[] = $location;
+    $where_parts[] = '(
+        TRIM(p.city) LIKE ?
+        OR ((p.city IS NULL OR TRIM(p.city) = "") AND TRIM(u.city) LIKE ?)
+    )';
+    $likeCity      = '%' . $location . '%';
+    $bind_types   .= 'ss';
+    $bind_values[] = $likeCity;
+    $bind_values[] = $likeCity;
 }
 
 $where_sql = 'WHERE ' . implode(' AND ', $where_parts);

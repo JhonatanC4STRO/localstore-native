@@ -93,7 +93,7 @@
             p.append('limit', limit);
             p.append('offset', offset);
             if (filters.search) p.append('search', filters.search);
-            if (filters.location) p.append('location', filters.location);
+            if (filters.location) p.append('city', filters.location);
             return p;
         }
 

@@ -18,7 +18,7 @@
     let url = 'products/all.php?';
     const params = new URLSearchParams();
     if (q) params.append('search', q);
-    if (city) params.append('location', city);
+    if (city) params.append('city', city);
     
     window.location.href = url + params.toString();
   }

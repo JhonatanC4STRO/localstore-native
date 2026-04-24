@@ -425,7 +425,7 @@
       // Ciudades
       if (data.cities && data.cities.length) {
         const rows = data.cities.map(city => {
-          const url = buildUrl({ location: city });
+          const url = buildUrl({ city: city });
           return `<a class="cl-sg-item cl-sg-city" role="option" href="${escHtml(url)}">
                     <div class="cl-sg-ico"><i class="bi bi-geo-alt-fill"></i></div>
                     <div class="cl-sg-text">

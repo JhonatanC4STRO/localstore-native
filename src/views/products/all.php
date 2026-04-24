@@ -68,10 +68,12 @@ if (!empty($_GET['condition']) && $_GET['condition'] !== 'all') {
     $where_parts[] = "LOWER(p.condition_type) = LOWER('$cond')";
 }
 
-// Ubicación: matchea contra ciudad del producto (preferida) o del vendedor.
-// Usamos TRIM + LIKE para tolerar espacios accidentales en city y diferencias menores.
-if (!empty($_GET['location'])) {
-    $loc = mysqli_real_escape_string($conn, trim($_GET['location']));
+// Ciudad: matchea contra ciudad del producto (preferida) o del vendedor.
+// Acepta ?city=... y, por compatibilidad, ?location=... (nombre legacy).
+// Usamos TRIM + LIKE para tolerar espacios accidentales y diferencias menores.
+$cityParam = $_GET['city'] ?? $_GET['location'] ?? '';
+if (!empty($cityParam)) {
+    $loc = mysqli_real_escape_string($conn, trim($cityParam));
     $where_parts[] = "(
         TRIM(p.city) LIKE '%$loc%'
         OR (
@@ -400,7 +402,7 @@ function getInitials($name)
     const initialPriceMin = <?= json_encode($_GET['price_min'] ?? '') ?>;
     const initialPriceMax = <?= json_encode($_GET['price_max'] ?? '') ?>;
     const initialCondition = <?= json_encode($_GET['condition'] ?? 'all') ?>;
-    const initialLocation = <?= json_encode(trim($_GET['location'] ?? '')) ?>;
+    const initialLocation = <?= json_encode(trim($_GET['city'] ?? $_GET['location'] ?? '')) ?>;
   </script>
     <script src="../../../public/js/favorites.js"></script>
     <script>
