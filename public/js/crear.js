@@ -64,8 +64,9 @@
               .then(r => r.json())
               .then(data => {
                 const a = data.address || {};
-                const city = a.city || a.town || a.village || a.municipality
-                          || a.county || a.state_district || a.state || '';
+                let city = a.city || a.town || a.village || a.municipality
+                        || a.county || a.state_district || a.state || '';
+                city = (city || '').trim();
                 if (city) {
                   cityInput.value = city;
                   setCityChip('ok', city);

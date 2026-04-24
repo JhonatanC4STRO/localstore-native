@@ -68,10 +68,17 @@ if (!empty($_GET['condition']) && $_GET['condition'] !== 'all') {
     $where_parts[] = "LOWER(p.condition_type) = LOWER('$cond')";
 }
 
-// Ubicación: matchea contra ciudad del producto (preferida) o del vendedor
+// Ubicación: matchea contra ciudad del producto (preferida) o del vendedor.
+// Usamos TRIM + LIKE para tolerar espacios accidentales en city y diferencias menores.
 if (!empty($_GET['location'])) {
-    $loc = mysqli_real_escape_string($conn, $_GET['location']);
-    $where_parts[] = "(p.city = '$loc' OR (p.city IS NULL AND u.city = '$loc'))";
+    $loc = mysqli_real_escape_string($conn, trim($_GET['location']));
+    $where_parts[] = "(
+        TRIM(p.city) LIKE '%$loc%'
+        OR (
+            (p.city IS NULL OR TRIM(p.city) = '')
+            AND TRIM(u.city) LIKE '%$loc%'
+        )
+    )";
 }
 
 $where_sql = "WHERE " . implode(" AND ", $where_parts);
