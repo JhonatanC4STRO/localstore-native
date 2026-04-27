@@ -1076,6 +1076,92 @@ $iconMap = [
     <?php include __DIR__ . '/../components/filter_sidebar.php'; ?>
 
     <div class="content-area">
+
+      <!-- ══ CITY FILTER BANNER ══ -->
+      <div class="city-banner" id="cityBanner">
+        <div class="city-banner-left">
+          <i class="bi bi-geo-alt-fill city-banner-icon"></i>
+          <div class="city-banner-text">
+            <div class="city-banner-title" id="cityBannerTitle">
+              <?php if ($cityFilterActive): ?>
+                Mostrando productos en <strong><?= htmlspecialchars($activeCity) ?></strong>
+              <?php else: ?>
+                Mostrando productos de toda Colombia
+              <?php endif; ?>
+            </div>
+            <div class="city-banner-sub" id="cityBannerSub">
+              <?php if ($cityFilterActive): ?>
+                Solo se muestran publicaciones de esta ciudad.
+              <?php else: ?>
+                Activa tu ubicación o escribe tu ciudad para filtrar.
+              <?php endif; ?>
+            </div>
+          </div>
+        </div>
+        <div class="city-banner-actions">
+          <?php if (!$cityFilterActive): ?>
+            <button type="button" class="city-btn city-btn-primary" id="useGeolocBtn">
+              <i class="bi bi-crosshair"></i> Detectar mi ciudad
+            </button>
+          <?php endif; ?>
+          <button type="button" class="city-btn" id="manualCityBtn">
+            <i class="bi bi-pencil"></i> <?= $cityFilterActive ? 'Cambiar' : 'Escribir ciudad' ?>
+          </button>
+          <?php if ($cityFilterActive): ?>
+            <a href="?city=" class="city-btn city-btn-ghost">
+              <i class="bi bi-x-lg"></i> Mostrar todo
+            </a>
+          <?php endif; ?>
+        </div>
+
+        <form id="manualCityForm" class="city-manual-form" method="get" action="" style="display:none;">
+          <input type="text" name="city" id="manualCityInput" placeholder="Ej: Florencia, Bogotá, Medellín..." autocomplete="off" required>
+          <button type="submit" class="city-btn city-btn-primary">Aplicar</button>
+          <button type="button" class="city-btn city-btn-ghost" id="manualCityCancel">Cancelar</button>
+        </form>
+      </div>
+
+      <style>
+        .city-banner {
+          background: linear-gradient(180deg,#f0fdf4 0%,#fff 100%);
+          border: 1.5px solid #86efac;
+          border-radius: 14px;
+          padding: 14px 18px;
+          margin-bottom: 18px;
+          display: flex; flex-wrap: wrap; gap: 14px; align-items: center;
+        }
+        .city-banner-left { display:flex; gap:12px; align-items:center; flex:1; min-width:240px; }
+        .city-banner-icon { font-size:1.4rem; color:#16a34a; }
+        .city-banner-title { font-weight:700; color:#15803d; font-size:.95rem; }
+        .city-banner-sub   { font-size:.8rem; color:#64748b; margin-top:2px; }
+        .city-banner-actions { display:flex; gap:8px; flex-wrap:wrap; }
+        .city-btn {
+          background:#fff; border:1.5px solid #d4d4d8; color:#0f172a;
+          border-radius:10px; padding:8px 14px; font-size:.84rem; font-weight:600;
+          cursor:pointer; display:inline-flex; align-items:center; gap:6px;
+          text-decoration:none; transition:all .15s ease;
+        }
+        .city-btn:hover { border-color:#16a34a; color:#16a34a; }
+        .city-btn-primary { background:#16a34a; color:#fff; border-color:#16a34a; }
+        .city-btn-primary:hover { background:#15803d; color:#fff; border-color:#15803d; }
+        .city-btn-ghost { background:transparent; border-color:transparent; color:#64748b; }
+        .city-btn-ghost:hover { color:#dc2626; border-color:transparent; }
+        .city-manual-form {
+          width:100%; display:flex; gap:8px; flex-wrap:wrap;
+          padding-top:10px; border-top:1px dashed #bbf7d0; margin-top:4px;
+        }
+        .city-manual-form input[type=text] {
+          flex:1; min-width:220px;
+          border:1.5px solid #d4d4d8; border-radius:10px; padding:9px 14px;
+          font-size:.9rem; outline:none;
+        }
+        .city-manual-form input[type=text]:focus { border-color:#16a34a; }
+        .city-banner.detecting { border-color:#fbbf24; background:linear-gradient(180deg,#fffbeb 0%,#fff 100%); }
+        .city-banner.detecting .city-banner-icon { color:#d97706; }
+        .city-banner.error    { border-color:#fca5a5; background:linear-gradient(180deg,#fef2f2 0%,#fff 100%); }
+        .city-banner.error    .city-banner-icon { color:#dc2626; }
+      </style>
+
       <?php
       // Consulta para obtener los primeros 4 productos con información del usuario
       $excludeSeller = $isLoggedIn ? " AND p.user_id != " . (int)$user['id'] : '';
@@ -1134,12 +1220,7 @@ $iconMap = [
             <div>
               <div class="nearby-badge">
                 <i class="bi bi-geo-alt-fill"></i>
-                <?php if ($cityFilterActive): ?>
-                  <?= htmlspecialchars($activeCity) ?>
-                  <a href="?city=" style="margin-left:8px;color:inherit;text-decoration:underline;font-weight:600;">cambiar</a>
-                <?php else: ?>
-                  Tu zona
-                <?php endif; ?>
+                <?= $cityFilterActive ? htmlspecialchars($activeCity) : 'Tu zona' ?>
               </div>
               <h2 class="section-title">
                 <?php if ($cityFilterActive): ?>
@@ -1504,6 +1585,100 @@ $iconMap = [
     // Estado de la ciudad activa (para auto-detección por geolocalización en home.js)
     window.__activeCity = <?= json_encode($activeCity, JSON_UNESCAPED_UNICODE) ?>;
     window.__cityFilterActive = <?= $cityFilterActive ? 'true' : 'false' ?>;
+  </script>
+  <script>
+    /* ══════════════════════════════════════
+       CITY FILTER — UI visible + auto-detect
+       ══════════════════════════════════════ */
+    (function cityFilterUI(){
+      const banner   = document.getElementById('cityBanner');
+      const title    = document.getElementById('cityBannerTitle');
+      const sub      = document.getElementById('cityBannerSub');
+      const useGeoBtn = document.getElementById('useGeolocBtn');
+      const manualBtn = document.getElementById('manualCityBtn');
+      const manualForm = document.getElementById('manualCityForm');
+      const manualInput = document.getElementById('manualCityInput');
+      const manualCancel = document.getElementById('manualCityCancel');
+      if (!banner) return;
+
+      function setBannerState(state, msgTitle, msgSub) {
+        banner.classList.remove('detecting','error');
+        if (state) banner.classList.add(state);
+        if (msgTitle) title.innerHTML = msgTitle;
+        if (msgSub)   sub.textContent = msgSub;
+      }
+
+      function applyCity(city) {
+        const u = new URL(window.location.href);
+        u.searchParams.set('city', city);
+        window.location.assign(u.toString());
+      }
+
+      function detectViaGeolocation() {
+        if (!('geolocation' in navigator)) {
+          setBannerState('error',
+            'Tu navegador no soporta geolocalización',
+            'Escribe tu ciudad manualmente abajo.');
+          return;
+        }
+        setBannerState('detecting',
+          'Detectando tu ciudad…',
+          'Acepta el permiso de ubicación en tu navegador.');
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const lat = pos.coords.latitude, lon = pos.coords.longitude;
+            sub.textContent = 'Identificando ciudad a partir de tu ubicación…';
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1&accept-language=es`,
+                  { headers: { 'Accept': 'application/json' } })
+              .then(r => r.json())
+              .then(data => {
+                const a = data.address || {};
+                const city = (a.city || a.town || a.village || a.municipality || a.county || a.state_district || a.state || '').trim();
+                if (!city) {
+                  setBannerState('error',
+                    'No pudimos identificar tu ciudad',
+                    'Escribe tu ciudad manualmente abajo.');
+                  return;
+                }
+                sessionStorage.setItem('detectedCity', city);
+                applyCity(city);
+              })
+              .catch(() => {
+                setBannerState('error',
+                  'Error consultando el servicio de ubicación',
+                  'Reintenta o escribe tu ciudad manualmente.');
+              });
+          },
+          (err) => {
+            const msg = err.code === 1
+              ? 'Permiso de ubicación denegado'
+              : err.code === 3
+                ? 'La detección tardó demasiado'
+                : 'No se pudo obtener tu ubicación';
+            setBannerState('error', msg, 'Escribe tu ciudad manualmente abajo.');
+          },
+          { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 }
+        );
+      }
+
+      useGeoBtn?.addEventListener('click', detectViaGeolocation);
+      manualBtn?.addEventListener('click', () => {
+        const visible = manualForm.style.display !== 'none';
+        manualForm.style.display = visible ? 'none' : 'flex';
+        if (!visible) manualInput.focus();
+      });
+      manualCancel?.addEventListener('click', () => { manualForm.style.display = 'none'; });
+
+      const url = new URL(window.location.href);
+      const cityEmptyExplicit = url.searchParams.has('city') && url.searchParams.get('city') === '';
+      if (window.__cityFilterActive) return;
+      if (cityEmptyExplicit) return;
+      if (sessionStorage.getItem('cityAutoSkip') === '1') return;
+      const cached = sessionStorage.getItem('detectedCity');
+      if (cached) { applyCity(cached); return; }
+      sessionStorage.setItem('cityAutoSkip','1');
+      detectViaGeolocation();
+    })();
   </script>
   <script src="../../public/js/home.js"></script>
 
