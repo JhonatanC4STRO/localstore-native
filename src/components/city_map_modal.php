@@ -16,8 +16,8 @@
   <div class="cmm-dialog" role="dialog" aria-modal="true" aria-labelledby="cmm-title">
     <div class="cmm-header">
       <div>
-        <h3 id="cmm-title">Elige tu ciudad</h3>
-        <p>Haz clic en el mapa, busca una ciudad o usa tu ubicación.</p>
+        <h3 id="cmm-title"><i class="bi bi-globe-americas" style="color:#16a34a;"></i> Elige tu ciudad en el mapa</h3>
+        <p>Navega libremente y haz clic en cualquier ciudad. Doble clic = aplicar al instante.</p>
       </div>
       <button type="button" class="cmm-close" id="cmmClose" aria-label="Cerrar">
         <i class="bi bi-x-lg"></i>
@@ -28,7 +28,7 @@
       <div class="cmm-tools">
         <div class="cmm-search">
           <i class="bi bi-search"></i>
-          <input type="text" id="cmmSearchInput" placeholder="Buscar ciudad (ej. Florencia, Caquetá)" autocomplete="off">
+          <input type="text" id="cmmSearchInput" placeholder="O busca por nombre (ej. Florencia, Caquetá)" autocomplete="off">
         </div>
         <button type="button" class="cmm-btn cmm-btn-ghost" id="cmmGeoBtn">
           <i class="bi bi-crosshair"></i> Mi ubicación
@@ -37,18 +37,21 @@
 
       <div id="cmmMap" class="cmm-map">
         <div class="cmm-map-loading">Cargando mapa…</div>
+        <div class="cmm-map-hint" id="cmmHint">
+          <i class="bi bi-hand-index-thumb-fill"></i> Haz clic en cualquier ciudad
+        </div>
       </div>
 
       <div class="cmm-detected" id="cmmDetected">
         <i class="bi bi-geo-alt-fill"></i>
-        <span>Selecciona un punto en el mapa…</span>
+        <span>Aún no has elegido ciudad. Haz clic en el mapa.</span>
       </div>
     </div>
 
     <div class="cmm-footer">
       <button type="button" class="cmm-btn cmm-btn-ghost" id="cmmCancel">Cancelar</button>
       <button type="button" class="cmm-btn cmm-btn-primary" id="cmmApply" disabled>
-        <i class="bi bi-check2"></i> Aplicar ciudad
+        <i class="bi bi-check2"></i> <span id="cmmApplyLabel">Aplicar ciudad</span>
       </button>
     </div>
   </div>
@@ -64,7 +67,7 @@
   }
   .cmm-dialog {
     background: #fff; border-radius: 16px;
-    width: 100%; max-width: 720px; max-height: 92vh;
+    width: 100%; max-width: 1000px; max-height: 94vh;
     display: flex; flex-direction: column;
     box-shadow: 0 24px 60px rgba(0,0,0,.25);
     overflow: hidden;
@@ -108,14 +111,28 @@
   .cmm-btn-ghost { background:transparent; border-color:#e2e8f0; color:#475569; }
 
   .cmm-map {
-    height: 360px; border-radius:12px; overflow:hidden;
+    height: 60vh; min-height: 380px; max-height: 620px;
+    border-radius:12px; overflow:hidden;
     background:#f1f5f9;
     position:relative;
+    cursor: crosshair;
   }
+  .cmm-map .leaflet-container { cursor: crosshair; }
   .cmm-map-loading {
     position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
     color:#64748b; font-size:.9rem;
   }
+  .cmm-map-hint {
+    position:absolute; top:12px; left:50%; transform:translateX(-50%);
+    z-index: 1000;
+    background: rgba(15,23,42,.85); color:#fff;
+    border-radius: 999px; padding: 7px 14px;
+    font-size:.78rem; font-weight:600;
+    display:inline-flex; align-items:center; gap:6px;
+    pointer-events:none;
+    transition: opacity .25s ease;
+  }
+  .cmm-map-hint.hidden { opacity: 0; }
   .cmm-detected {
     background:#f0fdf4; border:1.5px solid #bbf7d0; color:#15803d;
     border-radius:10px; padding:10px 14px;
@@ -132,7 +149,9 @@
   }
 
   @media (max-width: 560px) {
-    .cmm-map { height: 300px; }
+    .cmm-overlay { padding: 0; }
+    .cmm-dialog  { max-height: 100vh; height: 100vh; border-radius: 0; }
+    .cmm-map { height: 50vh; min-height: 320px; }
     .cmm-tools { flex-direction: column; }
     .cmm-search, .cmm-tools .cmm-btn { width: 100%; justify-content:center; }
   }
@@ -144,11 +163,13 @@
   const closeBtn  = document.getElementById('cmmClose');
   const cancelBtn = document.getElementById('cmmCancel');
   const applyBtn  = document.getElementById('cmmApply');
+  const applyLabel = document.getElementById('cmmApplyLabel');
   const detected  = document.getElementById('cmmDetected');
   const detectedTxt = detected.querySelector('span');
   const searchInp = document.getElementById('cmmSearchInput');
   const geoBtn    = document.getElementById('cmmGeoBtn');
   const mapEl     = document.getElementById('cmmMap');
+  const hintEl    = document.getElementById('cmmHint');
 
   // El botón del banner de ciudad abre el modal
   const openTriggers = document.querySelectorAll('#manualCityBtn');
@@ -189,9 +210,11 @@
     if (state === 'ok') {
       pendingCity = label;
       applyBtn.disabled = false;
+      applyLabel.textContent = `Aplicar "${label}"`;
     } else {
       pendingCity = '';
       applyBtn.disabled = true;
+      applyLabel.textContent = 'Aplicar ciudad';
     }
   }
 
@@ -225,24 +248,44 @@
   }
 
   function initMap() {
-    // Centro inicial: ciudad activa por geocoding rápido si existe, si no Colombia
     return loadLeaflet().then(() => {
       if (map) { map.invalidateSize(); return; }
       mapEl.querySelector('.cmm-map-loading')?.remove();
-      map = L.map(mapEl, { zoomControl: true }).setView([4.6, -74.08], 5); // Colombia centroide
+
+      // Vista mundial inicial — usuario navega libre y elige ciudad con un clic
+      map = L.map(mapEl, {
+        zoomControl: true,
+        worldCopyJump: true,
+        minZoom: 2,
+        maxZoom: 19,
+        scrollWheelZoom: true,
+        doubleClickZoom: false,   // doble clic lo usamos para aplicar la ciudad
+      }).setView([10, -50], 3);   // vista mundial
+
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap',
         maxZoom: 19,
       }).addTo(map);
 
+      // Clic simple → detectar ciudad
       map.on('click', (e) => {
+        hintEl?.classList.add('hidden');
         setMarker(e.latlng.lat, e.latlng.lng, false);
         reverseGeocode(e.latlng.lat, e.latlng.lng);
       });
 
-      // Si ya hay una ciudad activa en la URL, intenta centrar el mapa allí (forward geocoding)
+      // Doble clic → detectar y aplicar al instante
+      map.on('dblclick', (e) => {
+        hintEl?.classList.add('hidden');
+        setMarker(e.latlng.lat, e.latlng.lng, false);
+        reverseGeocode(e.latlng.lat, e.latlng.lng).then(city => {
+          if (city) applyCity();
+        });
+      });
+
+      // Centrar en ciudad activa o ubicación del usuario al abrir
       const u = new URL(window.location.href);
-      const current = u.searchParams.get('city') || u.searchParams.get('location') || '';
+      const current = u.searchParams.get('city') || u.searchParams.get('location') || window.__activeCity || '';
       if (current) {
         forwardGeocode(current).then(res => {
           if (res) {
@@ -250,13 +293,13 @@
             setDetected('ok', res.label);
           }
         });
-      } else if (window.__activeCity) {
-        forwardGeocode(window.__activeCity).then(res => {
-          if (res) {
-            setMarker(res.lat, res.lon, true);
-            setDetected('ok', res.label);
-          }
-        });
+      } else if ('geolocation' in navigator) {
+        // Sin ciudad activa: pre-centrar suavemente en la ubicación del usuario (sin pin)
+        navigator.geolocation.getCurrentPosition(
+          (pos) => { map.setView([pos.coords.latitude, pos.coords.longitude], 6); },
+          () => {},
+          { enableHighAccuracy:false, timeout:5000, maximumAge:600000 }
+        );
       }
     });
   }
@@ -279,7 +322,8 @@
     overlay.style.display = 'flex';
     overlay.setAttribute('aria-hidden','false');
     document.body.style.overflow = 'hidden';
-    setDetected('empty', 'Selecciona un punto en el mapa…');
+    hintEl?.classList.remove('hidden');
+    setDetected('empty', 'Aún no has elegido ciudad. Haz clic en el mapa.');
     initMap();
   }
 
