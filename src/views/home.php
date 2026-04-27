@@ -1105,7 +1105,7 @@ $iconMap = [
             </button>
           <?php endif; ?>
           <button type="button" class="city-btn" id="manualCityBtn">
-            <i class="bi bi-pencil"></i> <?= $cityFilterActive ? 'Cambiar' : 'Escribir ciudad' ?>
+            <i class="bi bi-map-fill"></i> <?= $cityFilterActive ? 'Cambiar ciudad' : 'Elegir en el mapa' ?>
           </button>
           <?php if ($cityFilterActive): ?>
             <a href="?city=" class="city-btn city-btn-ghost">
@@ -1114,11 +1114,6 @@ $iconMap = [
           <?php endif; ?>
         </div>
 
-        <form id="manualCityForm" class="city-manual-form" method="get" action="" style="display:none;">
-          <input type="text" name="city" id="manualCityInput" placeholder="Ej: Florencia, Bogotá, Medellín..." autocomplete="off" required>
-          <button type="submit" class="city-btn city-btn-primary">Aplicar</button>
-          <button type="button" class="city-btn city-btn-ghost" id="manualCityCancel">Cancelar</button>
-        </form>
       </div>
 
       <style>
@@ -1595,10 +1590,6 @@ $iconMap = [
       const title    = document.getElementById('cityBannerTitle');
       const sub      = document.getElementById('cityBannerSub');
       const useGeoBtn = document.getElementById('useGeolocBtn');
-      const manualBtn = document.getElementById('manualCityBtn');
-      const manualForm = document.getElementById('manualCityForm');
-      const manualInput = document.getElementById('manualCityInput');
-      const manualCancel = document.getElementById('manualCityCancel');
       if (!banner) return;
 
       function setBannerState(state, msgTitle, msgSub) {
@@ -1662,12 +1653,6 @@ $iconMap = [
       }
 
       useGeoBtn?.addEventListener('click', detectViaGeolocation);
-      manualBtn?.addEventListener('click', () => {
-        const visible = manualForm.style.display !== 'none';
-        manualForm.style.display = visible ? 'none' : 'flex';
-        if (!visible) manualInput.focus();
-      });
-      manualCancel?.addEventListener('click', () => { manualForm.style.display = 'none'; });
 
       const url = new URL(window.location.href);
       const cityEmptyExplicit = url.searchParams.has('city') && url.searchParams.get('city') === '';
@@ -1681,6 +1666,8 @@ $iconMap = [
     })();
   </script>
   <script src="../../public/js/home.js"></script>
+
+  <?php include __DIR__ . '/../components/city_map_modal.php'; ?>
 
 </body>
 

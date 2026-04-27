@@ -284,7 +284,7 @@ function getInitials($name)
                   </button>
                 <?php endif; ?>
                 <button type="button" class="city-btn" id="manualCityBtn">
-                  <i class="bi bi-pencil"></i> <?= $cityFilterActive ? 'Cambiar' : 'Escribir ciudad' ?>
+                  <i class="bi bi-map-fill"></i> <?= $cityFilterActive ? 'Cambiar ciudad' : 'Elegir en el mapa' ?>
                 </button>
                 <?php if ($cityFilterActive): ?>
                   <a href="?city=" class="city-btn city-btn-ghost">
@@ -293,25 +293,6 @@ function getInitials($name)
                 <?php endif; ?>
               </div>
 
-              <!-- Manual input (hidden by default) -->
-              <form id="manualCityForm" class="city-manual-form" method="get" style="display:none;">
-                <?php
-                  // Conservar otros parámetros GET para no perder filtros activos
-                  foreach ($_GET as $k => $v) {
-                    if ($k === 'city' || $k === 'location') continue;
-                    if (is_array($v)) {
-                      foreach ($v as $vv) {
-                        echo '<input type="hidden" name="' . htmlspecialchars($k) . '[]" value="' . htmlspecialchars((string)$vv) . '">';
-                      }
-                    } else {
-                      echo '<input type="hidden" name="' . htmlspecialchars($k) . '" value="' . htmlspecialchars((string)$v) . '">';
-                    }
-                  }
-                ?>
-                <input type="text" name="city" id="manualCityInput" placeholder="Ej: Florencia, Bogotá, Medellín..." autocomplete="off" required>
-                <button type="submit" class="city-btn city-btn-primary">Aplicar</button>
-                <button type="button" class="city-btn city-btn-ghost" id="manualCityCancel">Cancelar</button>
-              </form>
             </div>
 
             <style>
@@ -528,10 +509,6 @@ function getInitials($name)
       const title    = document.getElementById('cityBannerTitle');
       const sub      = document.getElementById('cityBannerSub');
       const useGeoBtn = document.getElementById('useGeolocBtn');
-      const manualBtn = document.getElementById('manualCityBtn');
-      const manualForm = document.getElementById('manualCityForm');
-      const manualInput = document.getElementById('manualCityInput');
-      const manualCancel = document.getElementById('manualCityCancel');
 
       function setBannerState(state, msgTitle, msgSub) {
         banner.classList.remove('detecting','error');
@@ -596,14 +573,6 @@ function getInitials($name)
       // Botón: detectar mi ciudad
       useGeoBtn?.addEventListener('click', detectViaGeolocation);
 
-      // Botón: mostrar/ocultar input manual
-      manualBtn?.addEventListener('click', () => {
-        const visible = manualForm.style.display !== 'none';
-        manualForm.style.display = visible ? 'none' : 'flex';
-        if (!visible) manualInput.focus();
-      });
-      manualCancel?.addEventListener('click', () => { manualForm.style.display = 'none'; });
-
       // Auto-detectar al entrar SOLO si:
       // - no hay ciudad aplicada
       // - el usuario no acaba de pulsar "Mostrar todo" (?city= vacío explícito)
@@ -633,6 +602,8 @@ function getInitials($name)
       })();
     </script>
     <script src="../../../public/js/all.js"></script>
+
+    <?php include __DIR__ . '/../../components/city_map_modal.php'; ?>
 </body>
 
 </html>
