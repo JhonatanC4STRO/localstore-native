@@ -64,9 +64,25 @@
               .then(r => r.json())
               .then(data => {
                 const a = data.address || {};
-                let city = a.city || a.town || a.village || a.municipality
-                        || a.county || a.state_district || a.state || '';
-                city = (city || '').trim();
+                // Limpia prefijos administrativos (DANE Colombia)
+                const clean = (raw) => {
+                  if (!raw) return '';
+                  let s = String(raw).trim();
+                  s = s.replace(/^per[ií]metro\s+urbano\s+/i, '');
+                  s = s.replace(/^centro\s+urbano\s+/i, '');
+                  s = s.replace(/^zona\s+urbana\s+(de\s+)?/i, '');
+                  s = s.replace(/^municipio\s+(de\s+)?/i, '');
+                  s = s.replace(/^localidad\s+(de\s+)?/i, '');
+                  s = s.replace(/^corregimiento\s+(de\s+)?/i, '');
+                  s = s.replace(/^comuna\s+\d+\s+(de\s+)?/i, '');
+                  return s.trim();
+                };
+                // Prioriza municipality (suele estar limpio en Colombia)
+                let city = '';
+                for (const c of [a.municipality, a.city, a.town, a.village, a.county, a.state_district, a.state]) {
+                  const v = clean(c);
+                  if (v) { city = v; break; }
+                }
                 if (city) {
                   cityInput.value = city;
                   setCityChip('ok', city);

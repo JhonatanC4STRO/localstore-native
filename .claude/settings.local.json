@@ -55,7 +55,9 @@
       "Bash(git commit -m 'fix: usar MYSQL_URL para conexion en Railway *)",
       "Bash(git commit *)",
       "Bash(git *)",
-      "Bash(node --check C:/laragon/www/localstore-native/public/js/home.js)"
+      "Bash(node --check C:/laragon/www/localstore-native/public/js/home.js)",
+      "Bash(node --check C:/laragon/www/localstore-native/public/js/crear.js)",
+      "Bash(node --check C:/laragon/www/localstore-native/public/js/edit.js)"
     ]
   }
 }

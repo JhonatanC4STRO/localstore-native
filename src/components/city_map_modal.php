@@ -179,6 +179,33 @@
   let leafletPromise = null;
   let pendingCity = '';
 
+  // Limpia prefijos administrativos comunes (DANE Colombia y similares)
+  // p.ej. "Perímetro Urbano Florencia" → "Florencia"
+  function cleanCityName(raw) {
+    if (!raw) return '';
+    let s = String(raw).trim();
+    s = s.replace(/^per[ií]metro\s+urbano\s+/i, '');
+    s = s.replace(/^centro\s+urbano\s+/i, '');
+    s = s.replace(/^zona\s+urbana\s+(de\s+)?/i, '');
+    s = s.replace(/^municipio\s+(de\s+)?/i, '');
+    s = s.replace(/^localidad\s+(de\s+)?/i, '');
+    s = s.replace(/^corregimiento\s+(de\s+)?/i, '');
+    s = s.replace(/^comuna\s+\d+\s+(de\s+)?/i, '');
+    return s.trim();
+  }
+
+  // Extrae nombre de ciudad desde el address de Nominatim,
+  // priorizando municipio (suele estar limpio en Colombia) y luego limpiando.
+  function pickCityFromAddress(a) {
+    a = a || {};
+    const candidates = [a.municipality, a.city, a.town, a.village, a.county, a.state_district, a.state];
+    for (const c of candidates) {
+      const cleaned = cleanCityName(c);
+      if (cleaned) return cleaned;
+    }
+    return '';
+  }
+
   function loadLeaflet() {
     if (window.L) return Promise.resolve();
     if (leafletPromise) return leafletPromise;
@@ -224,8 +251,7 @@
     return fetch(url, { headers:{ 'Accept':'application/json' } })
       .then(r => r.json())
       .then(data => {
-        const a = data.address || {};
-        const city = (a.city || a.town || a.village || a.municipality || a.county || a.state_district || a.state || '').trim();
+        const city = pickCityFromAddress(data.address);
         if (city) setDetected('ok', city);
         else      setDetected('error', 'No se pudo identificar la ciudad. Prueba otro punto.');
         return city;
@@ -311,8 +337,7 @@
       .then(arr => {
         if (!arr || !arr.length) return null;
         const r = arr[0];
-        const a = r.address || {};
-        const label = (a.city || a.town || a.village || a.municipality || a.county || a.state_district || a.state || query).trim();
+        const label = pickCityFromAddress(r.address) || cleanCityName(query);
         return { lat: parseFloat(r.lat), lon: parseFloat(r.lon), label };
       })
       .catch(() => null);

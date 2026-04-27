@@ -1592,6 +1592,25 @@ $iconMap = [
       const useGeoBtn = document.getElementById('useGeolocBtn');
       if (!banner) return;
 
+      function cleanCityName(raw) {
+        if (!raw) return '';
+        let s = String(raw).trim();
+        s = s.replace(/^per[ií]metro\s+urbano\s+/i, '');
+        s = s.replace(/^centro\s+urbano\s+/i, '');
+        s = s.replace(/^zona\s+urbana\s+(de\s+)?/i, '');
+        s = s.replace(/^municipio\s+(de\s+)?/i, '');
+        s = s.replace(/^localidad\s+(de\s+)?/i, '');
+        s = s.replace(/^corregimiento\s+(de\s+)?/i, '');
+        s = s.replace(/^comuna\s+\d+\s+(de\s+)?/i, '');
+        return s.trim();
+      }
+      function pickCityFromAddress(a) {
+        a = a || {};
+        const c = [a.municipality, a.city, a.town, a.village, a.county, a.state_district, a.state];
+        for (const x of c) { const v = cleanCityName(x); if (v) return v; }
+        return '';
+      }
+
       function setBannerState(state, msgTitle, msgSub) {
         banner.classList.remove('detecting','error');
         if (state) banner.classList.add(state);
@@ -1623,8 +1642,7 @@ $iconMap = [
                   { headers: { 'Accept': 'application/json' } })
               .then(r => r.json())
               .then(data => {
-                const a = data.address || {};
-                const city = (a.city || a.town || a.village || a.municipality || a.county || a.state_district || a.state || '').trim();
+                const city = pickCityFromAddress(data.address);
                 if (!city) {
                   setBannerState('error',
                     'No pudimos identificar tu ciudad',
