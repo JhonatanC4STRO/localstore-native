@@ -22,9 +22,9 @@ if ($activeCity === '' && $isLoggedIn) {
 $cityFilterActive = $activeCity !== '';
 $cityLikeParam    = '%' . $activeCity . '%';
 
-/* Cláusula reutilizable: prefiere p.city, si está vacío usa u.city */
+/* Cláusula reutilizable: matchea producto O vendedor en la ciudad (estilo Marketplace) */
 $cityWhereSql = $cityFilterActive
-    ? '(TRIM(p.city) LIKE ? OR ((p.city IS NULL OR TRIM(p.city) = "") AND TRIM(u.city) LIKE ?))'
+    ? '(TRIM(p.city) LIKE ? OR TRIM(u.city) LIKE ?)'
     : '';
 
 /* Query Hero: necesita JOIN a users para filtrar por ciudad */
@@ -1130,7 +1130,7 @@ $iconMap = [
       $cityClauseInline = '';
       if ($cityFilterActive) {
         $escCity = mysqli_real_escape_string($conn, $activeCity);
-        $cityClauseInline = " AND (TRIM(p.city) LIKE '%$escCity%' OR ((p.city IS NULL OR TRIM(p.city) = '') AND TRIM(u.city) LIKE '%$escCity%'))";
+        $cityClauseInline = " AND (TRIM(p.city) LIKE '%$escCity%' OR TRIM(u.city) LIKE '%$escCity%')";
       }
       $sqlProducts = "SELECT p.id, p.title, p.price, p.condition_type, p.created_at, COALESCE(NULLIF(p.city,''), u.city) AS city, u.full_name, p.user_id,
                       cat.name AS category_name,
