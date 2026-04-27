@@ -69,11 +69,21 @@ if (!empty($_GET['condition']) && $_GET['condition'] !== 'all') {
 }
 
 // Ciudad: matchea contra ciudad del producto (preferida) o del vendedor.
-// Acepta ?city=... y, por compatibilidad, ?location=... (nombre legacy).
-// Usamos TRIM + LIKE para tolerar espacios accidentales y diferencias menores.
-$cityParam = $_GET['city'] ?? $_GET['location'] ?? '';
-if (!empty($cityParam)) {
-    $loc = mysqli_real_escape_string($conn, trim($cityParam));
+// Prioridad:
+//   1) ?city=... (o ?location=... legacy)         — el usuario lo eligió/aplicó
+//   2) users.city del usuario logueado            — fallback conveniente
+//   3) vacío                                       — JS intentará auto-detectar
+// Si la URL trae ?city= con cadena vacía explícita, NO aplicamos fallback
+// (caso "limpiar" desde el botón "cambiar").
+$cityExplicit = isset($_GET['city']) || isset($_GET['location']);
+$cityParam    = trim($_GET['city'] ?? $_GET['location'] ?? '');
+if ($cityParam === '' && !$cityExplicit && $isLoggedIn) {
+    $cityParam = trim((string)($user['city'] ?? ''));
+}
+$activeCity       = $cityParam;
+$cityFilterActive = $activeCity !== '';
+if ($cityFilterActive) {
+    $loc = mysqli_real_escape_string($conn, $activeCity);
     $where_parts[] = "(
         TRIM(p.city) LIKE '%$loc%'
         OR (
@@ -249,7 +259,12 @@ function getInitials($name)
             <!-- Results header -->
             <div class="results-header">
                 <div class="results-left">
-                    <h1>Todos los productos en <span>tu ciudad</span></h1>
+                    <h1>Todos los productos en
+                        <span><?= $cityFilterActive ? htmlspecialchars($activeCity) : 'tu ciudad' ?></span>
+                        <?php if ($cityFilterActive): ?>
+                            <a href="?city=" style="font-size:.65em;font-weight:600;margin-left:8px;color:#16a34a;text-decoration:underline;vertical-align:middle;">cambiar</a>
+                        <?php endif; ?>
+                    </h1>
                     <div class="results-count">
                         <i class="bi bi-grid-3x3-gap-fill"></i>
                         Mostrando <?php echo $totalCount; ?> producto<?php echo $totalCount !== 1 ? 's' : ''; ?>
@@ -402,7 +417,51 @@ function getInitials($name)
     const initialPriceMin = <?= json_encode($_GET['price_min'] ?? '') ?>;
     const initialPriceMax = <?= json_encode($_GET['price_max'] ?? '') ?>;
     const initialCondition = <?= json_encode($_GET['condition'] ?? 'all') ?>;
-    const initialLocation = <?= json_encode(trim($_GET['city'] ?? $_GET['location'] ?? '')) ?>;
+    // initialLocation refleja la ciudad realmente aplicada en el SQL (no solo la URL),
+    // así el filtro AJAX y el "Buscar" mantienen el filtro al re-consultar.
+    const initialLocation = <?= json_encode($activeCity, JSON_UNESCAPED_UNICODE) ?>;
+    window.__activeCity        = <?= json_encode($activeCity, JSON_UNESCAPED_UNICODE) ?>;
+    window.__cityFilterActive  = <?= $cityFilterActive ? 'true' : 'false' ?>;
+  </script>
+  <script>
+    /* ── Auto-detección de ciudad por geolocalización (invitados / sin city aplicada) ─ */
+    (function autoDetectCity() {
+      if (window.__cityFilterActive) return;
+      if (!('geolocation' in navigator)) return;
+      const url = new URL(window.location.href);
+      // Si la URL trae ?city= explícitamente vacío (botón "cambiar"), no auto-detectar en esta sesión.
+      if (url.searchParams.has('city') && url.searchParams.get('city') === '') {
+        sessionStorage.setItem('cityAutoSkip', '1');
+        return;
+      }
+      if (sessionStorage.getItem('cityAutoSkip') === '1') return;
+      const cached = sessionStorage.getItem('detectedCity');
+      if (cached) {
+        url.searchParams.set('city', cached);
+        window.location.replace(url.toString());
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude, lon = pos.coords.longitude;
+          fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1&accept-language=es`,
+                { headers: { 'Accept': 'application/json' } })
+            .then(r => r.json())
+            .then(data => {
+              const a = data.address || {};
+              const city = (a.city || a.town || a.village || a.municipality || a.county || a.state_district || a.state || '').trim();
+              if (!city) { sessionStorage.setItem('cityAutoSkip', '1'); return; }
+              sessionStorage.setItem('detectedCity', city);
+              const u = new URL(window.location.href);
+              u.searchParams.set('city', city);
+              window.location.replace(u.toString());
+            })
+            .catch(() => sessionStorage.setItem('cityAutoSkip', '1'));
+        },
+        () => { sessionStorage.setItem('cityAutoSkip', '1'); },
+        { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 }
+      );
+    })();
   </script>
     <script src="../../../public/js/favorites.js"></script>
     <script>
