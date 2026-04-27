@@ -82,9 +82,12 @@ if ($condition !== 'all' && $condition !== '') {
     $bind_values[] = $condition;
 }
 
-/* Ciudad: matchea producto O vendedor en la ciudad. Tolerante a espacios via TRIM + LIKE. */
+/* Ciudad: prioriza p.city, fallback a u.city. Tolerante a espacios via TRIM + LIKE. */
 if ($location !== '') {
-    $where_parts[] = '(TRIM(p.city) LIKE ? OR TRIM(u.city) LIKE ?)';
+    $where_parts[] = '(
+        TRIM(p.city) LIKE ?
+        OR ((p.city IS NULL OR TRIM(p.city) = "") AND TRIM(u.city) LIKE ?)
+    )';
     $likeCity      = '%' . $location . '%';
     $bind_types   .= 'ss';
     $bind_values[] = $likeCity;

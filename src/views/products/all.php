@@ -84,8 +84,13 @@ $activeCity       = $cityParam;
 $cityFilterActive = $activeCity !== '';
 if ($cityFilterActive) {
     $loc = mysqli_real_escape_string($conn, $activeCity);
-    // Matchea producto O vendedor en la ciudad (más permisivo, estilo Marketplace).
-    $where_parts[] = "(TRIM(p.city) LIKE '%$loc%' OR TRIM(u.city) LIKE '%$loc%')";
+    $where_parts[] = "(
+        TRIM(p.city) LIKE '%$loc%'
+        OR (
+            (p.city IS NULL OR TRIM(p.city) = '')
+            AND TRIM(u.city) LIKE '%$loc%'
+        )
+    )";
 }
 
 $where_sql = "WHERE " . implode(" AND ", $where_parts);
