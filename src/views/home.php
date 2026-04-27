@@ -8,7 +8,7 @@ $user = $isLoggedIn ? $_SESSION['user'] : null;
 $userInitial = $isLoggedIn ? strtoupper(mb_substr($user['full_name'], 0, 1)) : '';
 $userName = $isLoggedIn ? explode(' ', $user['full_name'])[0] : ''; // First name only
 
-// Hero: 3 productos premium activos para las mini-cards
+// Hero: 3 productos con promoción activa (premium > recommended > basic) para las mini-cards
 $isSeller = $isLoggedIn && in_array($user['role'], ['seller', 'admin']);
 $heroExclude = $isLoggedIn ? 'AND p.user_id != ?' : '';
 
@@ -32,19 +32,22 @@ $heroCityJoin   = $cityFilterActive ? 'INNER JOIN users u ON u.id = p.user_id' :
 $heroCityClause = $cityFilterActive ? "AND $cityWhereSql" : '';
 
 $stHero = mysqli_prepare($conn,
-  "SELECT p.id, p.title, p.price, pi.image_url
+  "SELECT p.id, p.title, p.price, pi.image_url,
+          MIN(FIELD(pp.plan_type,'premium','recommended','basic')) AS plan_rank,
+          SUBSTRING_INDEX(GROUP_CONCAT(pp.plan_type ORDER BY FIELD(pp.plan_type,'premium','recommended','basic') ASC), ',', 1) AS plan_type
    FROM product_promotions pp
    INNER JOIN products p  ON p.id = pp.product_id AND p.status = 'disponible'
    $heroCityJoin
    LEFT  JOIN product_images pi
           ON pi.product_id = p.id
          AND pi.id = (SELECT MIN(p2.id) FROM product_images p2 WHERE p2.product_id = p.id)
-   WHERE pp.plan_type = 'premium'
+   WHERE pp.plan_type IN ('premium','recommended','basic')
      AND pp.status   = 'active'
      AND pp.end_date  > NOW()
      $heroExclude
      $heroCityClause
-   ORDER BY pp.id DESC
+   GROUP BY p.id, p.title, p.price, pi.image_url
+   ORDER BY plan_rank ASC, p.id DESC
    LIMIT 3");
 $heroPremium = [];
 if ($stHero) {
@@ -738,26 +741,34 @@ if ($stHero) {
     </div>
 
     <div class="hero-illustration">
-      <?php if (!empty($heroPremium)):
+      <?php
+      // Mapa de etiquetas para el badge según plan_type
+      $heroBadgeMap = [
+        'premium'     => ['icon' => '💎', 'label' => 'Premium',    'color' => '#d4a017', 'border' => 'rgba(212,160,23,.4)'],
+        'recommended' => ['icon' => '🚀', 'label' => 'Recomendado','color' => '#60a5fa', 'border' => 'rgba(96,165,250,.45)'],
+        'basic'       => ['icon' => '⭐', 'label' => 'Destacado',  'color' => '#fbbf24', 'border' => 'rgba(251,191,36,.45)'],
+      ];
+      if (!empty($heroPremium)):
         foreach ($heroPremium as $i => $hp):
           $hp_price = '$' . number_format($hp['price'], 0, ',', '.');
           $hp_title = htmlspecialchars($hp['title']);
           $hp_img   = !empty($hp['image_url'])
             ? '../../public/uploads/products/' . htmlspecialchars($hp['image_url'])
             : null;
+          $hp_badge = $heroBadgeMap[$hp['plan_type']] ?? $heroBadgeMap['premium'];
       ?>
         <a href="products/detalle.php?id=<?= (int)$hp['id'] ?>"
            class="hero-mini-card <?= $i === 0 ? 'featured' : '' ?>"
            style="text-decoration:none;color:inherit;display:block;position:relative;">
-          <!-- Badge premium -->
+          <!-- Badge de promoción -->
           <div style="position:absolute;top:8px;left:8px;z-index:2;
-                      background:rgba(18,18,18,.82);color:#d4a017;
-                      border:1px solid rgba(212,160,23,.4);
+                      background:rgba(18,18,18,.82);color:<?= $hp_badge['color'] ?>;
+                      border:1px solid <?= $hp_badge['border'] ?>;
                       border-radius:20px;padding:3px 9px;
                       font-size:.62rem;font-weight:800;letter-spacing:.06em;
                       text-transform:uppercase;display:flex;align-items:center;gap:4px;
                       backdrop-filter:blur(4px);">
-            💎 Premium
+            <?= $hp_badge['icon'] ?> <?= $hp_badge['label'] ?>
           </div>
           <?php if ($hp_img): ?>
             <img class="img-hero" width="150" height="150"
@@ -774,61 +785,16 @@ if ($stHero) {
           </div>
         </a>
       <?php endforeach;
-      else:
-        // Fallback: mostrar 3 productos recientes si no hay premium activos
-        $fallbackExclude = $isLoggedIn ? 'AND p.user_id != ' . (int)$user['id'] : '';
-        $stFallback = mysqli_prepare($conn,
-          "SELECT p.id, p.title, p.price,
-                  (SELECT pi.image_url FROM product_images pi
-                   WHERE pi.product_id = p.id ORDER BY pi.id ASC LIMIT 1) AS image_url
-           FROM products p
-           WHERE p.status = 'disponible' AND p.admin_status = 'active' $fallbackExclude
-           ORDER BY p.id DESC
-           LIMIT 3");
-        $fallbackProducts = [];
-        if ($stFallback) {
-          mysqli_stmt_execute($stFallback);
-          $rFb = mysqli_stmt_get_result($stFallback);
-          while ($fb = mysqli_fetch_assoc($rFb)) $fallbackProducts[] = $fb;
-        }
-
-        if (!empty($fallbackProducts)):
-          foreach ($fallbackProducts as $i => $fb):
-            $fb_price = '$' . number_format($fb['price'], 0, ',', '.');
-            $fb_title = htmlspecialchars($fb['title']);
-            $fb_img   = !empty($fb['image_url'])
-              ? '../../public/uploads/products/' . htmlspecialchars($fb['image_url'])
-              : null;
-      ?>
-        <a href="products/detalle.php?id=<?= (int)$fb['id'] ?>"
-           class="hero-mini-card <?= $i === 0 ? 'featured' : '' ?>"
-           style="text-decoration:none;color:inherit;display:block;">
-          <?php if ($fb_img): ?>
-            <img class="img-hero" width="150" height="150"
-                 src="<?= $fb_img ?>" alt="<?= $fb_title ?>">
-          <?php else: ?>
-            <div class="img-hero" style="display:flex;align-items:center;justify-content:center;
-                 background:rgba(255,255,255,.08);font-size:2.5rem;">🏷</div>
-          <?php endif; ?>
-          <div class="hmc-info">
-            <div class="hmc-price" style="<?= $i > 0 ? 'color:var(--yellow-400);' : '' ?>">
-              <?= $fb_price ?>
-            </div>
-            <div class="hmc-title"><?= $fb_title ?></div>
-          </div>
-        </a>
-      <?php endforeach;
-        else: ?>
+      else: ?>
           <div class="hero-mini-card featured">
             <div class="img-hero" style="display:flex;align-items:center;justify-content:center;
-                 background:rgba(255,255,255,.08);font-size:2.5rem;">🏷</div>
+                 background:rgba(255,255,255,.08);font-size:2.5rem;">✨</div>
             <div class="hmc-info">
               <div class="hmc-price">—</div>
-              <div class="hmc-title">No hay productos aún</div>
+              <div class="hmc-title">Aún no hay productos en promoción</div>
             </div>
           </div>
-        <?php endif;
-      endif; ?>
+      <?php endif; ?>
     </div>
   </section>
 
