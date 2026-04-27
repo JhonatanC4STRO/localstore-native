@@ -613,23 +613,9 @@ function getInitials($name)
       // Botón: detectar mi ciudad
       useGeoBtn?.addEventListener('click', detectViaGeolocation);
 
-      // Auto-detectar al entrar SOLO si:
-      // - no hay ciudad aplicada
-      // - el usuario no acaba de pulsar "Mostrar todo" (?city= vacío explícito)
-      // - no se le ha pedido aún en esta sesión
-      const url = new URL(window.location.href);
-      const cityEmptyExplicit = url.searchParams.has('city') && url.searchParams.get('city') === '';
-
-      if (window.__cityFilterActive) return;
-      if (cityEmptyExplicit) return;                                // usuario eligió no filtrar
-      if (sessionStorage.getItem('cityAutoSkip') === '1') return;   // ya intentamos
-
-      // Intentar usar caché si ya detectamos antes en esta sesión
-      const cached = sessionStorage.getItem('detectedCity');
-      if (cached) { applyCity(cached); return; }
-
-      sessionStorage.setItem('cityAutoSkip','1');                   // marca para no repetir
-      detectViaGeolocation();
+      // Nota: la auto-detección al cargar fue eliminada para evitar el "flash" donde
+      // los productos aparecen y luego desaparecen por el redirect a ?city=...
+      // El usuario activa el filtro manualmente con los botones del banner.
     })();
   </script>
     <script src="../../../public/js/favorites.js"></script>

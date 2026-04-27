@@ -1638,15 +1638,8 @@ $iconMap = [
 
       useGeoBtn?.addEventListener('click', detectViaGeolocation);
 
-      const url = new URL(window.location.href);
-      const cityEmptyExplicit = url.searchParams.has('city') && url.searchParams.get('city') === '';
-      if (window.__cityFilterActive) return;
-      if (cityEmptyExplicit) return;
-      if (sessionStorage.getItem('cityAutoSkip') === '1') return;
-      const cached = sessionStorage.getItem('detectedCity');
-      if (cached) { applyCity(cached); return; }
-      sessionStorage.setItem('cityAutoSkip','1');
-      detectViaGeolocation();
+      // Sin auto-detección al cargar: evita el "flash" de productos aparecen+desaparecen.
+      // El usuario activa el filtro con los botones del banner.
     })();
   </script>
   <script src="../../public/js/home.js"></script>
