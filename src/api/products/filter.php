@@ -164,6 +164,7 @@ $sql = "SELECT
             p.price,
             p.condition_type,
             p.created_at,
+            COALESCE(NULLIF(p.city,''), u.city) AS city,
             u.full_name,
             c.name AS category_name,
             (SELECT pi.image_url
@@ -230,6 +231,7 @@ if ($res && mysqli_num_rows($res) > 0) {
             'seller_name'     => $row['full_name'] ?? 'Usuario',
             'seller_initials' => $initials,
             'category_name'   => $row['category_name'] ?? 'General',
+            'city'            => $row['city'] ?? '',
             'image_url'       => $row['image_url'] ?? '',
             'image_path'      => $row['image_url']
                                     ? '../../public/uploads/products/' . $row['image_url']

@@ -104,6 +104,7 @@ $sql = "SELECT
     p.condition_type,
     p.status,
     p.created_at,
+    COALESCE(NULLIF(p.city,''), u.city) AS city,
     u.full_name AS seller_name,
     cat.name AS category_name,
     (SELECT pi.image_url
@@ -413,7 +414,7 @@ function getInitials($name)
                                     <div class="pc-title"><?php echo htmlspecialchars($row['title']); ?></div>
                                     <div class="pc-price">$<?php echo $price; ?></div>
                                     <div class="pc-meta">
-                                        <div class="pc-meta-row"><i class="bi bi-geo-alt-fill"></i> Bogotá, Colombia</div>
+                                        <div class="pc-meta-row"><i class="bi bi-geo-alt-fill"></i> <?= htmlspecialchars(!empty($row['city']) ? $row['city'] : 'Colombia') ?></div>
                                         <div class="pc-meta-row"><i class="bi bi-clock-fill"></i>
                                             <?php
                                             if (!empty($row['created_at'])) {

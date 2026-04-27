@@ -142,7 +142,7 @@
                             <div class="pc-title">${p.title}</div>
                             <div class="pc-price">$${p.price}</div>
                             <div class="pc-meta">
-                                <div class="pc-meta-row"><i class="bi bi-geo-alt-fill"></i> Colombia</div>
+                                <div class="pc-meta-row"><i class="bi bi-geo-alt-fill"></i> ${p.city || 'Colombia'}</div>
                                 <div class="pc-meta-row"><i class="bi bi-clock-fill"></i> ${p.time_label}</div>
                             </div>
                             <div class="pc-seller">
