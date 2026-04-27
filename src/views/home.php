@@ -12,10 +12,30 @@ $userName = $isLoggedIn ? explode(' ', $user['full_name'])[0] : ''; // First nam
 $isSeller = $isLoggedIn && in_array($user['role'], ['seller', 'admin']);
 $heroExclude = $isLoggedIn ? 'AND p.user_id != ?' : '';
 
+/* ── Ciudad activa para filtrar productos ────────────────────
+   Prioridad: ?city=... en URL → ciudad del usuario logueado → vacío.
+   Si está vacío, JS intentará detectarla por geolocalización. */
+$activeCity = trim($_GET['city'] ?? $_GET['location'] ?? '');
+if ($activeCity === '' && $isLoggedIn) {
+    $activeCity = trim((string)($user['city'] ?? ''));
+}
+$cityFilterActive = $activeCity !== '';
+$cityLikeParam    = '%' . $activeCity . '%';
+
+/* Cláusula reutilizable: prefiere p.city, si está vacío usa u.city */
+$cityWhereSql = $cityFilterActive
+    ? '(TRIM(p.city) LIKE ? OR ((p.city IS NULL OR TRIM(p.city) = "") AND TRIM(u.city) LIKE ?))'
+    : '';
+
+/* Query Hero: necesita JOIN a users para filtrar por ciudad */
+$heroCityJoin   = $cityFilterActive ? 'INNER JOIN users u ON u.id = p.user_id' : '';
+$heroCityClause = $cityFilterActive ? "AND $cityWhereSql" : '';
+
 $stHero = mysqli_prepare($conn,
   "SELECT p.id, p.title, p.price, pi.image_url
    FROM product_promotions pp
    INNER JOIN products p  ON p.id = pp.product_id AND p.status = 'disponible'
+   $heroCityJoin
    LEFT  JOIN product_images pi
           ON pi.product_id = p.id
          AND pi.id = (SELECT MIN(p2.id) FROM product_images p2 WHERE p2.product_id = p.id)
@@ -23,12 +43,17 @@ $stHero = mysqli_prepare($conn,
      AND pp.status   = 'active'
      AND pp.end_date  > NOW()
      $heroExclude
+     $heroCityClause
    ORDER BY pp.id DESC
    LIMIT 3");
 $heroPremium = [];
 if ($stHero) {
-  if ($isLoggedIn) {
-    mysqli_stmt_bind_param($stHero, 'i', $user['id']);
+  $heroTypes  = '';
+  $heroParams = [];
+  if ($isLoggedIn) { $heroTypes .= 'i'; $heroParams[] = $user['id']; }
+  if ($cityFilterActive) { $heroTypes .= 'ss'; $heroParams[] = $cityLikeParam; $heroParams[] = $cityLikeParam; }
+  if ($heroTypes !== '') {
+    mysqli_stmt_bind_param($stHero, $heroTypes, ...$heroParams);
   }
   mysqli_stmt_execute($stHero);
   $rHero = mysqli_stmt_get_result($stHero);
@@ -43,7 +68,7 @@ if ($stHero) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ComercioLocal – Compra y vende en tu ciudad</title>
+  <title>ComercioLocal – Compra y vende en tu ciudad</title> 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
@@ -953,13 +978,22 @@ $iconMap = [
                              FROM product_images pid2
                              WHERE pid2.product_id = p.id
                            )
-     " . ($isLoggedIn ? "WHERE p.user_id != ?" : "") . "
+     " . (function() use ($isLoggedIn, $cityFilterActive, $cityWhereSql) {
+            $parts = [];
+            if ($isLoggedIn)       $parts[] = 'p.user_id != ?';
+            if ($cityFilterActive) $parts[] = $cityWhereSql;
+            return $parts ? 'WHERE ' . implode(' AND ', $parts) : '';
+        })() . "
      ORDER BY sub.plan_rank DESC, p.id DESC");
 
   $featuredProducts = [];
   if ($stFeat) {
-    if ($isLoggedIn) {
-      mysqli_stmt_bind_param($stFeat, 'i', $user['id']);
+    $featTypes  = '';
+    $featParams = [];
+    if ($isLoggedIn)       { $featTypes .= 'i'; $featParams[] = $user['id']; }
+    if ($cityFilterActive) { $featTypes .= 'ss'; $featParams[] = $cityLikeParam; $featParams[] = $cityLikeParam; }
+    if ($featTypes !== '') {
+      mysqli_stmt_bind_param($stFeat, $featTypes, ...$featParams);
     }
     mysqli_stmt_execute($stFeat);
     $rFeat = mysqli_stmt_get_result($stFeat);
@@ -1045,6 +1079,12 @@ $iconMap = [
       <?php
       // Consulta para obtener los primeros 4 productos con información del usuario
       $excludeSeller = $isLoggedIn ? " AND p.user_id != " . (int)$user['id'] : '';
+      // Filtro por ciudad (si está activo) — usa cadena escapada para mantener el patrón inline
+      $cityClauseInline = '';
+      if ($cityFilterActive) {
+        $escCity = mysqli_real_escape_string($conn, $activeCity);
+        $cityClauseInline = " AND (TRIM(p.city) LIKE '%$escCity%' OR ((p.city IS NULL OR TRIM(p.city) = '') AND TRIM(u.city) LIKE '%$escCity%'))";
+      }
       $sqlProducts = "SELECT p.id, p.title, p.price, p.condition_type, p.created_at, COALESCE(NULLIF(p.city,''), u.city) AS city, u.full_name, p.user_id,
                       cat.name AS category_name,
                       (SELECT pp.plan_type FROM product_promotions pp
@@ -1056,7 +1096,7 @@ $iconMap = [
                       FROM products p
                       LEFT JOIN users u ON p.user_id = u.id
                       LEFT JOIN categories cat ON p.category_id = cat.id
-                      WHERE p.status = 'disponible' AND p.admin_status = 'active'$excludeSeller
+                      WHERE p.status = 'disponible' AND p.admin_status = 'active'$excludeSeller$cityClauseInline
                       ORDER BY p.id DESC
                       LIMIT 4";
       $resultProducts = $conn->query($sqlProducts);
@@ -1092,10 +1132,24 @@ $iconMap = [
         <div class="nearby-section">
           <div class="section-header">
             <div>
-              <div class="nearby-badge"><i class="bi bi-geo-alt-fill"></i> Tu zona</div>
-              <h2 class="section-title">Productos cerca <span>de ti</span></h2>
+              <div class="nearby-badge">
+                <i class="bi bi-geo-alt-fill"></i>
+                <?php if ($cityFilterActive): ?>
+                  <?= htmlspecialchars($activeCity) ?>
+                  <a href="?city=" style="margin-left:8px;color:inherit;text-decoration:underline;font-weight:600;">cambiar</a>
+                <?php else: ?>
+                  Tu zona
+                <?php endif; ?>
+              </div>
+              <h2 class="section-title">
+                <?php if ($cityFilterActive): ?>
+                  Productos en <span><?= htmlspecialchars($activeCity) ?></span>
+                <?php else: ?>
+                  Productos cerca <span>de ti</span>
+                <?php endif; ?>
+              </h2>
             </div>
-            <a class="section-link" href="products/all.php">Ver más <i class="bi bi-arrow-right"></i></a>
+            <a class="section-link" href="products/all.php<?= $cityFilterActive ? '?city=' . urlencode($activeCity) : '' ?>">Ver más <i class="bi bi-arrow-right"></i></a>
           </div>
           <!-- /////////////////////////////// productos aleatorios -->
           <?php
@@ -1111,7 +1165,7 @@ $iconMap = [
                                 FROM products p
                                 LEFT JOIN users u ON p.user_id = u.id
                                 LEFT JOIN categories cat ON p.category_id = cat.id
-                                WHERE p.status = 'disponible' AND p.admin_status = 'active'$excludeSeller
+                                WHERE p.status = 'disponible' AND p.admin_status = 'active'$excludeSeller$cityClauseInline
                                 ORDER BY RAND()
                                 LIMIT 4";
           $resultRandomProducts = $conn->query($sqlRandomProducts);
@@ -1446,6 +1500,10 @@ $iconMap = [
       Favorites.applyToButtons('.fav-btn');
       Favorites.bindButtons('.fav-btn', base);
     })();
+
+    // Estado de la ciudad activa (para auto-detección por geolocalización en home.js)
+    window.__activeCity = <?= json_encode($activeCity, JSON_UNESCAPED_UNICODE) ?>;
+    window.__cityFilterActive = <?= $cityFilterActive ? 'true' : 'false' ?>;
   </script>
   <script src="../../public/js/home.js"></script>
 

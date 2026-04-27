@@ -54,7 +54,8 @@
       "Bash(git commit -m 'fix: leer variables MYSQL* que Railway inyecta automaticamente *)",
       "Bash(git commit -m 'fix: usar MYSQL_URL para conexion en Railway *)",
       "Bash(git commit *)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Bash(node --check C:/laragon/www/localstore-native/public/js/home.js)"
     ]
   }
 }
