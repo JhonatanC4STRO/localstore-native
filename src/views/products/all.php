@@ -114,16 +114,28 @@ $sql = "SELECT
      LIMIT 1) AS image_url,
     COALESCE((SELECT ROUND(AVG(r.rating), 1) FROM reviews r WHERE r.product_id = p.id), 0) AS avg_rating,
     (SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id) AS total_reviews,
-    (SELECT sv.id FROM seller_verifications sv WHERE sv.user_id = p.user_id AND sv.status = 'approved' LIMIT 1) AS seller_verified
+    (SELECT sv.id FROM seller_verifications sv WHERE sv.user_id = p.user_id AND sv.status = 'approved' LIMIT 1) AS seller_verified,
+    (SELECT pp.plan_type FROM product_promotions pp
+       WHERE pp.product_id = p.id AND pp.status = 'active' AND pp.end_date > NOW()
+       ORDER BY FIELD(pp.plan_type,'premium','recommended','basic') ASC LIMIT 1) AS promotion_type,
+    (SELECT CASE pp.plan_type
+              WHEN 'premium' THEN 3
+              WHEN 'recommended' THEN 2
+              WHEN 'basic' THEN 1
+              ELSE 0 END
+     FROM product_promotions pp
+     WHERE pp.product_id = p.id AND pp.status = 'active' AND pp.end_date > NOW()
+     ORDER BY FIELD(pp.plan_type,'premium','recommended','basic') ASC LIMIT 1) AS promo_rank
 FROM products p
 LEFT JOIN users u ON p.user_id = u.id
 LEFT JOIN categories cat ON p.category_id = cat.id
 $where_sql";
 
-// Cuando hay search, ordenar por relevancia (título prefix > título contains > categoría > ciudad > descripción)
+// Promociones siempre van primero. Luego: relevancia (si hay search) o más recientes.
 if ($search !== '') {
     $sql .= "
 ORDER BY
+    COALESCE(promo_rank, 0) DESC,
     (CASE
         WHEN p.title    LIKE '$search%'  THEN 5
         WHEN p.title    LIKE '%$search%' THEN 4
@@ -135,7 +147,7 @@ ORDER BY
      END) DESC,
     p.id DESC";
 } else {
-    $sql .= " ORDER BY p.id DESC";
+    $sql .= " ORDER BY COALESCE(promo_rank, 0) DESC, p.id DESC";
 }
 
 $result     = mysqli_query($conn, $sql);
@@ -364,6 +376,12 @@ function getInitials($name)
             <!-- ══ PRODUCT GRID — LOGIC PRESERVED ══ -->
             <div class="product-grid" id="productGrid">
                 <?php
+                // Mapa de badge por promoción activa (fuera del loop)
+                $allPromoBadgeMap = [
+                  'premium'     => ['css' => 'promo-badge-premium',     'icon' => '💎', 'label' => 'Premium'],
+                  'recommended' => ['css' => 'promo-badge-recommended', 'icon' => '🚀', 'label' => 'Recomendado'],
+                  'basic'       => ['css' => 'promo-badge-basic',       'icon' => '⭐', 'label' => 'Destacado'],
+                ];
                 $i = 0;
                 if (mysqli_num_rows($result) > 0):
                     while ($row = mysqli_fetch_assoc($result)):
@@ -371,12 +389,12 @@ function getInitials($name)
                         $image      = $row['image_url']
                             ? "../../../public/uploads/products/" . $row['image_url']
                             : null;
-                        $isNew      = ($i % 3 !== 0); // alternate for demo; real: use condition_type
-                        $isFeatured = ($i % 5 === 0); // every 5th card gets "Destacado"
                         $condType   = strtolower($row['condition_type'] ?? '');
                         $isNewCond  = ($condType === 'nuevo');
                         $initials   = getInitials($row['seller_name'] ?? '');
                         $price      = number_format($row['price'], 0, ',', '.');
+                        $rowPromo = $row['promotion_type'] ?? null;
+                        $rowPromoBadge = $rowPromo ? ($allPromoBadgeMap[$rowPromo] ?? null) : null;
                 ?>
                         <a href="./detalle.php?id=<?php echo $row['id']; ?>"
                             style="display:contents;">
@@ -392,14 +410,17 @@ function getInitials($name)
                                     <?php endif; ?>
 
                                     <!-- Condition badge -->
-                                    <?php if ($isFeatured): ?>
-                                        <div class="badge badge-featured"><i class="bi bi-star-fill"></i> Destacado</div>
-                                    <?php elseif ($isNewCond): ?>
+                                    <?php if ($isNewCond): ?>
                                         <div class="badge badge-new">Nuevo</div>
                                     <?php elseif ($condType === 'reacondicionado'): ?>
                                         <div class="badge badge-refurbished">Reacondicionado</div>
                                     <?php else: ?>
                                         <div class="badge badge-used">Usado</div>
+                                    <?php endif; ?>
+
+                                    <!-- Promo badge -->
+                                    <?php if ($rowPromoBadge): ?>
+                                        <div class="promo-pill <?= $rowPromoBadge['css'] ?>"><?= $rowPromoBadge['icon'] ?> <?= $rowPromoBadge['label'] ?></div>
                                     <?php endif; ?>
 
                                     <!-- Fav -->
