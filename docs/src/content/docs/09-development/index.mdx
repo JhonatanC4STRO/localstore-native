@@ -1,0 +1,147 @@
+---
+title: Guía de Inicio Rápido
+description: Setup completo del entorno de desarrollo local para ComercioLocal.
+draft: false
+sidebar:
+  order: 1
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+# Guía de Inicio Rápido
+
+## Requisitos Previos
+
+| Herramienta | Versión mínima | Notas |
+|---|---|---|
+| PHP | 8.1+ | Con extensión `mysqli` habilitada |
+| MySQL | 8.0+ | O MariaDB 10.6+ |
+| Composer | 2.x | Para instalar Ratchet |
+| Node.js | 18+ | Solo para compilar Tailwind |
+| npm | 9+ | Incluido con Node.js |
+| Git | 2.x | Para clonar el repo |
+
+**Opción recomendada:** [Laragon](https://laragon.org/) — incluye PHP 8.2, MySQL 8.0 y administración gráfica.
+
+---
+
+## Setup en 5 Minutos
+
+<Steps>
+
+1. **Clonar el repositorio**
+   
+   ```bash
+   git clone https://github.com/JhonatanC4STRO/localstore-native.git
+   cd localstore-native
+   ```
+
+2. **Instalar dependencias PHP**
+   
+   ```bash
+   composer install
+   ```
+   
+   Instala Ratchet y sus dependencias en `vendor/`.
+
+3. **Instalar dependencias JS** (solo para desarrollo con Tailwind)
+   
+   ```bash
+   npm install
+   ```
+
+4. **Configurar base de datos**
+   
+   Crea la base de datos e importa el schema:
+   
+   ```bash
+   mysql -u root -p -e "CREATE DATABASE tiendalocal CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
+   mysql -u root -p tiendalocal < database/tiendalocal.sql
+   mysql -u root -p tiendalocal < database/promotion_plans.sql
+   mysql -u root -p tiendalocal < database/add_views_column.sql
+   mysql -u root -p tiendalocal < database/add_product_city.sql
+   ```
+
+5. **Configurar variables de entorno** (opcional para desarrollo)
+   
+   Copia el archivo de ejemplo:
+   
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Edita `.env`:
+   
+   ```env
+   DB_HOST=localhost
+   DB_USER=root
+   DB_PASS=
+   DB_NAME=tiendalocal
+   ```
+   
+   <Aside type="note">
+   Sin `.env`, el sistema usa los valores por defecto de `conexion.php`: `localhost`, `root`, contraseña vacía, BD `tiendalocal`. Esto funciona directamente en Laragon.
+   </Aside>
+
+6. **Iniciar el servidor HTTP**
+   
+   Con Laragon: la aplicación ya está disponible en `http://localstore-native.test/`
+   
+   Sin Laragon (PHP built-in):
+   
+   ```bash
+   php -S localhost:80 -t .
+   ```
+
+7. **Iniciar el servidor WebSocket** (para chat)
+   
+   En una terminal separada:
+   
+   ```bash
+   php server.php
+   ```
+   
+   El servidor escucha en `ws://localhost:8080`.
+
+8. **Compilar Tailwind** (para cambios de CSS)
+   
+   ```bash
+   npm run build
+   # O en modo watch durante desarrollo:
+   npx @tailwindcss/cli -i public/css/input.css -o public/css/output.css --watch
+   ```
+
+</Steps>
+
+---
+
+## Acceso
+
+| URL | Descripción |
+|---|---|
+| `http://localhost/` | Página principal |
+| `http://localhost/src/views/auth/login.php` | Login |
+| `http://localhost/src/views/admin/dashboard.php` | Panel admin |
+
+### Credenciales de Prueba (datos semilla)
+
+| Email | Contraseña | Rol |
+|---|---|---|
+| `shonano@gmail.com` | `123` | seller |
+| `admin@gmail.com` | (hasheada en BD) | admin |
+| `maria@gmail.com` | `123` | seller |
+| `topo@gmail.com` | `123` | seller |
+
+<Aside type="caution">
+Las contraseñas del dump son texto plano sin hashear (excepto los admins). Solo úsalas en desarrollo local.
+</Aside>
+
+---
+
+## Verificar Instalación
+
+1. Abre `http://localhost/` — debe mostrar el homepage con productos
+2. Inicia sesión como `shonano@gmail.com` / `123`
+3. Ve a "Todos los productos" — debe mostrar el listado con filtros
+4. Abre un producto y haz clic en "Contactar" — debe abrir el chat
+5. En otra terminal, ejecuta `php server.php` y verifica que el chat funciona en tiempo real

@@ -1,0 +1,217 @@
+---
+title: Configuración Detallada
+description: Configuración avanzada del entorno de desarrollo, depuración y flujo de trabajo.
+draft: false
+sidebar:
+  order: 2
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+# Configuración Detallada
+
+## Laragon (Recomendado para Windows)
+
+[Laragon](https://laragon.org/) es el entorno de desarrollo recomendado para Windows. Incluye PHP 8.2, MySQL 8.0, Apache/Nginx y administración gráfica.
+
+### Configuración automática de virtual host
+
+Laragon crea automáticamente el virtual host `http://localstore-native.test/` cuando el proyecto está en `C:\laragon\www\localstore-native\`.
+
+### PHP.ini en Laragon
+
+Edita `C:\laragon\bin\php\php-8.x.x\php.ini`:
+
+```ini
+; Habilitar extensiones necesarias
+extension=mysqli
+extension=pdo_mysql
+extension=fileinfo     ; para finfo_file() en uploads
+
+; Errores (development)
+display_errors = On
+error_reporting = E_ALL
+
+; Subida de archivos
+upload_max_filesize = 10M
+post_max_size = 20M
+max_file_uploads = 5
+```
+
+---
+
+## Configuración de Conexión a BD
+
+`src/config/conexion.php` sigue este orden de prioridad:
+
+```php
+// 1. URL completa (Railway, Heroku, PlanetScale)
+$db_url = getenv('MYSQL_URL') ?: getenv('DATABASE_URL');
+
+// 2. Variables individuales
+$host = getenv('DB_HOST') ?: (getenv('MYSQLHOST') ?: 'localhost');
+$user = getenv('DB_USER') ?: (getenv('MYSQLUSER') ?: 'root');
+$pass = getenv('DB_PASS') ?: (getenv('MYSQLPASSWORD') ?: '');
+$name = getenv('DB_NAME') ?: (getenv('MYSQLDATABASE') ?: 'tiendalocal');
+$port = getenv('DB_PORT') ?: (getenv('MYSQLPORT') ?: '3306');
+```
+
+### Definir variables de entorno en Windows (Laragon)
+
+Opción 1 — Archivo `.env` (con auto-load en Laragon):
+
+```env
+DB_HOST=localhost
+DB_USER=root
+DB_PASS=
+DB_NAME=tiendalocal
+ADMIN_EMAIL=admin@test.com
+ADMIN_PASSWORD=admin123
+WS_HOST=localhost
+WS_PORT=8080
+```
+
+Opción 2 — Variables de sistema Windows:
+
+```powershell
+$env:DB_NAME = "tiendalocal"
+$env:DB_USER = "root"
+```
+
+---
+
+## Flujo de Trabajo con Git
+
+### Ramas
+
+| Rama | Uso |
+|---|---|
+| `main` | Producción — se despliega automáticamente en Railway |
+
+El proyecto usa una única rama `main`. Para features nuevas, crea ramas temporales y haz merge a `main`.
+
+### Commit habitual
+
+```bash
+git add src/ public/
+git commit -m "feat: descripción del cambio"
+git push origin main
+```
+
+Railway detecta el push y redespliega automáticamente.
+
+---
+
+## Compilar Tailwind en Desarrollo
+
+```bash
+# Watch mode — recompila en cada cambio de .php o .html
+npx @tailwindcss/cli \
+  -i public/css/input.css \
+  -o public/css/output.css \
+  --watch
+
+# Build único para producción
+npx @tailwindcss/cli \
+  -i public/css/input.css \
+  -o public/css/output.css \
+  --minify
+```
+
+<Aside type="tip">
+Nunca edites `public/css/output.css` directamente. Es generado automáticamente por Tailwind y sobreescrito en cada build.
+</Aside>
+
+---
+
+## Depuración
+
+### Ver errores PHP
+
+Los errores de BD se loguean en `src/logs/error.log`. Para depuración en desarrollo:
+
+```php
+// Temporalmente en conexion.php (quitar en producción)
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+```
+
+### Ver queries ejecutadas
+
+Activa el log general de MySQL:
+
+```sql
+SET GLOBAL general_log = 'ON';
+SET GLOBAL general_log_file = '/tmp/mysql_general.log';
+```
+
+### Depurar WebSocket
+
+El servidor `server.php` imprime mensajes en consola:
+
+```
+New connection! (1)
+New connection! (2)
+[User 2 init] conversation 12 - ACCESS GRANTED
+[User 6 init] conversation 12 - ACCESS GRANTED
+[User 2] → conversation 12: hola
+```
+
+---
+
+## Tests
+
+Actualmente no hay suite de tests automatizados. Para validar cambios:
+
+1. Tests manuales en los flujos principales (ver [Verificar Instalación](/09-development/))
+2. Inspeccionar las queries en el log de MySQL
+3. Revisar `src/logs/error.log` tras cada operación
+
+---
+
+## Scripts npm Disponibles
+
+| Script | Comando | Descripción |
+|---|---|---|
+| Build Tailwind | `npm run build` | (requiere configuración en package.json) |
+| Dev Docs | `cd docs && npm run dev` | Inicia la documentación en `localhost:4321` |
+| Build Docs | `cd docs && npm run build` | Compila la documentación estática |
+
+---
+
+## Estructura de un Nuevo Endpoint
+
+Para agregar un nuevo endpoint a `src/api/`:
+
+```php
+<?php
+// 1. Inicializar sesión y conexión
+session_start();
+require_once '../../config/conexion.php';
+require_once '../../config/logger.php';
+
+// 2. Verificar autenticación
+if (!isset($_SESSION['user'])) {
+    http_response_code(401);
+    echo json_encode(['error' => 'No autenticado']);
+    exit;
+}
+
+// 3. Leer y validar parámetros
+$param = filter_input(INPUT_GET, 'param_name', FILTER_SANITIZE_SPECIAL_CHARS);
+if (!$param) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Parámetro requerido']);
+    exit;
+}
+
+// 4. Query con prepared statement
+$stmt = $conn->prepare("SELECT ... WHERE id = ?");
+$stmt->bind_param("i", $param);
+$stmt->execute();
+$result = $stmt->get_result();
+$data = $result->fetch_all(MYSQLI_ASSOC);
+
+// 5. Responder JSON
+header('Content-Type: application/json');
+echo json_encode($data);
+```

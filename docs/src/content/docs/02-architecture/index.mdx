@@ -1,0 +1,173 @@
+---
+title: Arquitectura del Sistema
+description: Capas, flujos de request y estructura de módulos de ComercioLocal.
+draft: false
+sidebar:
+  order: 1
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+# Arquitectura del Sistema
+
+## Diagrama de Capas
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                     BROWSER / CLIENTE                     │
+│  Tailwind CSS · Vanilla JS · Leaflet.js · Swiper.js       │
+└────────────────────────┬────────────────────────────────┘
+                         │ HTTP / HTTPS
+                         │
+┌────────────────────────▼────────────────────────────────┐
+│                  PHP BUILT-IN SERVER                      │
+│              (Docker: php -S 0.0.0.0:PORT)                │
+│                                                           │
+│  ┌────────────────────────────────────────────────────┐  │
+│  │  src/views/*.php     — Páginas HTML+PHP            │  │
+│  │  src/controllers/*.php — Lógica POST               │  │
+│  │  src/api/*.php        — Endpoints JSON (AJAX)      │  │
+│  │  src/components/*.php — Fragmentos reutilizables   │  │
+│  │  src/config/*.php     — Conexión, CSRF, Logger     │  │
+│  └────────────────────────────────────────────────────┘  │
+└────────────────────────┬────────────────────────────────┘
+                         │ mysqli / PDO
+                         │
+┌────────────────────────▼────────────────────────────────┐
+│                   MySQL 8.0                               │
+│              Database: tiendalocal                        │
+└─────────────────────────────────────────────────────────┘
+
+                    CANAL SEPARADO
+┌─────────────────────────────────────────────────────────┐
+│  server.php — Ratchet WebSocket                          │
+│  Puerto: WS_PORT (default 8080)                          │
+│  Protocolo: ws://HOST:PORT                               │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Módulos del Sistema
+
+### `src/config/` — Capa de Infraestructura
+
+| Archivo | Responsabilidad |
+|---|---|
+| `conexion.php` | Conexión MySQL con fallback a múltiples env vars; expone `$conn` global |
+| `csrf.php` | Generación y validación de tokens CSRF por sesión |
+| `logger.php` | Logger de errores internos a `src/logs/error.log` |
+| `role_sync.php` | Sincronización automática de rol `user` → `seller` |
+
+### `src/controllers/` — Capa de Comandos
+
+Procesan formularios `POST`, validan CSRF, realizan operaciones de BD y redirigen.
+
+| Archivo | Acción |
+|---|---|
+| `auth_login.php` | Login de usuarios y admin |
+| `auth_register.php` | Registro + auto-login |
+| `auth_reset_migrado.php` | Reset de contraseña admin |
+| `product_create_action.php` | Crear producto + subir imágenes |
+| `product_delete_action.php` | Borrar producto (auth check) |
+| `product_review_action.php` | Crear/actualizar reseña |
+| `settings_action.php` | Actualizar perfil de usuario |
+
+### `src/api/` — Capa de Consultas (JSON)
+
+Responden solicitudes AJAX del frontend con JSON. No renderizan HTML.
+
+```
+src/api/
+├── admin/
+│   ├── admins.php         GET/POST — gestión de admins
+│   ├── products.php       GET/POST — moderación de productos
+│   ├── reports.php        GET/POST — gestión de reportes
+│   └── users.php          GET/POST — gestión de usuarios
+├── chat/
+│   ├── crear_conversacion.php          POST
+│   ├── crear_conversacion_general.php  POST
+│   ├── eliminar_chat.php               POST
+│   ├── get_conversations.php           GET
+│   ├── get_messages.php                GET
+│   ├── get_notifications.php           GET
+│   ├── get_unread_count.php            GET
+│   └── save_message.php               POST (llamado por el servidor WebSocket)
+├── favorites/
+│   ├── list.php           GET
+│   └── toggle.php         POST
+├── payments/
+│   └── simulate.php       POST
+├── products/
+│   ├── clear_history.php  POST
+│   ├── filter.php         GET
+│   ├── mark_sold.php      POST
+│   └── suggest.php        GET
+├── promotions.php         GET
+├── reports.php            POST
+└── verificacion.php       GET/POST
+```
+
+### `src/views/` — Capa de Presentación
+
+Páginas PHP que generan HTML completo. Incluyen componentes de `src/components/` e invocan APIs vía fetch/AJAX.
+
+```
+src/views/
+├── admin/          → Panel de administración
+├── auth/           → Login, registro, reset
+├── chat/           → Interfaz de chat
+├── products/       → Listado, detalle, crear, editar
+├── home.php        → Página principal con slider
+├── dashboard.php   → Dashboard del usuario
+├── perfil.php      → Perfil público del usuario
+├── favoritos.php   → Lista de favoritos
+├── promociones.php → Planes de promoción
+├── resenas.php     → Reseñas del usuario
+└── seller_profile.php → Perfil del vendedor
+```
+
+---
+
+## Flujo de Datos — Crear un Producto
+
+```
+[Usuario] → crear.php (form GET)
+          → selecciona ubicación en Leaflet.js
+          → Nominatim API (geocoding inverso) → ciudad resuelta
+          → POST → product_create_action.php
+                  → verify_csrf_token()
+                  → finfo_file() (validar MIME imágenes)
+                  → INSERT INTO products (prepared statement)
+                  → INSERT INTO product_images
+                  → sync_user_role() → UPDATE users SET role='seller'
+                  → header('Location: mis_productos.php')
+```
+
+---
+
+## Flujo de Datos — Enviar un Mensaje
+
+```
+[Usuario] → chat.js → WebSocket connect → server.php
+          → send JSON: { type: 'init', conversation_id, user_id }
+          → server.php: valida acceso a conversación en MySQL
+          → send JSON: { type: 'message', message, conversation_id }
+          → server.php: POST → save_message.php → INSERT INTO messages
+          → server.php: broadcast JSON a todos los clientes de la conversación
+          → [Receptor] → chat.js → renderiza mensaje en UI
+```
+
+<Aside type="note">
+El servidor WebSocket no usa HTTP, sino una conexión persistente TCP en el puerto `WS_PORT`. El frontend (`chat.js`) establece la conexión con `new WebSocket(ws://host:port)`.
+</Aside>
+
+---
+
+## Estrategia de Sesiones
+
+- PHP sessions nativas (`session_start()`)
+- `$_SESSION['user']` almacena el objeto usuario completo tras login
+- `session_regenerate_id(true)` se llama post-login para prevenir session fixation
+- Las páginas protegidas verifican `$_SESSION['user']` al inicio
+- El servidor WebSocket valida el `user_id` contra la BD (no usa la sesión PHP directamente)

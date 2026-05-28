@@ -1,0 +1,125 @@
+---
+title: Características
+description: Lista completa de funcionalidades de ComercioLocal por módulo.
+draft: false
+sidebar:
+  order: 2
+---
+
+import { Badge } from '@astrojs/starlight/components';
+
+# Características del Sistema
+
+## Autenticación y Usuarios
+
+| Función | Descripción |
+|---|---|
+| Registro de usuario | Formulario con validación CSRF, contraseña hasheada con Bcrypt |
+| Inicio de sesión | Soporte para credenciales de entorno (`ADMIN_EMAIL` / `ADMIN_PASSWORD`) |
+| Recuperación de contraseña | Flujo de reset con `auth_reset_migrado.php` |
+| Gestión de perfil | Foto de avatar, bio, ciudad, teléfono, dirección |
+| Configuración de privacidad | Control sobre quién puede enviar mensajes (`all`, `verified`, `nobody`) |
+| Notificaciones | Toggle por tipo: mensajes, reseñas, ventas, promociones, browser |
+| Soft delete | Campo `deleted_at` — el perfil se desactiva sin borrar datos |
+
+---
+
+## Productos
+
+| Función | Descripción |
+|---|---|
+| Crear producto | Título, precio, descripción, categoría, condición, múltiples imágenes, coordenadas GPS |
+| Editar producto | Actualización completa con revalidación CSRF |
+| Eliminar producto | Soft delete con verificación de propietario |
+| Marcar como vendido | Estado `vendido` en campo `status` |
+| Filtrado avanzado | Por ciudad, categoría, precio mín/máx, condición, nombre |
+| Geolocalización | Mapa Leaflet para seleccionar ubicación exacta; ciudad resuelta automáticamente |
+| Galería de imágenes | Hasta 5 imágenes por producto con validación MIME real |
+| Historial de vistas | Contador `views` incremental por producto |
+| Limpiar historial | Endpoint para vaciar historial de búsqueda del usuario |
+
+---
+
+## Categorías <Badge text="23 categorías" variant="note" />
+
+Vehículos · Propiedades en venta · Propiedades en alquiler · Electrónica · Celulares · Computadores · Hogar · Electrodomésticos · Ropa · Calzado · Belleza · Deportes · Juguetes · Mascotas · Herramientas · Jardín · Instrumentos musicales · Arte · Libros · Videojuegos · Bicicletas · Motocicletas · Servicios
+
+---
+
+## Chat en Tiempo Real
+
+| Función | Descripción |
+|---|---|
+| Conversación privada | Vinculada a un producto específico (buyer + seller + product) |
+| Conversación directa | Sin producto asociado (chat general entre usuarios) |
+| Mensajes en tiempo real | WebSocket con Ratchet PHP en puerto `8080` |
+| Historial de mensajes | Persistido en MySQL, cargado al abrir el chat |
+| Contador de no leídos | Badge en navegación con mensajes sin leer |
+| Ocultar conversación | Cada participante puede ocultar el hilo por su lado |
+| Eliminar conversación | Solo el creador puede eliminarla |
+| Notificaciones | Endpoint de notificaciones en tiempo diferido |
+
+---
+
+## Favoritos
+
+- Toggle (agregar/quitar) mediante AJAX
+- Listado de favoritos en página dedicada
+- Restricción de duplicados via `UNIQUE KEY uk_user_product`
+
+---
+
+## Reseñas
+
+- Rating de 1 a 5 estrellas con validación `CHECK` en BD
+- Comentario opcional
+- Una reseña por usuario por producto (`UNIQUE KEY unique_review`)
+- Visible en perfil del vendedor y en detalle del producto
+
+---
+
+## Promociones / Badges
+
+| Plan | Duración | Prioridad |
+|---|---|---|
+| `basic` | 3 días | 1 |
+| `recommended` | 7 días | 2 |
+| `premium` | 7 días | 3 |
+
+Los productos con promoción activa aparecen primero en el marketplace con un badge visual. El campo `promo_priority` en `products` se actualiza automáticamente al activar/expirar la promoción.
+
+---
+
+## Verificación de Vendedores
+
+- Solicitud con nombre de tienda, categoría, ciudad, teléfono y documento (PDF)
+- Tipos: `persona` o `negocio`
+- Estados: `pending` → `approved` / `rejected`
+- Admins revisan y aprueban/rechazan con nota de rechazo opcional
+- Badge de verificado visible en perfil del vendedor
+
+---
+
+## Reportes
+
+| Tipo | Tabla |
+|---|---|
+| Reporte de producto | `product_reports` |
+| Reporte de usuario | `user_reports` |
+
+Cada reporte incluye: razón, descripción, evidencia (imagen), estado (`pending`, `resolved`, `dismissed`), notas del admin y revisor.
+
+---
+
+## Panel de Administración
+
+| Sección | Funciones |
+|---|---|
+| Dashboard | Estadísticas generales (usuarios, productos, reportes) |
+| Gestión de usuarios | Suspender, bloquear, eliminar, cambiar rol |
+| Gestión de productos | Aprobar, desactivar, eliminar listing |
+| Reportes | Revisar y resolver reportes de productos y usuarios |
+| Verificaciones | Aprobar/rechazar solicitudes de verificación |
+| Gestión de admins | Crear nuevos administradores |
+| Estadísticas | Gráficas de actividad |
+| Log de actividad | Registro de todas las acciones administrativas (`activity_log`) |

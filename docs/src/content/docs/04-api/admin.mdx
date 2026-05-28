@@ -1,0 +1,210 @@
+---
+title: API — Administración
+description: Endpoints del panel de administración para gestión de usuarios, productos y reportes.
+draft: false
+sidebar:
+  order: 5
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+# API — Administración
+
+<Aside type="caution">
+Todos los endpoints de `src/api/admin/` verifican que `$_SESSION['user']['role']` sea `admin` o `super_admin`. Cualquier acceso no autorizado retorna HTTP 403.
+</Aside>
+
+---
+
+## GET/POST `/src/api/admin/users.php`
+
+Gestión de usuarios de la plataforma.
+
+### GET — Listar usuarios
+
+Retorna todos los usuarios (activos, suspendidos, bloqueados) con paginación.
+
+**Query params:** `page`, `status`, `role`, `search`
+
+```json
+{
+  "users": [
+    {
+      "id": 2,
+      "full_name": "Jhonatan castro calderon",
+      "email": "shonano@gmail.com",
+      "role": "seller",
+      "status": "active",
+      "created_at": "2026-03-17 06:05:26",
+      "product_count": 5
+    }
+  ],
+  "total": 14
+}
+```
+
+### POST — Acciones sobre usuarios
+
+| Acción (`action`) | Descripción |
+|---|---|
+| `suspend` | Cambia `status` a `suspended` |
+| `activate` | Cambia `status` a `active` |
+| `block` | Cambia `status` a `blocked` |
+| `delete` | Soft delete: `deleted_at = NOW()` |
+| `change_role` | Actualiza `role` (solo super_admin puede crear admins) |
+
+**Body:**
+```json
+{
+  "action": "suspend",
+  "user_id": 13
+}
+```
+
+Cada acción se registra en `activity_log`.
+
+---
+
+## GET/POST `/src/api/admin/products.php`
+
+Moderación de productos.
+
+### GET — Listar productos
+
+**Query params:** `status`, `admin_status`, `category`, `search`, `page`
+
+```json
+{
+  "products": [
+    {
+      "id": 11,
+      "title": "Yamaha XTZ 150",
+      "seller_name": "Jhonatan castro calderon",
+      "admin_status": "active",
+      "status": "disponible",
+      "created_at": "2026-03-19 22:01:11"
+    }
+  ]
+}
+```
+
+### POST — Acciones sobre productos
+
+| Acción | Descripción |
+|---|---|
+| `approve` | `admin_status = 'active'` |
+| `deactivate` | `admin_status = 'inactive'` |
+| `delete` | `admin_status = 'deleted'` |
+
+---
+
+## GET/POST `/src/api/admin/reports.php`
+
+Gestión de reportes de productos y usuarios.
+
+### GET — Listar reportes
+
+**Query params:** `type` (`product` o `user`), `status`
+
+```json
+[
+  {
+    "id": 2,
+    "type": "product",
+    "product_id": 11,
+    "product_title": "Yamaha XTZ 150",
+    "reporter_name": "Monica Galindo",
+    "reason": "fraude",
+    "description": "bruto no me regalo la moto",
+    "status": "resolved",
+    "admin_notes": "NEgativo",
+    "reviewed_at": "2026-04-21 18:51:40"
+  }
+]
+```
+
+### POST — Resolver o desestimar reporte
+
+```json
+{
+  "report_id": 2,
+  "type": "product",
+  "action": "resolve",
+  "admin_notes": "El producto fue revisado y eliminado."
+}
+```
+
+Cambia `status` a `resolved` o `dismissed`, registra `reviewed_by` y `reviewed_at`.
+
+---
+
+## GET/POST `/src/api/admin/admins.php`
+
+Gestión de cuentas de administrador.
+
+<Aside type="caution">
+Solo accesible por `super_admin`.
+</Aside>
+
+### POST — Crear admin
+
+```json
+{
+  "action": "create",
+  "full_name": "Nuevo Admin",
+  "email": "nuevo@admin.com",
+  "password": "SecurePass123",
+  "role": "admin"
+}
+```
+
+La contraseña se hashea con `password_hash()` antes de insertar.
+
+### POST — Eliminar admin
+
+```json
+{
+  "action": "delete",
+  "user_id": 17
+}
+```
+
+---
+
+## GET/POST `/src/api/verificacion.php`
+
+Gestión de solicitudes de verificación de vendedores.
+
+### GET — Listar solicitudes (admin)
+
+Retorna todas las solicitudes pendientes con datos del solicitante.
+
+### POST — Aprobar / Rechazar
+
+```json
+{
+  "action": "approve",
+  "verification_id": 5
+}
+```
+
+```json
+{
+  "action": "reject",
+  "verification_id": 7,
+  "rejection_reason": "Los datos no coinciden con el registro."
+}
+```
+
+Al aprobar: actualiza `seller_verifications.status = 'approved'`.
+
+---
+
+## GET `/src/views/admin/estadisticas.php`
+
+Página de estadísticas del panel admin. Genera gráficos de:
+
+- Usuarios registrados por mes
+- Productos publicados por categoría
+- Reportes resueltos vs pendientes
+- Promociones activas por plan

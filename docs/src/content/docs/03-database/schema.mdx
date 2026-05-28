@@ -1,0 +1,204 @@
+---
+title: Esquema SQL y Migraciones
+description: DDL completo, archivos de migración y orden de aplicación.
+draft: false
+sidebar:
+  order: 2
+---
+
+import { Aside, FileTree } from '@astrojs/starlight/components';
+
+# Esquema SQL y Migraciones
+
+## Archivos en `database/`
+
+<FileTree>
+- database/
+  - tiendalocal.sql     Schema principal completo + datos de ejemplo
+  - promotion_plans.sql Tablas de planes de promoción
+  - favorites.sql       Tabla de favoritos
+  - add_views_column.sql Migración: columna `views` en products
+  - add_product_city.sql Migración: columna `city` en products
+  - search_history.sql   Tabla de historial de búsqueda
+</FileTree>
+
+---
+
+## Orden de Instalación
+
+Ejecuta los scripts en este orden exacto:
+
+```sql
+-- 1. Schema principal (crea todas las tablas base)
+SOURCE database/tiendalocal.sql;
+
+-- 2. Planes de promoción (si no está en el schema principal)
+SOURCE database/promotion_plans.sql;
+
+-- 3. Migración: contador de vistas en productos
+SOURCE database/add_views_column.sql;
+
+-- 4. Migración: campo ciudad en productos
+SOURCE database/add_product_city.sql;
+
+-- 5. Historial de búsqueda (opcional)
+SOURCE database/search_history.sql;
+```
+
+O desde la línea de comandos:
+
+```bash
+mysql -u root -p tiendalocal < database/tiendalocal.sql
+mysql -u root -p tiendalocal < database/promotion_plans.sql
+mysql -u root -p tiendalocal < database/add_views_column.sql
+mysql -u root -p tiendalocal < database/add_product_city.sql
+```
+
+---
+
+## DDL — Tablas Clave
+
+### `users`
+
+```sql
+CREATE TABLE `users` (
+  `id`            INT NOT NULL AUTO_INCREMENT,
+  `full_name`     VARCHAR(100) NOT NULL,
+  `email`         VARCHAR(100) NOT NULL,
+  `password`      VARCHAR(255) NOT NULL,
+  `created_at`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `phone`         VARCHAR(20) DEFAULT NULL,
+  `city`          VARCHAR(100) DEFAULT NULL,
+  `address`       VARCHAR(200) DEFAULT NULL,
+  `bio`           TEXT,
+  `profile_photo` VARCHAR(255) DEFAULT NULL,
+  `status`        ENUM('active','inactive','blocked','suspended') NOT NULL DEFAULT 'active',
+  `role`          ENUM('user','seller','admin','super_admin') NOT NULL DEFAULT 'user',
+  `updated_at`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at`    TIMESTAMP NULL DEFAULT NULL,
+  `last_login`    TIMESTAMP NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+### `products`
+
+```sql
+CREATE TABLE `products` (
+  `id`             INT NOT NULL AUTO_INCREMENT,
+  `title`          VARCHAR(150) DEFAULT NULL,
+  `price`          DECIMAL(10,2) DEFAULT NULL,
+  `description`    TEXT,
+  `category_id`    INT DEFAULT NULL,
+  `status`         ENUM('disponible','vendido') DEFAULT NULL,
+  `longitude`      DECIMAL(11,7) DEFAULT NULL,
+  `latitude`       DECIMAL(10,7) DEFAULT NULL,
+  `city`           VARCHAR(100) DEFAULT NULL,
+  `condition_type` ENUM('nuevo','usado','reacondicionado') NOT NULL,
+  `user_id`        INT DEFAULT NULL,
+  `created_at`     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `admin_status`   ENUM('active','inactive','deleted') NOT NULL DEFAULT 'active',
+  `updated_at`     TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+  `promo_priority` TINYINT UNSIGNED NOT NULL DEFAULT '0',
+  `views`          INT UNSIGNED NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `category_id` (`category_id`),
+  KEY `fk_user` (`user_id`),
+  KEY `idx_admin_status` (`admin_status`,`status`),
+  KEY `idx_created` (`created_at`),
+  KEY `idx_city` (`city`),
+  CONSTRAINT `fk_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `products_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+### `conversations`
+
+```sql
+CREATE TABLE `conversations` (
+  `id`              INT NOT NULL AUTO_INCREMENT,
+  `product_id`      INT DEFAULT NULL,
+  `buyer_id`        INT DEFAULT NULL,
+  `seller_id`       INT DEFAULT NULL,
+  `created_at`      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `hidden_by_buyer` TINYINT(1) NOT NULL DEFAULT '0',
+  `hidden_by_seller` TINYINT(1) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_conv_triplet` (`product_id`,`buyer_id`,`seller_id`),
+  KEY `idx_buyer` (`buyer_id`),
+  KEY `idx_seller` (`seller_id`),
+  KEY `idx_product` (`product_id`),
+  CONSTRAINT `fk_conv_buyer`   FOREIGN KEY (`buyer_id`)   REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_conv_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_conv_seller`  FOREIGN KEY (`seller_id`)  REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+### `messages`
+
+```sql
+CREATE TABLE `messages` (
+  `id`              INT NOT NULL AUTO_INCREMENT,
+  `conversation_id` INT DEFAULT NULL,
+  `sender_id`       INT DEFAULT NULL,
+  `message`         TEXT,
+  `created_at`      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `is_read`         TINYINT(1) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `idx_conv_time` (`conversation_id`,`id`),
+  KEY `idx_sender` (`sender_id`),
+  KEY `idx_unread` (`conversation_id`,`is_read`),
+  CONSTRAINT `fk_msg_conv`   FOREIGN KEY (`conversation_id`) REFERENCES `conversations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_msg_sender` FOREIGN KEY (`sender_id`)       REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+---
+
+## Migraciones Detalladas
+
+### `add_views_column.sql`
+
+Agrega contador de vistas a la tabla de productos:
+
+```sql
+ALTER TABLE products
+  ADD COLUMN views INT UNSIGNED NOT NULL DEFAULT 0
+  AFTER promo_priority;
+```
+
+### `add_product_city.sql`
+
+Agrega campo de ciudad resuelta por geocodificación inversa:
+
+```sql
+ALTER TABLE products
+  ADD COLUMN city VARCHAR(100) DEFAULT NULL
+  AFTER latitude;
+
+CREATE INDEX idx_city ON products(city);
+```
+
+---
+
+## Datos Semilla
+
+El archivo `tiendalocal.sql` incluye datos de ejemplo para desarrollo:
+
+| Tabla | Registros |
+|---|---|
+| `users` | 14 usuarios (sellers, admins, users) |
+| `products` | 16 productos en varias categorías |
+| `categories` | 23 categorías predefinidas |
+| `conversations` | 30 conversaciones de ejemplo |
+| `messages` | ~100 mensajes de ejemplo |
+| `product_promotions` | 8 promociones (la mayoría expiradas) |
+| `reviews` | 3 reseñas |
+| `favorites` | 5 favoritos |
+| `seller_verifications` | 2 solicitudes (1 aprobada, 1 rechazada) |
+| `activity_log` | 13 entradas de auditoría |
+
+<Aside type="caution">
+Los datos semilla incluyen contraseñas en texto plano (`123`) para usuarios de desarrollo. **Nunca uses datos de ejemplo en producción.** Cambia todas las contraseñas antes de publicar.
+</Aside>

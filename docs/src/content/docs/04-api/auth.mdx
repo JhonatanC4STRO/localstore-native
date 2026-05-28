@@ -1,0 +1,124 @@
+---
+title: API — Autenticación
+description: Endpoints de login, registro, logout y recuperación de contraseña.
+draft: false
+sidebar:
+  order: 2
+---
+
+# API — Autenticación
+
+## POST `/src/controllers/auth_login.php`
+
+Procesa el formulario de login. Redirige según resultado.
+
+### Parámetros (form-data)
+
+| Campo | Tipo | Requerido | Descripción |
+|---|---|---|---|
+| `email` | string | Sí | Email del usuario |
+| `password` | string | Sí | Contraseña |
+| `csrf_token` | string | Sí | Token CSRF del formulario |
+
+### Lógica
+
+1. Valida CSRF token
+2. Comprueba si `email` + `password` coinciden con vars de entorno `ADMIN_EMAIL` / `ADMIN_PASSWORD`
+   - Si sí: login como admin de entorno
+3. Si no: `SELECT` usuario por email + `password_verify()` hash bcrypt
+4. Verifica `status` del usuario (no `blocked`, no `suspended`)
+5. `session_regenerate_id(true)`
+6. Guarda `$_SESSION['user']`
+
+### Respuestas (redirects)
+
+| Condición | Redirect |
+|---|---|
+| Login exitoso como user/seller | `/src/views/home.php` |
+| Login exitoso como admin/super_admin | `/src/views/admin/dashboard.php` |
+| Error (credenciales incorrectas, cuenta suspendida) | `/src/views/auth/login.php?error=...` |
+
+---
+
+## POST `/src/controllers/auth_register.php`
+
+Registro de nuevo usuario.
+
+### Parámetros (form-data)
+
+| Campo | Tipo | Requerido |
+|---|---|---|
+| `full_name` | string | Sí |
+| `email` | string | Sí |
+| `password` | string | Sí |
+| `csrf_token` | string | Sí |
+
+### Lógica
+
+1. Valida CSRF
+2. Sanitiza inputs
+3. Verifica que el email no exista (`SELECT` con prepared statement)
+4. `password_hash($password, PASSWORD_BCRYPT)`
+5. `INSERT INTO users (full_name, email, password)`
+6. Auto-login: `session_regenerate_id(true)` + `$_SESSION['user'] = nuevo_usuario`
+7. Redirige a `/src/views/home.php`
+
+---
+
+## GET/POST `/src/views/auth/login.php`
+
+Página HTML del formulario de login. No es un endpoint de API; renderiza el formulario con `insert_csrf_input()`.
+
+---
+
+## GET `/src/controllers/auth_logout.php`
+
+Destruye la sesión y redirige al login.
+
+```php
+session_start();
+session_destroy();
+header('Location: /src/views/auth/login.php');
+```
+
+No requiere CSRF (es una acción GET sin efectos secundarios peligrosos).
+
+---
+
+## POST `/src/controllers/auth_reset_migrado.php`
+
+Migración de contraseña de administrador. Útil para la primera puesta en marcha.
+
+### Lógica
+
+1. Verifica que `ADMIN_EMAIL` esté en las variables de entorno
+2. Busca usuario con ese email
+3. Si la contraseña no está hasheada con bcrypt (`$2y$`): hashea y actualiza
+4. Responde con JSON `{ migrated: true }` o `{ already_migrated: true }`
+
+---
+
+## Manejo de Sesión de Admin por Entorno
+
+Cuando las variables de entorno `ADMIN_EMAIL` y `ADMIN_PASSWORD` están definidas, el controlador de login permite acceder sin consultar la base de datos:
+
+```php
+if (
+  getenv('ADMIN_EMAIL') === $email &&
+  getenv('ADMIN_PASSWORD') === $password
+) {
+  // Auto-login como super admin de entorno
+}
+```
+
+Esto permite el acceso de emergencia cuando la BD no está disponible.
+
+---
+
+## Protección contra Fuerza Bruta
+
+Actualmente no hay rate limiting implementado. Para producción se recomienda agregar:
+
+- Contador de intentos fallidos en sesión o BD
+- CAPTCHA tras N intentos fallidos
+- IP blocking vía `$_SERVER['REMOTE_ADDR']`

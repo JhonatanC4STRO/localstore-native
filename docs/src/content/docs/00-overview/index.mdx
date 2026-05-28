@@ -1,0 +1,99 @@
+---
+title: Introducción
+description: Visión general de ComercioLocal — qué es, qué problema resuelve y su stack tecnológico.
+draft: false
+sidebar:
+  order: 1
+---
+
+import { Badge, Aside } from '@astrojs/starlight/components';
+
+# ComercioLocal <Badge text="v1.0" variant="tip" />
+
+**ComercioLocal** es una plataforma de marketplace web nativa que conecta compradores y vendedores de la misma ciudad. Permite publicar productos con geolocalización exacta, chatear en tiempo real con vendedores, y acceder a un panel administrativo completo para moderación.
+
+## Propósito
+
+El proyecto nace de la necesidad de un marketplace **local y ligero** para comunidades pequeñas y medianas, donde las transacciones se resuelven cara a cara en la misma ciudad. A diferencia de plataformas nacionales, ComercioLocal prioriza:
+
+- **Proximidad geográfica** — los productos se muestran con coordenadas GPS y ciudad resuelta vía geocodificación inversa.
+- **Comunicación directa** — chat en tiempo real entre comprador y vendedor sin intermediarios.
+- **Confianza** — sistema de verificación de vendedores, reseñas, reportes y moderación de contenido.
+
+---
+
+## Stack Tecnológico
+
+| Capa | Tecnología |
+|---|---|
+| Lenguaje backend | PHP 8.2 |
+| Base de datos | MySQL 8.0 |
+| WebSocket (chat) | Ratchet 0.4 (PHP) |
+| Frontend | Vanilla JS + Tailwind CSS v4 |
+| Slider / Carruseles | Swiper.js 12 |
+| Animaciones | Animate.css 4 |
+| Mapas / Geocodificación | Leaflet.js + Nominatim (OpenStreetMap) |
+| Contenedor | Docker (PHP 8.2 CLI) |
+| Plataforma cloud | Railway.app |
+
+---
+
+## Estructura de Carpetas
+
+```
+localstore-native/
+├── database/          # Archivos SQL (schema + migraciones)
+├── docs/              # Esta documentación (Astro Starlight)
+├── public/            # Assets estáticos (CSS, JS, imágenes, uploads)
+│   ├── css/
+│   ├── js/
+│   └── uploads/
+│       ├── avatars/
+│       ├── products/
+│       ├── reportes/
+│       └── verificaciones/
+├── src/
+│   ├── api/           # Endpoints JSON (AJAX)
+│   ├── components/    # Fragmentos PHP reutilizables
+│   ├── config/        # Conexión DB, CSRF, Logger, RoleSync
+│   ├── controllers/   # Lógica de formularios POST
+│   ├── logs/          # Archivo de errores interno
+│   └── views/         # Páginas HTML/PHP
+├── vendor/            # Dependencias PHP (Ratchet)
+├── server.php         # Servidor WebSocket
+├── index.php          # Entry point → redirige a home
+├── health.php         # Health check para Railway
+├── Dockerfile
+└── railway.toml
+```
+
+---
+
+## Roles de Usuario
+
+| Rol | Descripción |
+|---|---|
+| `user` | Comprador estándar. Puede chatear y guardar favoritos. |
+| `seller` | Auto-promovido cuando publica un producto. Puede crear listings. |
+| `admin` | Modera usuarios, productos y reportes desde panel admin. |
+| `super_admin` | Acceso completo; nunca pierde rol por lógica automática. |
+
+<Aside type="tip">
+La promoción de `user` → `seller` es **automática**: en cuanto un usuario crea su primer producto, `role_sync.php` actualiza su rol sin intervención manual.
+</Aside>
+
+---
+
+## Flujo de Request Típico
+
+```
+Browser → index.php → src/views/*.php
+                    ↓
+              src/controllers/*.php  (POST)
+                    ↓
+              src/api/*.php          (AJAX/JSON)
+                    ↓
+              src/config/conexion.php → MySQL
+```
+
+El servidor WebSocket corre como proceso separado en el puerto `8080` y solo maneja mensajes de chat.

@@ -1,0 +1,197 @@
+---
+title: CSRF, Sesiones y Uploads
+description: Implementación detallada de protección CSRF, hardening de sesiones y validación de archivos.
+draft: false
+sidebar:
+  order: 2
+---
+
+# CSRF, Sesiones y Uploads
+
+## Implementación CSRF (`src/config/csrf.php`)
+
+### API
+
+```php
+get_csrf_token(): string        // Genera o recupera token de la sesión
+insert_csrf_input(): void       // Hace echo del campo oculto HTML
+verify_csrf_token(?string): bool // Valida el token recibido
+```
+
+### Generación del token
+
+```php
+function get_csrf_token(): string {
+    if (!isset($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+```
+
+`random_bytes(32)` genera 32 bytes criptográficamente aleatorios (256 bits de entropía). `bin2hex()` los convierte a 64 caracteres hexadecimales.
+
+### Inserción en formularios
+
+```php
+function insert_csrf_input(): void {
+    $token = get_csrf_token();
+    echo '<input type="hidden" name="csrf_token" value="' 
+        . htmlspecialchars($token, ENT_QUOTES, 'UTF-8') 
+        . '">';
+}
+```
+
+**Uso en vistas:**
+
+```php
+<form action="/src/controllers/auth_login.php" method="POST">
+    <?php insert_csrf_input(); ?>
+    <input type="email" name="email">
+    <input type="password" name="password">
+    <button type="submit">Ingresar</button>
+</form>
+```
+
+### Validación del token
+
+```php
+function verify_csrf_token(?string $token): bool {
+    if (empty($token) || !isset($_SESSION['csrf_token'])) {
+        return false;
+    }
+    return hash_equals($_SESSION['csrf_token'], $token);
+}
+```
+
+`hash_equals()` compara en tiempo constante para prevenir **timing attacks** — un atacante no puede determinar cuántos caracteres del token son correctos midiendo el tiempo de respuesta.
+
+---
+
+## Hardening de Sesiones PHP
+
+### Session Fixation
+
+```php
+// auth_login.php y auth_register.php
+session_start();
+// ... validar credenciales ...
+session_regenerate_id(true);  // nuevo ID; invalida el anterior
+$_SESSION['user'] = $user_row;
+```
+
+Esto previene que un atacante inyecte un `PHPSESSID` conocido en la URL/cookie antes del login.
+
+### Recomendaciones adicionales para producción
+
+Agrega en `php.ini` o `ini_set()` al inicio de la aplicación:
+
+```ini
+; Previene acceso JS a la cookie de sesión
+session.cookie_httponly = 1
+
+; Solo enviar cookie por HTTPS
+session.cookie_secure = 1
+
+; No exponer el ID de sesión en URLs
+session.use_only_cookies = 1
+
+; Vida de la sesión en segundos (8 horas)
+session.gc_maxlifetime = 28800
+```
+
+---
+
+## Validación de Uploads — Flujo Completo
+
+### 1. Recepción del archivo
+
+```php
+$file = $_FILES['images'];  // o 'images[]' para múltiples
+$tmp_name = $file['tmp_name'];
+$original_name = basename($file['name']);
+$size = $file['size'];
+```
+
+### 2. Validación de tamaño
+
+```php
+if ($size > 5 * 1024 * 1024) {  // 5MB
+    log_error("Upload demasiado grande: {$size} bytes", 'UPLOAD');
+    http_response_code(400);
+    echo json_encode(['error' => 'El archivo supera 5MB']);
+    exit;
+}
+```
+
+### 3. Validación MIME real
+
+```php
+$finfo = finfo_open(FILEINFO_MIME_TYPE);
+$mime = finfo_file($finfo, $tmp_name);
+finfo_close($finfo);
+
+$allowed_images = ['image/jpeg', 'image/png', 'image/webp'];
+$allowed_docs   = ['application/pdf'];
+
+if (!in_array($mime, $allowed_images)) {
+    http_response_code(415);
+    echo json_encode(['error' => 'Tipo MIME no permitido: ' . $mime]);
+    exit;
+}
+```
+
+### 4. Generación de nombre seguro
+
+```php
+$timestamp = time();
+$safe_name = $timestamp . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '', $original_name);
+$destination = __DIR__ . '/../../public/uploads/products/' . $safe_name;
+```
+
+El `preg_replace` elimina caracteres especiales del nombre original, evitando path traversal (`../`).
+
+### 5. Movimiento del archivo temporal
+
+```php
+if (!move_uploaded_file($tmp_name, $destination)) {
+    log_error("Error moviendo archivo: {$destination}", 'UPLOAD');
+    http_response_code(500);
+    exit;
+}
+```
+
+`move_uploaded_file()` solo funciona con archivos realmente subidos vía HTTP POST (previene ataques de path traversal en el origen).
+
+---
+
+## Política de Contraseñas
+
+| Regla | Estado |
+|---|---|
+| Hash bcrypt `$2y$` | Implementado |
+| Longitud mínima | No implementado (recomendado: 8 caracteres) |
+| Complejidad (mayúsculas, números) | No implementado |
+| Expiración de contraseña | No implementado |
+| Historial de contraseñas | No implementado |
+
+Para producción, implementar al menos longitud mínima en el frontend y backend.
+
+---
+
+## Log de Seguridad
+
+Formato del archivo `src/logs/error.log`:
+
+```
+[2026-05-27 10:15:33] [DB] [IP: 203.0.113.42] 
+  mysqli_connect failed: Access denied for user 'root'@'localhost'
+
+[2026-05-27 11:02:14] [UPLOAD] [IP: 192.168.1.10] 
+  Tipo MIME no permitido: application/x-php
+
+[2026-05-27 12:30:01] [AUTH] [IP: 198.51.100.7] 
+  Login fallido para email: attacker@evil.com
+```
+
+El log nunca se sirve como archivo estático. Está en `src/logs/` fuera de `public/`, por lo que no es accesible desde el browser.

@@ -1,0 +1,194 @@
+---
+title: Railway & Docker
+description: Guía de despliegue en Railway.app usando el Dockerfile del proyecto.
+draft: false
+sidebar:
+  order: 2
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+# Railway & Docker
+
+## Visión General
+
+El proyecto incluye un `Dockerfile` optimizado para Railway.app. Railway detecta automáticamente el Dockerfile y construye la imagen.
+
+---
+
+## Dockerfile
+
+```dockerfile
+FROM php:8.2-cli
+
+# Instalar dependencias del sistema
+RUN apt-get update && apt-get install -y curl unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Extensiones PHP
+RUN docker-php-ext-install mysqli pdo pdo_mysql
+
+# Composer
+RUN curl -sS https://getcomposer.org/installer | php \
+    -- --install-dir=/usr/local/bin --filename=composer
+
+WORKDIR /var/www/html
+COPY . .
+
+# Instalar dependencias PHP (sin dev, optimizado)
+RUN composer install --no-dev --optimize-autoloader
+
+# Seed de imágenes: copia las imágenes originales fuera del volumen
+RUN mkdir -p /opt/uploads-seed && \
+    cp -r public/uploads/. /opt/uploads-seed/ 2>/dev/null || true
+
+RUN mkdir -p public/uploads/products && chmod -R 777 public/uploads
+
+# Script de inicio
+RUN printf '#!/bin/sh\n\
+mkdir -p /var/www/html/public/uploads/products\n\
+if [ ! -f /var/www/html/public/uploads/.seeded ]; then\n\
+  cp -rn /opt/uploads-seed/. /var/www/html/public/uploads/ 2>/dev/null || true\n\
+  touch /var/www/html/public/uploads/.seeded\n\
+fi\n\
+chmod -R 777 /var/www/html/public/uploads\n\
+exec php -S 0.0.0.0:${PORT:-80} -t /var/www/html\n\
+' > /start.sh && chmod +x /start.sh
+
+CMD ["/bin/sh", "/start.sh"]
+```
+
+---
+
+## railway.toml
+
+```toml
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+healthcheckPath = "/health.php"
+healthcheckTimeout = 300
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
+```
+
+| Campo | Valor | Descripción |
+|---|---|---|
+| `builder` | `dockerfile` | Usa el Dockerfile del repo |
+| `healthcheckPath` | `/health.php` | Railway verifica este endpoint |
+| `healthcheckTimeout` | 300s | Tiempo máximo para que el servidor responda |
+| `restartPolicyType` | `on_failure` | Reinicia si el proceso muere |
+| `restartPolicyMaxRetries` | 3 | Máximo 3 reinicios antes de marcar como fallido |
+
+---
+
+## Pasos de Despliegue en Railway
+
+<Steps>
+
+1. **Crear proyecto en Railway**
+   
+   Ve a [railway.app](https://railway.app) y crea un nuevo proyecto desde un repositorio GitHub.
+
+2. **Conectar repositorio**
+   
+   Selecciona `JhonatanC4STRO/localstore-native`. Railway detectará el Dockerfile automáticamente.
+
+3. **Agregar plugin MySQL**
+   
+   En el proyecto, haz clic en `+ New` → `Database` → `MySQL`. Railway provisiona automáticamente la BD y expone `MYSQL_URL`.
+
+4. **Configurar variables de entorno**
+   
+   En `Variables` del servicio web, agrega:
+   
+   ```
+   ADMIN_EMAIL=tu_email@dominio.com
+   ADMIN_PASSWORD=contraseña_segura
+   WS_HOST=0.0.0.0
+   WS_PORT=8080
+   ```
+   
+   Railway inyecta `MYSQL_URL` y `PORT` automáticamente.
+
+5. **Importar base de datos**
+   
+   Usando el CLI de Railway o el cliente MySQL con las credenciales del plugin:
+   
+   ```bash
+   railway run mysql < database/tiendalocal.sql
+   railway run mysql < database/promotion_plans.sql
+   railway run mysql < database/add_views_column.sql
+   railway run mysql < database/add_product_city.sql
+   ```
+
+6. **Primer deploy**
+   
+   Railway buildea y despliega automáticamente. El health check en `/health.php` confirma que el servidor está listo.
+
+7. **Migrar contraseña de admin (opcional)**
+   
+   Si creaste el admin con las variables de entorno y quieres migrar a la BD:
+   
+   ```
+   GET https://tu-app.railway.app/src/controllers/auth_reset_migrado.php
+   ```
+
+</Steps>
+
+---
+
+## Dominio Personalizado
+
+En Railway, ve a `Settings` → `Networking` → `Custom Domain` y agrega tu dominio. Railway provisiona automáticamente el certificado TLS (Let's Encrypt).
+
+Una vez activo HTTPS, actualiza la configuración PHP:
+
+```php
+// En el inicio de la aplicación o php.ini
+ini_set('session.cookie_secure', '1');
+```
+
+---
+
+## WebSocket en Producción
+
+<Aside type="caution">
+El Dockerfile actual solo inicia el servidor HTTP. El servidor WebSocket (Ratchet) necesita un proceso separado.
+</Aside>
+
+### Opción 1: Segundo servicio en Railway
+
+Agrega un segundo servicio al proyecto Railway con el mismo repo y este comando de inicio:
+
+```bash
+php /var/www/html/server.php
+```
+
+Configura las variables `WS_HOST=0.0.0.0` y `WS_PORT=8080`.
+
+### Opción 2: Proceso en background (no recomendado para producción)
+
+Modifica `/start.sh` para iniciar el WebSocket en background:
+
+```sh
+php /var/www/html/server.php &
+exec php -S 0.0.0.0:${PORT:-80} -t /var/www/html
+```
+
+Esto no es ideal porque si el proceso WebSocket muere, no se reinicia automáticamente.
+
+---
+
+## Límites de Railway (Plan Free)
+
+| Límite | Valor |
+|---|---|
+| Horas de ejecución/mes | 500 horas (≈ 20 días continuo) |
+| RAM | 512 MB |
+| Disco efímero | — (usa volumen para uploads) |
+| MySQL incluido | 1 GB |
+
+Para uso continuo en producción, el plan Developer ($5/mes) es recomendado.

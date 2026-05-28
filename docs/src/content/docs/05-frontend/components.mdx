@@ -1,0 +1,164 @@
+---
+title: Frontend — Componentes PHP
+description: Fragmentos PHP reutilizables, librerías JS externas y sistema de mapas.
+draft: false
+sidebar:
+  order: 2
+---
+
+# Frontend — Componentes PHP
+
+Los componentes PHP en `src/components/` son fragmentos HTML/PHP incluidos con `require_once` en múltiples vistas.
+
+---
+
+## `header.php`
+
+Barra de navegación principal. Presente en todas las páginas.
+
+**Incluye:**
+- Logo y nombre de la plataforma
+- Menú de navegación (Inicio, Marketplace, Crear, Chat, Perfil)
+- Badge de mensajes no leídos (llamada AJAX a `get_unread_count.php`)
+- Avatar del usuario autenticado
+- Botones de Login / Registro si no hay sesión
+- Menú hamburguesa para móvil
+
+**Uso:**
+```php
+<?php require_once 'src/components/header.php'; ?>
+```
+
+---
+
+## `sidebar.php`
+
+Menú lateral para dispositivos móviles. Aparece al activar el hamburger del header.
+
+**Incluye:**
+- Navegación completa (igual que header)
+- Información del usuario (nombre, rol, foto)
+- Acceso rápido al panel admin (si aplica)
+
+---
+
+## `sliderhome.php`
+
+Carrusel hero de la página principal. Implementado con **Swiper.js v12**.
+
+```php
+<?php require_once 'src/components/sliderhome.php'; ?>
+```
+
+**Configuración Swiper:**
+```javascript
+new Swiper('.hero-swiper', {
+  loop: true,
+  autoplay: { delay: 4000 },
+  pagination: { el: '.swiper-pagination', clickable: true },
+  navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' }
+});
+```
+
+---
+
+## `categoriasslider.php`
+
+Slider horizontal de categorías en la página principal.
+
+- Iconos SVG por categoría
+- Swiper con `slidesPerView: 'auto'` y `freeMode: true`
+- Clic en categoría redirige a `/src/views/products/all.php?category=ID`
+
+---
+
+## `filter_sidebar.php`
+
+Panel lateral de filtros del marketplace (`all.php`).
+
+**Controles:**
+- Input de búsqueda por nombre
+- Select de categoría
+- Inputs de precio mínimo/máximo
+- Radio buttons de condición (nuevo/usado/reacondicionado)
+- Input de ciudad
+- Botón "Aplicar filtros" → llama a `filter.php` vía `fetch()`
+
+---
+
+## `city_map_modal.php`
+
+Modal con mapa Leaflet para seleccionar la ubicación de un producto.
+
+**Funcionalidad:**
+1. Abre mapa centrado en la última posición conocida (o IP geolocation)
+2. El usuario hace clic en el mapa
+3. Se actualiza el marcador en `latitude` y `longitude`
+4. Geocodificación inversa vía **Nominatim** para resolver el nombre de la ciudad
+5. Los campos ocultos del formulario se actualizan automáticamente
+
+```javascript
+map.on('click', async (e) => {
+  const { lat, lng } = e.latlng;
+  document.getElementById('latitude').value = lat;
+  document.getElementById('longitude').value = lng;
+  
+  // Reverse geocoding
+  const res = await fetch(
+    `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
+  );
+  const data = await res.json();
+  const city = data.address.city || data.address.town || data.address.village;
+  document.getElementById('city').value = city;
+});
+```
+
+---
+
+## `user_settings.php`
+
+Formulario de configuración de cuenta.
+
+**Secciones:**
+1. Datos básicos (nombre, teléfono, ciudad, dirección, bio)
+2. Foto de perfil (preview en tiempo real)
+3. Notificaciones (toggles por tipo)
+4. Privacidad (mostrar teléfono/email, quién puede escribir)
+
+---
+
+## Librerías de Terceros (CDN)
+
+| Librería | Versión | CDN |
+|---|---|---|
+| Leaflet.js | 1.9.x | unpkg / CDN |
+| Swiper.js | 12.x | CDN de Swiper |
+| Animate.css | 4.1.x | cdnjs |
+| Font Awesome | 6.x | cdnjs |
+
+Las librerías se cargan desde CDN en las páginas que las necesitan, no de forma global.
+
+---
+
+## Convenciones de Tailwind CSS
+
+El proyecto usa **Tailwind v4** con configuración en `tailwind.config.js`.
+
+```javascript
+// tailwind.config.js (simplificado)
+export default {
+  content: [
+    './src/**/*.php',
+    './public/**/*.html'
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: '#2563eb',  // Azul principal
+      }
+    }
+  }
+}
+```
+
+Los estilos específicos de cada página que no se pueden expresar con utilidades de Tailwind van en `public/css/[pagina].css`.

@@ -1,0 +1,148 @@
+---
+title: Frontend — Visión General
+description: Stack frontend, páginas disponibles y arquitectura CSS/JS de ComercioLocal.
+draft: false
+sidebar:
+  order: 1
+---
+
+# Frontend — Visión General
+
+## Stack Frontend
+
+| Tecnología | Versión | Uso |
+|---|---|---|
+| Tailwind CSS | v4.2 | Utilidades de estilos |
+| Swiper.js | v12 | Carruseles y sliders |
+| Animate.css | v4.1 | Animaciones de entrada |
+| Leaflet.js | CDN | Mapas y geolocalización |
+| Vanilla JS | ES6+ | Interactividad sin frameworks |
+
+---
+
+## Estructura de Assets
+
+```
+public/
+├── css/
+│   ├── input.css          # Entrada de Tailwind
+│   ├── output.css         # Compilado de Tailwind (NO editar)
+│   └── [pagina].css       # Estilos específicos por vista
+├── js/
+│   └── [pagina].js        # Módulo JS por vista
+└── uploads/
+    ├── products/           # Imágenes de productos
+    ├── avatars/            # Fotos de perfil
+    ├── reportes/           # Evidencias de reportes
+    └── verificaciones/     # Documentos de verificación
+```
+
+### Compilación de Tailwind
+
+```bash
+# En la raíz del proyecto
+npx @tailwindcss/cli -i public/css/input.css -o public/css/output.css --watch
+```
+
+---
+
+## Páginas del Sistema
+
+### Públicas (sin sesión)
+
+| Ruta | Archivo | Descripción |
+|---|---|---|
+| `/` | `index.php` → `home.php` | Página principal con slider y categorías |
+| `/src/views/auth/login.php` | `login.php` | Formulario de login |
+| `/src/views/auth/register.php` | `register.php` | Formulario de registro |
+| `/src/views/products/all.php` | `all.php` | Listado marketplace con filtros |
+| `/src/views/products/detalle.php` | `detalle.php` | Detalle de producto |
+| `/src/views/perfil.php` | `perfil.php` | Perfil público de usuario |
+| `/src/views/seller_profile.php` | `seller_profile.php` | Storefront del vendedor |
+
+### Autenticadas (requieren sesión)
+
+| Ruta | Archivo | Descripción |
+|---|---|---|
+| `/src/views/dashboard.php` | `dashboard.php` | Dashboard del usuario |
+| `/src/views/products/crear.php` | `crear.php` | Crear nuevo producto |
+| `/src/views/products/edit.php` | `edit.php` | Editar producto |
+| `/src/views/products/mis_productos.php` | `mis_productos.php` | Lista de productos del usuario |
+| `/src/views/chat/chat.php` | `chat.php` | Interfaz de chat |
+| `/src/views/favoritos.php` | `favoritos.php` | Lista de favoritos |
+| `/src/views/promociones.php` | `promociones.php` | Planes de promoción |
+| `/src/views/resenas.php` | `resenas.php` | Reseñas del usuario |
+| `/src/views/configuracion.php` | `configuracion.php` | Configuración de cuenta |
+| `/src/views/solicitar_verificacion.php` | `solicitar_verificacion.php` | Solicitar verificación |
+
+### Admin (requieren rol admin/super_admin)
+
+| Archivo | Descripción |
+|---|---|
+| `admin/dashboard.php` | Dashboard con KPIs |
+| `admin/gestion_usuarios.php` | Tabla de usuarios |
+| `admin/gestion_productos.php` | Tabla de productos |
+| `admin/reportes.php` | Reportes pendientes |
+| `admin/verificaciones.php` | Solicitudes de verificación |
+| `admin/gestion_admins.php` | Gestión de admins |
+| `admin/estadisticas.php` | Gráficas de actividad |
+
+---
+
+## Patrón de una Vista PHP
+
+Cada vista sigue este patrón:
+
+```php
+<?php
+session_start();
+require_once '../../config/conexion.php';  // $conn disponible
+
+// Guard de sesión (en vistas protegidas)
+if (!isset($_SESSION['user'])) {
+    header('Location: /src/views/auth/login.php');
+    exit;
+}
+
+$user = $_SESSION['user'];
+?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/public/css/output.css">
+    <link rel="stylesheet" href="/public/css/[pagina].css">
+</head>
+<body>
+    <?php require_once '../../components/header.php'; ?>
+    
+    <!-- Contenido de la vista -->
+    
+    <script src="/public/js/[pagina].js"></script>
+</body>
+</html>
+```
+
+---
+
+## Módulos JavaScript
+
+Cada página tiene su propio módulo JS en `public/js/`. Los módulos no usan frameworks ni bundlers; son archivos ES6 cargados directamente.
+
+| Módulo | Responsabilidad |
+|---|---|
+| `home.js` | Inicializar Swiper del hero; animaciones de categorías |
+| `all.js` | Filtros del marketplace; paginación; mapa de productos |
+| `crear.js` | Mapa Leaflet para seleccionar ubicación; geocodificación inversa; preview de imágenes |
+| `edit.js` | Igual que `crear.js` pero pre-carga datos existentes |
+| `chat.js` | Conexión WebSocket; envío/recepción de mensajes; scroll al fondo |
+| `detalle.js` | Galería de imágenes; botón de favorito; abrir conversación |
+| `favorites.js` | Toggle de favoritos con `fetch()` |
+| `dashboard.js` | Stats del usuario |
+| `header.js` | Menú móvil; contador de mensajes no leídos |
+| `login.js` | Validación de formulario; mostrar/ocultar contraseña |
+| `register.js` | Validación en tiempo real |
+| `perfil.js` | Preview de foto de perfil |
+| `mis_productos.js` | Acciones sobre productos (marcar vendido, eliminar) |
+| `promociones.js` | Selección de plan; simulación de pago |
+| `seller_profile.js` | Tabs de productos/reseñas del vendedor |

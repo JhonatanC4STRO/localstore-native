@@ -1,0 +1,143 @@
+---
+title: API — Convenciones Generales
+description: Convenciones, autenticación y formato de respuestas de la API interna de ComercioLocal.
+draft: false
+sidebar:
+  order: 1
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+# API — Convenciones Generales
+
+Todos los endpoints de `src/api/` son **internos** — no existe una API pública documentada con versión. Son consumidos exclusivamente por el frontend JavaScript del mismo dominio.
+
+---
+
+## Autenticación
+
+La API usa **sesiones PHP** para autenticar. No hay tokens JWT ni API keys.
+
+- El cliente debe tener una cookie de sesión válida (`PHPSESSID`)
+- Los endpoints comprueban `$_SESSION['user']` antes de responder
+- Si la sesión no existe, responden con HTTP 401 o redirigen al login
+
+```php
+// Patrón típico en todos los endpoints protegidos
+session_start();
+if (!isset($_SESSION['user'])) {
+    http_response_code(401);
+    echo json_encode(['error' => 'No autenticado']);
+    exit;
+}
+$user = $_SESSION['user'];
+```
+
+---
+
+## Formato de Respuesta
+
+Todos los endpoints devuelven `Content-Type: application/json`.
+
+### Respuesta exitosa
+
+```json
+{
+  "success": true,
+  "data": { ... }
+}
+```
+
+O en endpoints que retornan listas:
+
+```json
+[
+  { "id": 1, "title": "Producto A", ... },
+  { "id": 2, "title": "Producto B", ... }
+]
+```
+
+### Respuesta de error
+
+```json
+{
+  "success": false,
+  "error": "Mensaje descriptivo del error"
+}
+```
+
+---
+
+## Métodos HTTP
+
+| Método | Uso |
+|---|---|
+| `GET` | Consultas y listados (no modifica estado) |
+| `POST` | Creación, actualización, eliminación (con CSRF en formularios) |
+
+<Aside type="note">
+Los endpoints AJAX (`src/api/`) no usan CSRF porque son llamados vía `fetch()` con la sesión ya establecida. Los controladores de formularios (`src/controllers/`) sí requieren CSRF.
+</Aside>
+
+---
+
+## Protección CSRF (solo en controladores)
+
+Los archivos en `src/controllers/` procesan formularios HTML y requieren token CSRF:
+
+```php
+// Validación de CSRF en controladores
+require_once '../config/csrf.php';
+if (!verify_csrf_token($_POST['csrf_token'] ?? null)) {
+    http_response_code(403);
+    exit('CSRF validation failed');
+}
+```
+
+---
+
+## Códigos de Estado HTTP Usados
+
+| Código | Significado |
+|---|---|
+| `200` | OK — operación exitosa |
+| `400` | Bad Request — parámetros inválidos |
+| `401` | Unauthorized — sesión no válida |
+| `403` | Forbidden — no tiene permisos |
+| `404` | Not Found — recurso no existe |
+| `500` | Internal Server Error — error de BD u otro |
+
+---
+
+## Subida de Archivos
+
+Los endpoints que aceptan archivos (imágenes, documentos) siguen estas reglas:
+
+| Regla | Detalle |
+|---|---|
+| Validación MIME real | `finfo_file()` — no confía en la extensión |
+| Tipos permitidos (imágenes) | `image/jpeg`, `image/png`, `image/webp` |
+| Tipos permitidos (documentos) | `application/pdf` |
+| Tamaño máximo | 5 MB por archivo |
+| Nombre del archivo | `{timestamp}_{nombre_original}` |
+| Destino imágenes | `public/uploads/products/` |
+| Destino avatares | `public/uploads/avatars/` |
+| Destino verificaciones | `public/uploads/verificaciones/` |
+| Destino reportes | `public/uploads/reportes/` |
+
+---
+
+## Estructura de la API por Módulo
+
+| Módulo | Ruta base |
+|---|---|
+| Autenticación | `src/controllers/auth_*` |
+| Productos | `src/api/products/` + `src/controllers/product_*` |
+| Chat | `src/api/chat/` + `server.php` (WebSocket) |
+| Favoritos | `src/api/favorites/` |
+| Reseñas | `src/controllers/product_review_action.php` |
+| Promociones | `src/api/promotions.php` + `src/api/payments/simulate.php` |
+| Reportes | `src/api/reports.php` |
+| Verificaciones | `src/api/verificacion.php` |
+| Admin | `src/api/admin/` |
+| Configuración | `src/controllers/settings_action.php` |

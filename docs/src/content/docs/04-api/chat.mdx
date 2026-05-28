@@ -1,0 +1,189 @@
+---
+title: API — Chat y Mensajería
+description: Endpoints REST y protocolo WebSocket para el sistema de chat en tiempo real.
+draft: false
+sidebar:
+  order: 4
+---
+
+# API — Chat y Mensajería
+
+## GET `/src/api/chat/get_conversations.php`
+
+Lista todas las conversaciones del usuario autenticado.
+
+### Respuesta
+
+```json
+[
+  {
+    "id": 12,
+    "product_id": 5,
+    "product_title": "Ropa de segunda",
+    "product_image": "1773777337_1.jpg",
+    "other_user_id": 6,
+    "other_user_name": "FerroMax",
+    "other_user_photo": null,
+    "last_message": "sapo",
+    "last_message_time": "2026-03-24 17:06:14",
+    "unread_count": 2
+  }
+]
+```
+
+Excluye conversaciones donde `hidden_by_buyer = 1` o `hidden_by_seller = 1` según el rol del usuario en la conversación.
+
+---
+
+## GET `/src/api/chat/get_messages.php`
+
+Retorna el historial de mensajes de una conversación.
+
+### Query Parameters
+
+| Parámetro | Tipo | Descripción |
+|---|---|---|
+| `conversation_id` | int | ID de la conversación |
+
+### Respuesta
+
+```json
+[
+  {
+    "id": 45,
+    "sender_id": 2,
+    "sender_name": "Jhonatan castro calderon",
+    "sender_photo": "u2_1775561589.png",
+    "message": "Hola! Me interesa tu producto.",
+    "created_at": "2026-03-22 02:43:25",
+    "is_read": 1
+  }
+]
+```
+
+También marca los mensajes recibidos como `is_read = 1`.
+
+---
+
+## POST `/src/api/chat/crear_conversacion.php`
+
+Crea o recupera una conversación privada vinculada a un producto.
+
+### Body (JSON o form-data)
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `product_id` | int | Producto al que refiere |
+| `seller_id` | int | ID del vendedor |
+
+### Lógica
+
+1. Verifica que el usuario no sea el dueño del producto (no puede chatear consigo mismo)
+2. `INSERT IGNORE INTO conversations (product_id, buyer_id, seller_id)` + obtiene el ID existente o nuevo
+3. Inserta mensaje inicial automático: "Hola! Me interesa tu producto: \{título\}"
+4. Responde `{ conversation_id: 12 }`
+
+---
+
+## POST `/src/api/chat/crear_conversacion_general.php`
+
+Crea una conversación directa entre dos usuarios (sin producto).
+
+### Body
+
+| Campo | Tipo |
+|---|---|
+| `target_user_id` | int |
+
+### Respuesta
+
+```json
+{ "success": true, "conversation_id": 16 }
+```
+
+---
+
+## POST `/src/api/chat/eliminar_chat.php`
+
+Elimina (oculta) una conversación para el usuario que la solicita.
+
+### Body
+
+| Campo | Tipo |
+|---|---|
+| `conversation_id` | int |
+
+### Lógica
+
+- Si el usuario es `buyer_id`: `UPDATE conversations SET hidden_by_buyer = 1`
+- Si el usuario es `seller_id`: `UPDATE conversations SET hidden_by_seller = 1`
+- Si ambos la han ocultado: `DELETE FROM conversations` (+ cascade en messages)
+
+---
+
+## POST `/src/api/chat/save_message.php`
+
+Persiste un mensaje enviado via WebSocket. Llamado internamente por `server.php`.
+
+### Body (form-data o JSON)
+
+| Campo | Tipo |
+|---|---|
+| `conversation_id` | int |
+| `sender_id` | int |
+| `message` | string |
+
+### Respuesta
+
+```json
+{ "success": true, "message_id": 104 }
+```
+
+---
+
+## GET `/src/api/chat/get_unread_count.php`
+
+Retorna el total de mensajes no leídos del usuario.
+
+### Respuesta
+
+```json
+{ "unread": 5 }
+```
+
+Usado por `header.php` para mostrar el badge de notificaciones.
+
+---
+
+## GET `/src/api/chat/get_notifications.php`
+
+Retorna notificaciones recientes no leídas del usuario.
+
+### Respuesta
+
+```json
+[
+  {
+    "conversation_id": 28,
+    "sender_name": "Topogigio",
+    "message": "¡Hola! Me interesa tu producto: Hoodie azul.",
+    "created_at": "2026-04-21 01:05:56"
+  }
+]
+```
+
+---
+
+## WebSocket — Protocolo
+
+Ver la documentación completa en [WebSocket & Chat en Tiempo Real](/02-architecture/websocket/).
+
+### Resumen del flujo
+
+```
+Cliente → WebSocket connect ws://HOST:8080
+         → { type: "init", user_id, conversation_id }
+         → { type: "message", user_id, conversation_id, message }
+Servidor → broadcast a todos los clientes de esa conversación
+         → POST interno a save_message.php
+```

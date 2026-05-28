@@ -1,0 +1,257 @@
+---
+title: Modelo de Datos
+description: Descripción de tablas, relaciones y estrategias de indexación en la base de datos de ComercioLocal.
+draft: false
+sidebar:
+  order: 1
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+# Modelo de Datos
+
+## Configuración
+
+- **Motor:** MySQL 8.0 (InnoDB)
+- **Charset:** `utf8mb4` con collation `utf8mb4_0900_ai_ci`
+- **Base de datos:** `tiendalocal`
+
+---
+
+## Diagrama Entidad-Relación (simplificado)
+
+```
+users (1) ──────────────────── (*) products
+  │                                    │
+  │                              (*) product_images
+  │                              (*) product_promotions
+  │                              (*) product_reports ──── (*) users (reporter)
+  │                              (*) reviews ─────────── (*) users
+  │
+  ├──── (*) seller_verifications
+  ├──── (*) user_settings
+  ├──── (*) favorites ──────────────── (*) products
+  ├──── (*) user_reports ─────────────  (*) users (reported)
+  │
+  ├──── (*) conversations (buyer) ───── (*) conversations (seller)
+  │              │
+  │        (*) messages
+  │
+  └──── (*) activity_log (admin)
+```
+
+---
+
+## Tablas del Sistema
+
+### `users` — Usuarios de la plataforma
+
+| Columna | Tipo | Descripción |
+|---|---|---|
+| `id` | INT AUTO_INCREMENT | PK |
+| `full_name` | VARCHAR(100) | Nombre completo |
+| `email` | VARCHAR(100) UNIQUE | Email (login) |
+| `password` | VARCHAR(255) | Hash bcrypt `$2y$` |
+| `phone` | VARCHAR(20) | Teléfono opcional |
+| `city` | VARCHAR(100) | Ciudad del perfil |
+| `address` | VARCHAR(200) | Dirección opcional |
+| `bio` | TEXT | Descripción personal |
+| `profile_photo` | VARCHAR(255) | Nombre del archivo en `uploads/avatars/` |
+| `status` | ENUM | `active`, `inactive`, `blocked`, `suspended` |
+| `role` | ENUM | `user`, `seller`, `admin`, `super_admin` |
+| `deleted_at` | TIMESTAMP | Soft delete timestamp |
+| `last_login` | TIMESTAMP | Último acceso |
+
+---
+
+### `products` — Publicaciones / Listings
+
+| Columna | Tipo | Descripción |
+|---|---|---|
+| `id` | INT AUTO_INCREMENT | PK |
+| `title` | VARCHAR(150) | Título del producto |
+| `price` | DECIMAL(10,2) | Precio de venta |
+| `description` | TEXT | Descripción larga |
+| `category_id` | INT FK | → `categories.id` |
+| `status` | ENUM | `disponible`, `vendido` |
+| `longitude` | DECIMAL(11,7) | Coordenada GPS |
+| `latitude` | DECIMAL(10,7) | Coordenada GPS |
+| `city` | VARCHAR(100) | Ciudad resuelta por geocodificación |
+| `condition_type` | ENUM | `nuevo`, `usado`, `reacondicionado` |
+| `user_id` | INT FK | → `users.id` ON DELETE CASCADE |
+| `admin_status` | ENUM | `active`, `inactive`, `deleted` |
+| `promo_priority` | TINYINT UNSIGNED | `0`=normal · `1`=basic · `2`=recommended · `3`=premium |
+| `views` | INT UNSIGNED | Contador de visualizaciones |
+| `created_at` | TIMESTAMP | Fecha de publicación |
+| `updated_at` | TIMESTAMP | Última modificación |
+
+**Índices en `products`:**
+
+| Índice | Columnas | Propósito |
+|---|---|---|
+| `idx_admin_status` | `(admin_status, status)` | Filtro principal del marketplace |
+| `idx_created` | `(created_at)` | Ordenación por reciente |
+| `idx_city` | `(city)` | Filtro por ciudad |
+| `fk_user` | `(user_id)` | JOIN con users |
+
+---
+
+### `categories` — Categorías de productos
+
+23 categorías predefinidas: Vehículos, Propiedades, Electrónica, Ropa, etc.
+
+| Columna | Tipo |
+|---|---|
+| `id` | INT AUTO_INCREMENT PK |
+| `name` | VARCHAR(100) NOT NULL |
+
+---
+
+### `product_images` — Imágenes de productos
+
+| Columna | Tipo | Descripción |
+|---|---|---|
+| `id` | INT AUTO_INCREMENT PK | |
+| `product_id` | INT FK | → `products.id` ON DELETE CASCADE |
+| `image_url` | VARCHAR(255) | Nombre del archivo en `uploads/products/` |
+
+---
+
+### `conversations` — Hilos de chat
+
+| Columna | Tipo | Descripción |
+|---|---|---|
+| `id` | INT AUTO_INCREMENT PK | |
+| `product_id` | INT FK NULL | → `products.id`; NULL = chat directo |
+| `buyer_id` | INT FK NULL | → `users.id` |
+| `seller_id` | INT FK NULL | → `users.id` |
+| `hidden_by_buyer` | TINYINT(1) | Oculto para comprador |
+| `hidden_by_seller` | TINYINT(1) | Oculto para vendedor |
+
+**Restricción:** `UNIQUE KEY uk_conv_triplet (product_id, buyer_id, seller_id)` — evita duplicados.
+
+---
+
+### `messages` — Mensajes del chat
+
+| Columna | Tipo | Descripción |
+|---|---|---|
+| `id` | INT AUTO_INCREMENT PK | |
+| `conversation_id` | INT FK | → `conversations.id` ON DELETE CASCADE |
+| `sender_id` | INT FK NULL | → `users.id` ON DELETE SET NULL |
+| `message` | TEXT | Contenido del mensaje |
+| `is_read` | TINYINT(1) | `0`=no leído, `1`=leído |
+
+**Índice `idx_unread(conversation_id, is_read)`** — optimiza el contador de no leídos.
+
+---
+
+### `favorites` — Productos guardados
+
+| Columna | Tipo | Descripción |
+|---|---|---|
+| `id` | INT AUTO_INCREMENT PK | |
+| `user_id` | INT FK NOT NULL | → `users.id` |
+| `product_id` | INT FK NOT NULL | → `products.id` |
+
+**Restricción:** `UNIQUE KEY uk_user_product (user_id, product_id)`.
+
+---
+
+### `reviews` — Reseñas
+
+| Columna | Tipo | Descripción |
+|---|---|---|
+| `id` | INT AUTO_INCREMENT PK | |
+| `product_id` | INT FK | → `products.id` ON DELETE CASCADE |
+| `user_id` | INT FK | → `users.id` ON DELETE CASCADE |
+| `rating` | TINYINT | 1–5 (`CHECK (rating BETWEEN 1 AND 5)`) |
+| `comment` | TEXT NULL | Comentario opcional |
+
+**Restricción:** `UNIQUE KEY unique_review (product_id, user_id)` — una reseña por usuario por producto.
+
+---
+
+### `product_promotions` — Promociones
+
+| Columna | Tipo | Descripción |
+|---|---|---|
+| `id` | INT AUTO_INCREMENT PK | |
+| `product_id` | INT FK | → `products.id` ON DELETE CASCADE |
+| `plan_type` | ENUM | `basic`, `recommended`, `premium` |
+| `price` | DECIMAL(10,2) | Precio pagado |
+| `start_date` | DATETIME | Inicio de la promoción |
+| `end_date` | DATETIME | Fin de la promoción |
+| `status` | ENUM | `pending`, `active`, `expired` |
+
+---
+
+### `product_reports` — Reportes de productos
+
+| Columna | Tipo |
+|---|---|
+| `id` | INT AUTO_INCREMENT PK |
+| `product_id` | INT FK → products |
+| `reporter_id` | INT FK NULL → users |
+| `reason` | VARCHAR(60) |
+| `description` | TEXT |
+| `evidence_path` | VARCHAR(255) NULL |
+| `status` | ENUM: `pending`, `resolved`, `dismissed` |
+| `admin_notes` | TEXT NULL |
+| `reviewed_by` | INT FK NULL → users |
+| `reviewed_at` | TIMESTAMP NULL |
+
+---
+
+### `user_reports` — Reportes de usuarios
+
+Misma estructura que `product_reports` pero referencia `reported_user_id → users`.
+
+---
+
+### `seller_verifications` — Verificaciones de vendedores
+
+| Columna | Tipo | Descripción |
+|---|---|---|
+| `id` | INT AUTO_INCREMENT PK | |
+| `user_id` | INT FK | → `users.id` ON DELETE CASCADE |
+| `verification_type` | VARCHAR(20) | `persona` o `negocio` |
+| `store_name` | VARCHAR(255) | Nombre de la tienda |
+| `category` | VARCHAR(100) | Categoría del negocio |
+| `city` | VARCHAR(100) | Ciudad |
+| `phone` | VARCHAR(30) | Teléfono de contacto |
+| `document_type` | VARCHAR(100) | Tipo de documento (Cédula, Cámara de Comercio) |
+| `document_path` | VARCHAR(255) | Ruta del PDF en `uploads/verificaciones/` |
+| `status` | ENUM | `pending`, `approved`, `rejected` |
+| `rejection_reason` | TEXT NULL | Razón de rechazo |
+
+---
+
+### `user_settings` — Preferencias de usuario
+
+| Columna | Tipo | Por defecto |
+|---|---|---|
+| `user_id` | INT PK FK | — |
+| `notif_email_messages` | TINYINT(1) | `1` |
+| `notif_email_reviews` | TINYINT(1) | `1` |
+| `notif_email_sales` | TINYINT(1) | `1` |
+| `notif_email_promos` | TINYINT(1) | `1` |
+| `notif_browser` | TINYINT(1) | `1` |
+| `privacy_show_phone` | TINYINT(1) | `1` |
+| `privacy_show_email` | TINYINT(1) | `0` |
+| `privacy_who_can_message` | ENUM | `all`, `verified`, `nobody` |
+
+---
+
+### `activity_log` — Auditoría administrativa
+
+| Columna | Tipo |
+|---|---|
+| `id` | INT AUTO_INCREMENT PK |
+| `admin_id` | INT FK NULL → users |
+| `action` | TEXT |
+| `created_at` | TIMESTAMP |
+
+<Aside type="tip">
+Cada acción sensible en el panel admin (suspender usuario, eliminar producto, crear admin) se registra en `activity_log`. El `admin_id` puede ser `NULL` si la acción fue realizada por el sistema (rol de entorno).
+</Aside>

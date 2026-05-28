@@ -1,0 +1,145 @@
+---
+title: Legal y Cumplimiento
+description: Términos de uso, privacidad de datos, contenido permitido y responsabilidades en ComercioLocal.
+draft: false
+sidebar:
+  order: 1
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+# Legal y Cumplimiento
+
+<Aside type="caution">
+Esta sección describe las consideraciones legales que deben revisarse antes de publicar ComercioLocal en producción con usuarios reales. No constituye asesoramiento legal. Consulta un abogado para tu jurisdicción específica.
+</Aside>
+
+---
+
+## Política de Privacidad y Datos de Usuarios
+
+### Datos Recopilados
+
+ComercioLocal recopila los siguientes datos de los usuarios:
+
+| Dato | Propósito | Opcional |
+|---|---|---|
+| Nombre completo | Identificación en la plataforma | No |
+| Correo electrónico | Login y comunicaciones | No |
+| Contraseña (hash bcrypt) | Autenticación | No |
+| Teléfono | Contacto con compradores | Sí |
+| Ciudad / Dirección | Localización de productos | Sí |
+| Foto de perfil | Identificación visual | Sí |
+| Coordenadas GPS | Ubicación de productos en mapa | Por producto |
+| Mensajes de chat | Comunicación entre usuarios | Por conversación |
+| IP de acceso | Logs de seguridad (`error.log`) | Automático |
+
+### Almacenamiento
+
+- Datos en MySQL (servidor Railway o propio)
+- Imágenes en `public/uploads/` (servidor web)
+- Logs en `src/logs/error.log` (servidor web, no accesible por HTTP)
+
+### Retención de Datos
+
+- Los usuarios "eliminados" no se borran físicamente: el campo `deleted_at` se rellena (soft delete)
+- Para cumplir con regulaciones de privacidad (GDPR, Ley 1581 de Colombia), implementar:
+  - Endpoint de **eliminación definitiva** de cuenta y datos
+  - Política de retención: eliminar `deleted_at` > 90 días
+
+---
+
+## Contenido Permitido
+
+### Productos permitidos
+
+- Artículos nuevos o usados de categorías listadas
+- Servicios locales
+- Propiedades en venta o alquiler
+
+### Contenido prohibido
+
+ComercioLocal prohíbe expresamente la publicación de:
+
+- Productos ilegales, controlados o sujetos a restricciones especiales
+- Armas de fuego, munición y explosivos
+- Drogas y sustancias controladas
+- Material que infrinja derechos de autor o propiedad intelectual
+- Contenido sexual explícito o servicios de naturaleza sexual
+- Animales exóticos o en peligro de extinción
+- Artículos robados
+- Publicaciones fraudulentas o engañosas
+
+Los usuarios que publiquen contenido prohibido pueden ser reportados y la cuenta bloqueada por el administrador.
+
+---
+
+## Responsabilidades
+
+### Del Operador de la Plataforma
+
+- Moderar contenido reportado en tiempo razonable
+- Proteger los datos personales de los usuarios
+- Mantener la disponibilidad del servicio
+- Notificar a usuarios ante brechas de seguridad
+
+### Del Usuario
+
+- Proporcionar información verídica en el registro
+- Publicar únicamente productos de los que es propietario o tiene derecho a vender
+- No usar la plataforma para actividades fraudulentas o ilegales
+- Respetar a otros usuarios en las conversaciones
+
+### Limitación de Responsabilidad
+
+ComercioLocal es una plataforma de intermediación. El operador **no es responsable** de:
+- La calidad, legalidad o exactitud de los productos publicados
+- Las transacciones entre compradores y vendedores
+- Disputas entre usuarios
+- Pérdidas derivadas de fraudes entre usuarios
+
+---
+
+## Cumplimiento Regulatorio (Colombia)
+
+Para operar en Colombia con usuarios reales, considera:
+
+| Regulación | Descripción | Acción requerida |
+|---|---|---|
+| **Ley 1581 de 2012** (Habeas Data) | Protección de datos personales | Política de privacidad, consentimiento explícito, derecho al olvido |
+| **Decreto 1377 de 2013** | Reglamento de la Ley 1581 | Registro de base de datos ante SIC |
+| **Ley 527 de 1999** | Comercio electrónico | Validez de contratos electrónicos |
+| **Ley 1480 de 2011** (Estatuto del Consumidor) | Protección al consumidor | Información clara sobre vendedor y producto |
+
+---
+
+## Términos de Uso — Resumen
+
+Los usuarios que usan ComercioLocal aceptan:
+
+1. **Uso responsable:** No usar la plataforma para actividades ilegales o fraudulentas
+2. **Veracidad:** Publicar información verídica sobre productos y perfil
+3. **Respeto:** Mantener comunicación respetuosa en el chat
+4. **Propiedad intelectual:** Solo subir imágenes de las que tienen los derechos
+5. **Moderación:** Aceptar las decisiones del equipo de moderación
+
+---
+
+## Sistema de Reportes y Moderación
+
+ComercioLocal implementa un sistema de reportes accesible a todos los usuarios:
+
+- **Reportar producto:** Razón + descripción + evidencia opcional → revisado por admin
+- **Reportar usuario:** Misma estructura → puede resultar en suspensión o bloqueo
+- **Estados de reporte:** `pending` → `resolved` / `dismissed`
+- **Auditoría:** Cada acción del admin queda registrada en `activity_log`
+
+Las decisiones de moderación pueden apelar contactando al administrador directamente.
+
+---
+
+## Licencia del Código
+
+Este proyecto es de **uso privado / propietario**. No está licenciado para redistribución o uso comercial sin autorización del autor.
+
+Para colaboración o licenciamiento, contactar al autor via GitHub: [@JhonatanC4STRO](https://github.com/JhonatanC4STRO).

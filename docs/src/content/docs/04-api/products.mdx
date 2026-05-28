@@ -1,0 +1,196 @@
+---
+title: API — Productos
+description: Endpoints para crear, editar, filtrar, sugerir y gestionar productos.
+draft: false
+sidebar:
+  order: 3
+---
+
+# API — Productos
+
+## GET `/src/api/products/filter.php`
+
+Busca y filtra productos del marketplace.
+
+### Query Parameters
+
+| Parámetro | Tipo | Descripción |
+|---|---|---|
+| `city` | string | Filtra por ciudad (producto OR ciudad del vendedor) |
+| `category` | int | ID de categoría |
+| `min_price` | float | Precio mínimo |
+| `max_price` | float | Precio máximo |
+| `condition` | string | `nuevo`, `usado`, `reacondicionado` |
+| `search` | string | Búsqueda por título (LIKE) |
+| `sort` | string | `recent`, `price_asc`, `price_desc` |
+
+### Lógica de filtro de ciudad
+
+La búsqueda por ciudad es **permisiva** (marketplace-style): un producto aparece si:
+- `products.city` coincide con la ciudad buscada, **O**
+- La ciudad del vendedor (`users.city`) coincide
+
+```sql
+AND (p.city LIKE ? OR u.city LIKE ?)
+```
+
+### Respuesta
+
+```json
+[
+  {
+    "id": 7,
+    "title": "Reloj melo melo",
+    "price": "50000.00",
+    "city": "Florencia",
+    "category_name": "Electrodomésticos",
+    "condition_type": "nuevo",
+    "status": "disponible",
+    "promo_priority": 3,
+    "image_url": "1773904092_watch-1.jpg",
+    "seller_name": "Jhonatan castro calderon",
+    "seller_photo": "u2_1775561589.png",
+    "latitude": "1.6167661",
+    "longitude": "-75.6132991"
+  }
+]
+```
+
+---
+
+## GET `/src/api/products/suggest.php`
+
+Sugerencias de productos relacionados para la página de detalle.
+
+### Query Parameters
+
+| Parámetro | Tipo | Descripción |
+|---|---|---|
+| `product_id` | int | ID del producto actual |
+| `category_id` | int | Categoría para buscar similares |
+| `limit` | int | Cantidad de sugerencias (default: 4) |
+
+### Respuesta
+
+Array de productos con la misma estructura que `filter.php`, excluyendo el producto actual.
+
+---
+
+## POST `/src/controllers/product_create_action.php`
+
+Crea un nuevo producto.
+
+### Parámetros (multipart/form-data)
+
+| Campo | Tipo | Requerido | Descripción |
+|---|---|---|---|
+| `title` | string | Sí | Título del producto |
+| `price` | float | Sí | Precio |
+| `description` | text | Sí | Descripción |
+| `category_id` | int | Sí | ID de categoría |
+| `condition_type` | string | Sí | `nuevo`, `usado`, `reacondicionado` |
+| `latitude` | float | Sí | Coordenada GPS |
+| `longitude` | float | Sí | Coordenada GPS |
+| `city` | string | No | Ciudad (resuelta por geocodificación) |
+| `images[]` | file | Sí | Mínimo 1 imagen, máximo 5 |
+| `csrf_token` | string | Sí | Token CSRF |
+
+### Lógica
+
+1. Valida CSRF
+2. Valida que latitud/longitud estén presentes
+3. Para cada imagen: valida MIME real con `finfo`, valida tamaño ≤ 5MB
+4. `INSERT INTO products` (prepared statement)
+5. `INSERT INTO product_images` por cada imagen subida
+6. `sync_user_role()` — promueve a `seller` si es el primer producto
+7. Redirect a `/src/views/products/mis_productos.php`
+
+---
+
+## POST `/src/controllers/product_delete_action.php`
+
+Elimina un producto (soft delete).
+
+### Parámetros (form-data)
+
+| Campo | Tipo | Requerido |
+|---|---|---|
+| `product_id` | int | Sí |
+| `csrf_token` | string | Sí |
+
+### Lógica
+
+1. Verifica que `$_SESSION['user']['id']` sea el dueño del producto
+2. `UPDATE products SET admin_status = 'deleted' WHERE id = ? AND user_id = ?`
+3. Redirect a mis_productos.php
+
+---
+
+## POST `/src/api/products/mark_sold.php`
+
+Marca un producto como vendido.
+
+### Body (JSON o form-data)
+
+| Campo | Tipo |
+|---|---|
+| `product_id` | int |
+
+### Respuesta
+
+```json
+{ "success": true }
+```
+
+---
+
+## POST `/src/api/products/clear_history.php`
+
+Limpia el historial de búsqueda del usuario autenticado.
+
+### Respuesta
+
+```json
+{ "success": true, "cleared": 12 }
+```
+
+---
+
+## GET `/src/api/promotions.php`
+
+Retorna productos con promoción activa, ordenados por `promo_priority` descendente.
+
+### Respuesta
+
+```json
+[
+  {
+    "id": 19,
+    "title": "Zapatos de jardinero botanico",
+    "plan_type": "premium",
+    "promo_priority": 3,
+    "image_url": "1776797662_1.jpg"
+  }
+]
+```
+
+---
+
+## POST `/src/api/payments/simulate.php`
+
+Simula el pago de un plan de promoción (entorno de pruebas).
+
+### Body
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `product_id` | int | Producto a promover |
+| `plan_type` | string | `basic`, `recommended`, `premium` |
+
+### Lógica
+
+1. Verifica que el usuario sea dueño del producto
+2. Calcula duración: `basic` = 3 días, `recommended` / `premium` = 7 días
+3. `INSERT INTO product_promotions`
+4. `UPDATE products SET promo_priority = N WHERE id = ?`
+5. Responde `{ success: true, plan: "premium", expires: "2026-06-03" }`

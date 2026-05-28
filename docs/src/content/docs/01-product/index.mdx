@@ -1,0 +1,82 @@
+---
+title: Visión del Producto
+description: Propuesta de valor, usuarios objetivo y casos de uso de ComercioLocal.
+draft: false
+sidebar:
+  order: 1
+---
+
+# Visión del Producto
+
+## Propuesta de Valor
+
+ComercioLocal resuelve el problema de la **desconexión entre vendedores locales y compradores cercanos**. Las plataformas nacionales (MercadoLibre, OLX) tienen alta fricción para transacciones locales: envíos costosos, competencia nacional y poca confianza. ComercioLocal elimina esa fricción al enfocarse exclusivamente en la ciudad del usuario.
+
+> **Misión:** Hacer que cualquier persona pueda comprar o vender algo en su ciudad en menos de 5 minutos.
+
+---
+
+## Usuarios Objetivo
+
+### Compradores
+- Personas que buscan productos de segunda mano o nuevos en su ciudad
+- Usuarios que prefieren transacciones cara a cara
+- Compradores que quieren evitar costos de envío
+
+### Vendedores
+- Emprendedores locales y micronegocios
+- Personas que quieren vender artículos usados del hogar
+- Tiendas físicas que necesitan presencia digital local
+
+### Administradores
+- Operadores de la plataforma responsables de la moderación de contenido y gestión de usuarios
+
+---
+
+## Casos de Uso Principales
+
+### UC-01: Publicar un producto
+1. Vendedor se registra o inicia sesión
+2. Navega a "Crear producto"
+3. Completa formulario: título, precio, descripción, categoría, condición
+4. Sube hasta 5 imágenes
+5. Selecciona ubicación en mapa (Leaflet) — la ciudad se resuelve automáticamente
+6. Publica el listing
+7. El rol se actualiza a `seller` automáticamente
+
+### UC-02: Comprar / Contactar vendedor
+1. Comprador navega el marketplace (filtros por ciudad, categoría, precio)
+2. Abre el detalle del producto
+3. Hace clic en "Contactar vendedor"
+4. Se crea una conversación privada (buyer + seller + product)
+5. Chat en tiempo real vía WebSocket
+
+### UC-03: Promocionar un producto
+1. Vendedor selecciona un producto propio
+2. Elige plan (`basic`, `recommended`, `premium`)
+3. El sistema simula el pago y activa la promoción
+4. El producto aparece con badge y prioridad elevada en el listado
+
+### UC-04: Verificar identidad como vendedor
+1. Vendedor solicita verificación desde su perfil
+2. Sube documento (Cédula / Cámara de Comercio) en PDF
+3. Admin revisa la solicitud
+4. Si aprobada: badge "Verificado" aparece en su perfil
+
+### UC-05: Reportar contenido
+1. Usuario encuentra producto o perfil sospechoso
+2. Hace clic en "Reportar"
+3. Elige razón y agrega descripción / evidencia
+4. Admin recibe el reporte en el panel y lo gestiona
+
+---
+
+## Métricas Clave
+
+| Métrica | Descripción |
+|---|---|
+| Tiempo de publicación | < 5 min desde registro hasta listing activo |
+| Latencia de chat | < 100ms (WebSocket local) |
+| Tiempo de carga de listado | < 150ms (índices optimizados) |
+| Categorías disponibles | 23 categorías de productos |
+| Planes de promoción | 3 planes (basic / recommended / premium) |

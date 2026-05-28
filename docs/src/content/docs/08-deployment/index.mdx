@@ -1,0 +1,137 @@
+---
+title: Despliegue — Visión General
+description: Variables de entorno, checklist de producción y configuración para desplegar ComercioLocal.
+draft: false
+sidebar:
+  order: 1
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+# Despliegue — Visión General
+
+## Variables de Entorno
+
+Todas las configuraciones sensibles se pasan como variables de entorno. No existe archivo `.env` en el repositorio (está en `.gitignore`).
+
+### Variables de Base de Datos
+
+| Variable | Por defecto | Descripción |
+|---|---|---|
+| `MYSQL_URL` | — | URL completa: `mysql://user:pass@host:port/db` |
+| `DATABASE_URL` | — | Alias de `MYSQL_URL` (compatibilidad Railway) |
+| `DB_HOST` | `localhost` | Host de MySQL |
+| `DB_USER` | `root` | Usuario de MySQL |
+| `DB_PASS` | `` (vacío) | Contraseña de MySQL |
+| `DB_NAME` | `tiendalocal` | Nombre de la base de datos |
+| `DB_PORT` | `3306` | Puerto de MySQL |
+
+**Alternativas (otros proveedores):**
+
+| Variable | Equivale a |
+|---|---|
+| `MYSQLHOST` | `DB_HOST` |
+| `MYSQLUSER` | `DB_USER` |
+| `MYSQLPASSWORD` | `DB_PASS` |
+| `MYSQLDATABASE` | `DB_NAME` |
+| `MYSQLPORT` | `DB_PORT` |
+
+### Variables de Administración
+
+| Variable | Por defecto | Descripción |
+|---|---|---|
+| `ADMIN_EMAIL` | `admin@gmail.com` | Email del admin de entorno |
+| `ADMIN_PASSWORD` | `admin` | Contraseña del admin de entorno |
+
+<Aside type="caution">
+Cambia `ADMIN_EMAIL` y `ADMIN_PASSWORD` antes de desplegar en producción. Los valores por defecto son inseguros.
+</Aside>
+
+### Variables del Servidor WebSocket
+
+| Variable | Por defecto | Descripción |
+|---|---|---|
+| `WS_HOST` | `localhost` | Interfaz de escucha del WebSocket |
+| `WS_PORT` | `8080` | Puerto TCP del servidor WebSocket |
+
+### Variables del Servidor HTTP
+
+| Variable | Por defecto | Descripción |
+|---|---|---|
+| `PORT` | `80` | Puerto del servidor PHP built-in |
+
+---
+
+## Copia de Seguridad de Datos
+
+### Imágenes
+
+Las imágenes subidas por usuarios están en `public/uploads/`. En Docker, este directorio debe montarse como **volumen persistente**:
+
+```yaml
+# docker-compose.yml (ejemplo)
+volumes:
+  - uploads_data:/var/www/html/public/uploads
+```
+
+El Dockerfile copia las imágenes de ejemplo al volumen si está vacío:
+
+```dockerfile
+RUN mkdir -p /opt/uploads-seed && \
+    cp -r public/uploads/. /opt/uploads-seed/
+
+# En /start.sh:
+if [ ! -f /var/www/html/public/uploads/.seeded ]; then
+  cp -rn /opt/uploads-seed/. /var/www/html/public/uploads/
+  touch /var/www/html/public/uploads/.seeded
+fi
+```
+
+### Base de Datos
+
+Railway.app provee backups automáticos si usas el **plugin MySQL de Railway**. Para backups manuales:
+
+```bash
+mysqldump -h HOST -u USER -p DBNAME > backup_$(date +%Y%m%d).sql
+```
+
+---
+
+## Checklist de Producción
+
+### Seguridad
+
+- [ ] Cambiar `ADMIN_EMAIL` y `ADMIN_PASSWORD` en variables de entorno
+- [ ] Configurar `session.cookie_secure = 1` (requiere HTTPS)
+- [ ] Revisar `session.cookie_httponly = 1` (ya activo por defecto en PHP)
+- [ ] Agregar cabeceras de seguridad HTTP (CSP, X-Frame-Options, etc.)
+- [ ] Configurar HTTPS con certificado TLS válido
+
+### Base de Datos
+
+- [ ] Cambiar contraseñas de la BD (los usuarios del dump usan `123`)
+- [ ] Crear usuario MySQL con permisos mínimos (no `root`)
+- [ ] Habilitar backups automáticos
+- [ ] Verificar que `src/logs/error.log` no sea accesible por HTTP
+
+### Rendimiento
+
+- [ ] Habilitar OPcache en PHP
+- [ ] Configurar índices adicionales si el volumen de datos crece
+- [ ] Considerar un CDN para `public/uploads/`
+
+### WebSocket
+
+- [ ] Configurar servidor WebSocket como proceso separado
+- [ ] Configurar reverse proxy (Nginx) para `wss://`
+- [ ] Implementar reconexión automática en el cliente
+
+---
+
+## Entornos
+
+| Entorno | Stack | BD | WebSocket |
+|---|---|---|---|
+| **Local** (Laragon) | PHP built-in | MySQL local | `php server.php` en terminal |
+| **Staging** | Docker | Railway MySQL plugin | Proceso separado |
+| **Producción** | Docker (Railway) | Railway MySQL plugin | Proceso separado |

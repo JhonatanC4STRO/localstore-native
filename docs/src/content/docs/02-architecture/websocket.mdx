@@ -1,0 +1,177 @@
+---
+title: WebSocket & Chat en Tiempo Real
+description: Servidor Ratchet PHP, protocolo de mensajes y ciclo de vida de las conexiones.
+draft: false
+sidebar:
+  order: 2
+---
+
+import { Aside, Code } from '@astrojs/starlight/components';
+
+# WebSocket & Chat en Tiempo Real
+
+## Tecnología
+
+| Componente | Detalle |
+|---|---|
+| Librería servidor | [Ratchet](http://socketo.me/) `cboden/ratchet ^0.4.4` |
+| Protocolo | WebSocket (RFC 6455) |
+| Puerto por defecto | `8080` (configurable vía `WS_PORT`) |
+| Entrada del cliente | `new WebSocket('ws://HOST:PORT')` |
+
+---
+
+## Arquitectura del Servidor (`server.php`)
+
+### Clase `Chat`
+
+```php
+class Chat implements MessageComponentInterface {
+    protected SplObjectStorage $clients;  // todas las conexiones activas
+    protected array $conversations;       // conversationId => [conn1, conn2, ...]
+    protected array $connectionUsers;     // conn resourceId => user_id
+}
+```
+
+### Eventos del Ciclo de Vida
+
+| Evento | Acción |
+|---|---|
+| `onOpen(ConnectionInterface $conn)` | Registra la conexión en `$clients` |
+| `onMessage($from, $msg)` | Parsea JSON; maneja `init` o `message` |
+| `onClose(ConnectionInterface $conn)` | Limpia la conexión de `$clients` y `$conversations` |
+| `onError($conn, Exception $e)` | Registra el error; cierra la conexión |
+
+---
+
+## Protocolo de Mensajes (JSON)
+
+### Tipo `init` — Autenticar la conexión
+
+Enviado por el cliente al conectarse para asociar la conexión a un usuario y conversación.
+
+```json
+{
+  "type": "init",
+  "user_id": 42,
+  "conversation_id": 7
+}
+```
+
+**El servidor:**
+1. Consulta la BD: `SELECT id FROM conversations WHERE id = ? AND (buyer_id = ? OR seller_id = ?)`
+2. Si el usuario pertenece a la conversación: lo registra en `$conversations[7]`
+3. Si no: cierra la conexión inmediatamente
+
+### Tipo `message` — Enviar un mensaje
+
+```json
+{
+  "type": "message",
+  "user_id": 42,
+  "conversation_id": 7,
+  "message": "Hola, ¿está disponible?"
+}
+```
+
+**El servidor:**
+1. Valida que el usuario esté registrado en esa conversación (via `$connectionUsers` + `$conversations`)
+2. `POST` a `src/api/chat/save_message.php` → INSERT en MySQL
+3. Broadcast del mensaje a **todos los demás** clientes en esa conversación
+
+### Payload de broadcast al receptor
+
+```json
+{
+  "type": "message",
+  "user_id": 42,
+  "message": "Hola, ¿está disponible?",
+  "conversation_id": 7
+}
+```
+
+---
+
+## Variables de Entorno del Servidor
+
+| Variable | Por defecto | Descripción |
+|---|---|---|
+| `WS_HOST` | `localhost` | Interfaz en la que escucha el WebSocket |
+| `WS_PORT` | `8080` | Puerto TCP del servidor |
+
+### Inicio del servidor
+
+```bash
+php server.php
+```
+
+En Railway, el servidor WebSocket **no corre por defecto** (el `CMD` del Dockerfile solo inicia el servidor HTTP). Para chat en producción, se necesita un segundo servicio o un proceso supervisor (ver [Despliegue](/08-deployment/)).
+
+---
+
+## Cliente WebSocket (`public/js/chat.js`)
+
+### Conexión inicial
+
+```javascript
+const socket = new WebSocket(`ws://${WS_HOST}:${WS_PORT}`);
+
+socket.onopen = () => {
+  socket.send(JSON.stringify({
+    type: 'init',
+    user_id: USER_ID,
+    conversation_id: CONVERSATION_ID
+  }));
+};
+```
+
+### Enviar un mensaje
+
+```javascript
+function sendMessage(text) {
+  socket.send(JSON.stringify({
+    type: 'message',
+    user_id: USER_ID,
+    conversation_id: CONVERSATION_ID,
+    message: text
+  }));
+}
+```
+
+### Recibir mensajes
+
+```javascript
+socket.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  if (data.type === 'message') {
+    renderMessage(data);
+  }
+};
+```
+
+---
+
+## Persistencia de Mensajes
+
+El servidor WebSocket llama a `save_message.php` vía HTTP POST interno. Este endpoint:
+
+1. Verifica que `conversation_id` y `sender_id` sean válidos
+2. Ejecuta `INSERT INTO messages (conversation_id, sender_id, message) VALUES (?, ?, ?)`
+3. Marca el mensaje como `is_read = 0`
+
+El historial se carga al abrir la conversación mediante `GET /src/api/chat/get_messages.php?conversation_id=X`.
+
+<Aside type="caution">
+En producción, asegúrate de que el servidor WebSocket sea accesible en el dominio correcto. Si el frontend está en HTTPS, el WebSocket debe usar `wss://` con TLS. Configura un reverse proxy (Nginx / Caddy) que eleve `ws://` a `wss://`.
+</Aside>
+
+---
+
+## Limitaciones Actuales
+
+| Limitación | Notas |
+|---|---|
+| Sin autenticación de token | La validación usa solo `user_id` + consulta a BD. No usa JWT ni cookies de sesión. |
+| Un mensaje a la vez | No hay confirmación de entrega (ACK). |
+| Sin reconexión automática | Si se cae el WebSocket, el cliente no reconecta automáticamente. |
+| Sin soporte de archivos | Solo texto plano. |

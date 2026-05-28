@@ -1,0 +1,46 @@
+---
+title: ComercioLocal — Documentación
+description: Documentación técnica completa de la plataforma ComercioLocal, un marketplace local PHP con chat en tiempo real.
+template: splash
+hero:
+  tagline: Marketplace local PHP con chat en tiempo real, geolocalización y panel de administración.
+  actions:
+    - text: Comenzar
+      link: /00-overview/
+      icon: right-arrow
+      variant: primary
+    - text: Ver en GitHub
+      link: https://github.com/JhonatanC4STRO/localstore-native
+      icon: external
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Explora la documentación
+
+<CardGrid stagger>
+  <Card title="Vista General" icon="open-book">
+    Qué es ComercioLocal, su stack tecnológico y arquitectura de alto nivel.
+    [Leer →](/00-overview/)
+  </Card>
+  <Card title="Base de Datos" icon="document">
+    Esquema completo: 12 tablas, índices, relaciones y migraciones.
+    [Leer →](/03-database/)
+  </Card>
+  <Card title="API Reference" icon="setting">
+    Todos los endpoints PHP: autenticación, productos, chat y administración.
+    [Leer →](/04-api/)
+  </Card>
+  <Card title="Seguridad" icon="warning">
+    CSRF, SQL injection, upload validation, session hardening.
+    [Leer →](/07-security/)
+  </Card>
+  <Card title="Despliegue" icon="rocket">
+    Docker, Railway.app, variables de entorno y checklist de producción.
+    [Leer →](/08-deployment/)
+  </Card>
+  <Card title="Desarrollo Local" icon="laptop">
+    Setup con Laragon, MySQL y servidor WebSocket en minutos.
+    [Leer →](/09-development/)
+  </Card>
+</CardGrid>

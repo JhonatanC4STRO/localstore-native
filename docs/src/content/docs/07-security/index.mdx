@@ -1,0 +1,176 @@
+---
+title: Seguridad — Visión General
+description: "Arquitectura de seguridad por capas de ComercioLocal: SQL injection, autenticación, uploads y logging."
+draft: false
+sidebar:
+  order: 1
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+# Seguridad — Visión General
+
+ComercioLocal implementa una arquitectura de **defensa en profundidad** con múltiples capas de protección.
+
+---
+
+## Capa 1 — Prevención de SQL Injection
+
+**Regla:** Ninguna query concatena strings de usuario directamente.
+
+Todas las operaciones de BD usan **prepared statements** con `mysqli`:
+
+```php
+$stmt = $conn->prepare(
+  "SELECT id, role FROM users WHERE email = ? LIMIT 1"
+);
+$stmt->bind_param("s", $email);
+$stmt->execute();
+$result = $stmt->get_result();
+```
+
+El motor SQL trata los parámetros como datos, nunca como código. Esto neutraliza inyecciones clásicas y avanzadas.
+
+---
+
+## Capa 2 — Protección CSRF
+
+Ver [CSRF & Sesiones](/07-security/csrf/) para la implementación detallada.
+
+**Resumen:**
+- Token criptográfico `bin2hex(random_bytes(32))` almacenado en sesión
+- Insertado en cada formulario `POST` como campo oculto
+- Validado con `hash_equals()` (timing-safe) antes de procesar
+
+---
+
+## Capa 3 — Autenticación y Control de Acceso
+
+### Contraseñas
+
+- Almacenadas con `password_hash($pass, PASSWORD_BCRYPT)` (factor de coste 10)
+- Verificadas con `password_verify()` — sin comparación directa de strings
+- **Nunca** se almacena la contraseña en texto plano
+
+### Control de Sesión
+
+- `session_regenerate_id(true)` tras cada login exitoso (previene session fixation)
+- Session cookie con flags `HttpOnly` (PHP default)
+- Para producción en HTTPS: agregar `Secure` flag en `session.cookie_secure`
+
+### Roles y Autorización
+
+```php
+// Guard en páginas de admin
+if (!isset($_SESSION['user']) || 
+    !in_array($_SESSION['user']['role'], ['admin', 'super_admin'])) {
+    header('Location: /src/views/auth/login.php');
+    exit;
+}
+```
+
+```php
+// Verificación de propietario en operaciones sensibles
+if ($_SESSION['user']['id'] !== $product['user_id']) {
+    http_response_code(403);
+    exit('No autorizado');
+}
+```
+
+---
+
+## Capa 4 — Validación de Subida de Archivos
+
+<Aside type="caution">
+Los archivos subidos sin validación son el vector #1 de compromisos de servidor. ComercioLocal valida el tipo MIME real, no la extensión.
+</Aside>
+
+### Proceso de validación
+
+```php
+$finfo = finfo_open(FILEINFO_MIME_TYPE);
+$mime = finfo_file($finfo, $_FILES['image']['tmp_name']);
+finfo_close($finfo);
+
+$allowed = ['image/jpeg', 'image/png', 'image/webp'];
+if (!in_array($mime, $allowed)) {
+    die('Tipo de archivo no permitido');
+}
+
+if ($_FILES['image']['size'] > 5 * 1024 * 1024) {
+    die('El archivo supera el límite de 5MB');
+}
+```
+
+### Por qué MIME real y no extensión
+
+Un atacante puede renombrar `shell.php` a `shell.jpg`. La extensión no es confiable. `finfo_file()` lee los primeros bytes (magic bytes) del archivo temporal para determinar el tipo real.
+
+### Destinos separados por tipo
+
+| Tipo de archivo | Destino | ¿Ejecutable desde web? |
+|---|---|---|
+| Imágenes de productos | `public/uploads/products/` | No (sin PHP execution) |
+| Avatares | `public/uploads/avatars/` | No |
+| Documentos de verificación | `public/uploads/verificaciones/` | No |
+| Evidencias de reportes | `public/uploads/reportes/` | No |
+
+---
+
+## Capa 5 — Logging Interno
+
+El sistema de logging reemplaza los errores visibles de MySQL con mensajes genéricos.
+
+```php
+// logger.php
+function log_error(string $message, string $category = 'GENERAL'): void {
+    $log_dir = __DIR__ . '/../logs/';
+    $log_file = $log_dir . 'error.log';
+    
+    if (!is_dir($log_dir)) {
+        mkdir($log_dir, 0755, true);
+    }
+    
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $entry = sprintf(
+        "[%s] [%s] [IP: %s] %s\n",
+        date('Y-m-d H:i:s'),
+        strtoupper($category),
+        $ip,
+        $message
+    );
+    
+    file_put_contents($log_file, $entry, FILE_APPEND | LOCK_EX);
+}
+```
+
+**Lo que ve el usuario final:**
+```
+"Ocurrió un error. Por favor, inténtalo más tarde."
+```
+
+**Lo que queda en el log:**
+```
+[2026-05-27 14:32:01] [DB] [IP: 192.168.1.5] 
+  mysqli_connect(): Connection refused to localhost:3306
+```
+
+<Aside type="tip">
+El archivo `src/logs/error.log` está en `.gitignore`. Nunca subas logs al repositorio; pueden contener IPs, queries y estructura interna.
+</Aside>
+
+---
+
+## Resumen de Superficie de Ataque
+
+| Vector | Estado | Mitigación |
+|---|---|---|
+| SQL Injection | Mitigado | Prepared statements en 100% de queries |
+| CSRF | Mitigado | Token por sesión en todos los formularios POST |
+| XSS | Parcial | `htmlspecialchars()` en outputs críticos; revisar todas las vistas |
+| File Upload RCE | Mitigado | Validación MIME + límite de tamaño |
+| Session Fixation | Mitigado | `session_regenerate_id(true)` post-login |
+| Information Disclosure | Mitigado | Logger interno; errores genéricos al usuario |
+| Broken Access Control | Mitigado | Guards de sesión + verificación de propietario |
+| Brute Force | Pendiente | Sin rate limiting implementado |
+| HTTPS/TLS | Pendiente | Dependiente de configuración del hosting |

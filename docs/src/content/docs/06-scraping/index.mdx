@@ -1,0 +1,155 @@
+---
+title: APIs Externas y Geocodificación
+description: Integración con Nominatim (OpenStreetMap) para geocodificación inversa y APIs externas usadas en ComercioLocal.
+draft: false
+sidebar:
+  order: 1
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+# APIs Externas y Geocodificación
+
+ComercioLocal integra APIs externas para resolver la ubicación GPS de los productos y renderizar mapas interactivos.
+
+---
+
+## Nominatim — Geocodificación Inversa
+
+**Nominatim** es la API de geocodificación de OpenStreetMap. Se usa para convertir coordenadas GPS (latitud/longitud) en nombres de ciudad legibles.
+
+### Endpoint utilizado
+
+```
+GET https://nominatim.openstreetmap.org/reverse
+  ?lat={latitude}
+  &lon={longitude}
+  &format=json
+  &accept-language=es
+```
+
+### Respuesta típica
+
+```json
+{
+  "address": {
+    "city": "Florencia",
+    "state": "Caquetá",
+    "country": "Colombia",
+    "country_code": "co"
+  },
+  "display_name": "Florencia, Caquetá, Colombia"
+}
+```
+
+### Extracción del nombre de ciudad
+
+```javascript
+const city = 
+  data.address.city     ||   // Ciudad principal
+  data.address.town     ||   // Pueblo
+  data.address.village  ||   // Vereda
+  data.address.county   ||   // Municipio
+  data.address.state;        // Departamento (fallback)
+```
+
+### Cuándo se ejecuta
+
+La geocodificación inversa se ejecuta **en el cliente** (browser), no en el servidor PHP. Se dispara en dos momentos:
+
+1. **Al seleccionar ubicación en el mapa** (`city_map_modal.php`) — durante la creación o edición de un producto.
+2. **Al renderizar el mapa del marketplace** (`all.js`) — para mostrar marcadores con el nombre de ciudad.
+
+<Aside type="note">
+Nominatim tiene un límite de 1 request por segundo por IP y requiere un `User-Agent` descriptivo. Para alto volumen en producción, considera hospedar una instancia propia o usar una API alternativa (Google Maps, MapBox).
+</Aside>
+
+---
+
+## Leaflet.js — Mapas Interactivos
+
+Leaflet.js es la librería de mapas open-source usada para:
+
+1. **Selector de ubicación** (crear/editar producto): mapa clickeable que devuelve lat/lon
+2. **Vista de marketplace** (all.php): clústeres de marcadores de productos
+3. **Detalle de producto** (detalle.php): mapa estático con la ubicación exacta
+
+### Configuración típica
+
+```javascript
+const map = L.map('mapa').setView([1.6167, -75.6132], 13);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors',
+  maxZoom: 19
+}).addTo(map);
+```
+
+### Tiles utilizados
+
+Los tiles de mapa provienen de **OpenStreetMap** (gratuitos, con atribución). No se requiere API key.
+
+---
+
+## Health Check Endpoint
+
+`health.php` — Usado por Railway.app para verificar que el servidor está activo.
+
+```php
+<?php
+http_response_code(200);
+echo json_encode([
+  'status' => 'ok',
+  'timestamp' => date('c')
+]);
+```
+
+Railway llama este endpoint cada 30 segundos. Si falla, reinicia el contenedor (`restartPolicyType = "on_failure"`).
+
+---
+
+## Datos de Búsqueda e Historial
+
+### Tabla `search_history` (migración adicional)
+
+El archivo `database/search_history.sql` agrega una tabla para registrar búsquedas de usuarios:
+
+| Columna | Tipo | Descripción |
+|---|---|---|
+| `id` | INT PK | |
+| `user_id` | INT FK → users | Usuario que buscó |
+| `query` | VARCHAR(255) | Término de búsqueda |
+| `created_at` | TIMESTAMP | Cuándo buscó |
+
+El endpoint `src/api/products/clear_history.php` vacía este historial por usuario.
+
+---
+
+## Sugerencias de Productos (`suggest.php`)
+
+La API de sugerencias usa una consulta SQL simple (sin ML):
+
+```sql
+SELECT p.*, pi.image_url
+FROM products p
+LEFT JOIN product_images pi ON pi.product_id = p.id
+WHERE p.category_id = ?
+  AND p.id != ?
+  AND p.admin_status = 'active'
+  AND p.status = 'disponible'
+ORDER BY p.promo_priority DESC, p.created_at DESC
+LIMIT ?
+```
+
+Prioriza productos promovidos de la misma categoría. No hay algoritmo de recomendación personalizado en la versión actual.
+
+---
+
+## Integración Futura Planificada
+
+| Integración | Propósito |
+|---|---|
+| Google Maps Platform | Mayor precisión en geocodificación y rutas |
+| SendGrid / Mailgun | Notificaciones por email |
+| Wompi / PayU | Pagos reales (Colombia) |
+| Firebase FCM | Push notifications móvil |

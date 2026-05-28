@@ -1,0 +1,5 @@
+* [🏠 Inicio](README.md)
+* [⚙️ Arquitectura y Configuración](config.md)
+* [🗄️ Estructura de Base de Datos](db.md)
+* [🛡️ Seguridad y Buenas Prácticas](security.md)
+* [💬 Servidor de Chat (WebSockets)](websocket.md)

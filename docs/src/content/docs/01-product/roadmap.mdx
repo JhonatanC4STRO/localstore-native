@@ -1,0 +1,102 @@
+---
+title: Hoja de Ruta
+description: Estado actual y features planificadas para ComercioLocal.
+draft: false
+sidebar:
+  order: 2
+---
+
+import { Badge } from '@astrojs/starlight/components';
+
+# Hoja de Ruta
+
+## Completado <Badge text="v1.0" variant="success" />
+
+### Core Marketplace
+- [x] Registro y autenticación de usuarios
+- [x] Sistema de roles (`user`, `seller`, `admin`, `super_admin`)
+- [x] Promoción automática `user` → `seller` al publicar
+- [x] CRUD completo de productos con múltiples imágenes
+- [x] 23 categorías de productos
+- [x] Filtrado por ciudad, categoría, precio, condición, nombre
+- [x] Geolocalización GPS con Leaflet.js
+- [x] Geocodificación inversa vía Nominatim (ciudad automática)
+- [x] Vista de detalle de producto con galería
+- [x] Listado de "Mis productos" con estado
+
+### Comunicación
+- [x] Chat en tiempo real WebSocket (Ratchet PHP)
+- [x] Conversaciones privadas vinculadas a productos
+- [x] Conversaciones directas entre usuarios
+- [x] Historial de mensajes persistido en MySQL
+- [x] Contador de mensajes no leídos
+- [x] Ocultar / eliminar conversaciones
+
+### Confianza y Moderación
+- [x] Sistema de reseñas con rating 1-5 estrellas
+- [x] Favoritos con toggle AJAX
+- [x] Reportes de productos y usuarios con evidencia
+- [x] Verificación de vendedores (persona / negocio)
+- [x] Soft delete de usuarios y productos
+- [x] Promociones con 3 planes (basic / recommended / premium)
+- [x] Badges de productos promovidos en el marketplace
+
+### Panel Admin
+- [x] Dashboard con estadísticas
+- [x] Gestión completa de usuarios (suspender, bloquear, eliminar)
+- [x] Gestión de productos (aprobar, desactivar, eliminar)
+- [x] Revisión de reportes con notas
+- [x] Aprobación/rechazo de verificaciones
+- [x] Creación de administradores
+- [x] Log de actividad administrativa
+
+### Seguridad
+- [x] CSRF token en todos los formularios POST
+- [x] Prepared statements en todas las queries
+- [x] Validación MIME real en upload de archivos
+- [x] Session regeneration post-login
+- [x] Logger interno (no expone errores de BD)
+
+### Infraestructura
+- [x] Dockerfile (PHP 8.2 CLI + Composer)
+- [x] Deployment en Railway.app
+- [x] Health check endpoint (`/health.php`)
+- [x] Seed de imágenes en volumen Docker
+
+---
+
+## En Progreso <Badge text="v1.1" variant="caution" />
+
+- [ ] Paginación en listado de marketplace
+- [ ] Notificaciones push en tiempo real (WebSocket → frontend)
+- [ ] Búsqueda por radio de distancia (km desde ubicación)
+- [ ] Panel de estadísticas del vendedor (vistas, contactos, ventas)
+
+---
+
+## Planificado <Badge text="v2.0" variant="note" />
+
+### Pagos
+- [ ] Integración con pasarela de pagos (Wompi / PayU Colombia)
+- [ ] Pago de planes de promoción real
+- [ ] Historial de transacciones
+
+### Comunicación
+- [ ] Notificaciones por correo electrónico (mensajes, reseñas, ventas)
+- [ ] Indicador "en línea" / "última vez" en chat
+- [ ] Envío de imágenes en chat
+
+### Marketplace
+- [ ] Búsqueda full-text (MATCH AGAINST)
+- [ ] Productos relacionados en detalle
+- [ ] Comparador de productos
+- [ ] Sistema de ofertas / contraofertas
+
+### Mobile
+- [ ] PWA (Progressive Web App) con service worker
+- [ ] Notificaciones push nativas
+
+### Admin
+- [ ] Exportación de reportes en CSV / Excel
+- [ ] Moderación asistida por IA (detección de fraude)
+- [ ] Multi-ciudad / multi-región
