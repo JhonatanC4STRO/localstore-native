@@ -1,16 +1,27 @@
 <?php
 
 session_start();
-include("../config/conexion.php");
-include("../config/role_sync.php");
+require_once __DIR__ . "/../config/conexion.php";
+require_once __DIR__ . "/../config/role_sync.php";
+
+require_once __DIR__ . "/../config/csrf.php";
 
 if (isset($_POST['save'])) {
+    // Validar token CSRF
+    if (!verify_csrf_token($_POST['csrf_token'] ?? null)) {
+        log_error("Fallo de validación de token CSRF en login.", "SECURITY");
+        header("Location: ../views/auth/login.php?error=csrf");
+        exit();
+    }
 
     $email    = $_POST['email'];
     $password = $_POST['password'];
 
-    // ── Admin hardcoded (se garantiza fila real en users para que pueda publicar, chatear, comprar, etc.) ──
-    if ($email === 'admin@gmail.com' && $password === 'admin') {
+    // ── Admin desde variables de entorno (definidas en el despliegue) o fallbacks por defecto ──
+    $admin_email = getenv('ADMIN_EMAIL') ?: 'admin@gmail.com';
+    $admin_pass  = getenv('ADMIN_PASSWORD') ?: 'admin';
+
+    if ($email === $admin_email && $password === $admin_pass) {
         $adminRow = null;
 
         $qAdmin = mysqli_prepare($conn, "SELECT * FROM users WHERE email = ? LIMIT 1");
@@ -48,26 +59,41 @@ if (isset($_POST['save'])) {
             }
         }
 
-        $_SESSION['user'] = $adminRow;
-        header("Location: ../views/admin/dashboard.php");
+        // Forzar cambio de contraseña al primer inicio (cuando ingresa con las credenciales por defecto de despliegue)
+        $_SESSION['migrate_user_id'] = $adminRow['id'];
+        header("Location: ../views/auth/reset_password.php?migrate=1");
         exit();
     }
 
-    $email_esc = mysqli_real_escape_string($conn, $email);
-    $query  = "SELECT * FROM users WHERE email = '$email_esc' LIMIT 1";
-    $result = mysqli_query($conn, $query);
+    // Usar consulta preparada para buscar el usuario por email de forma segura
+    $stmt_user = mysqli_prepare($conn, "SELECT * FROM users WHERE email = ? LIMIT 1");
+    if (!$stmt_user) {
+        die("Error de preparación: " . mysqli_error($conn));
+    }
+    mysqli_stmt_bind_param($stmt_user, "s", $email);
+    mysqli_stmt_execute($stmt_user);
+    $result_user = mysqli_stmt_get_result($stmt_user);
+    $user = mysqli_fetch_assoc($result_user);
+    mysqli_stmt_close($stmt_user);
 
-    $user       = mysqli_num_rows($result) > 0 ? mysqli_fetch_assoc($result) : null;
     $authenticated = false;
 
     if ($user) {
         $stored = (string)($user['password'] ?? '');
-        /* Soporta contraseñas con hash (bcrypt/argon2) y contraseñas en texto plano
-           creadas por el flujo de registro antiguo. */
-        if ($stored !== '' && $stored[0] === '$' && password_verify($password, $stored)) {
-            $authenticated = true;
-        } elseif (hash_equals($stored, $password)) {
-            $authenticated = true;
+        
+        // Comprobar si la contraseña guardada está encriptada (comienza con $)
+        if ($stored !== '' && $stored[0] === '$') {
+            if (password_verify($password, $stored)) {
+                $authenticated = true;
+            }
+        } else {
+            // Contraseña antigua en texto plano.
+            // NO permitimos el inicio de sesión directo, pero si coincide, forzamos su restablecimiento/migración.
+            if ($stored !== '' && hash_equals($stored, $password)) {
+                $_SESSION['migrate_user_id'] = $user['id'];
+                header("Location: ../views/auth/reset_password.php?migrate=1");
+                exit();
+            }
         }
     }
 
@@ -75,9 +101,18 @@ if (isset($_POST['save'])) {
         /* Sincronizar rol antes de guardar en sesión */
         sync_user_role($conn, (int)$user['id']);
 
-        /* Re-leer para obtener el rol actualizado */
-        $refreshed = mysqli_query($conn, "SELECT * FROM users WHERE id = {$user['id']} LIMIT 1");
-        $fresh = mysqli_fetch_assoc($refreshed);
+        /* Re-leer para obtener el rol actualizado usando consulta preparada */
+        $stmt_fresh = mysqli_prepare($conn, "SELECT * FROM users WHERE id = ? LIMIT 1");
+        if ($stmt_fresh) {
+            $user_id = (int)$user['id'];
+            mysqli_stmt_bind_param($stmt_fresh, "i", $user_id);
+            mysqli_stmt_execute($stmt_fresh);
+            $res_fresh = mysqli_stmt_get_result($stmt_fresh);
+            $fresh = mysqli_fetch_assoc($res_fresh);
+            mysqli_stmt_close($stmt_fresh);
+        } else {
+            $fresh = $user;
+        }
 
         /* Bloquear cuentas suspendidas/bloqueadas/eliminadas */
         $acctStatus = $fresh['status'] ?? 'active';
@@ -90,6 +125,7 @@ if (isset($_POST['save'])) {
             exit();
         }
 
+        session_regenerate_id(true);
         $_SESSION['user'] = $fresh;
 
         header("Location: ../views/home.php");

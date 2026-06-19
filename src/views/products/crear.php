@@ -255,8 +255,8 @@ if ($r) {
             <?php endif; ?>
 
 
-            <!-- FORM wrapper — preserves original action/method/enctype -->
             <form action="../../controllers/product_create_action.php" method="POST" enctype="multipart/form-data" id="mainForm">
+                <?php require_once __DIR__ . "/../../config/csrf.php"; insert_csrf_input(); ?>
 
                 <!-- Hidden inputs (logic preserved) -->
                 <input type="hidden" name="latitude" id="latitude">

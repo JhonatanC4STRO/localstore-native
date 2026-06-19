@@ -1,0 +1,1278 @@
+\documentclass[11pt,a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage[table]{xcolor}
+\usepackage{fancyhdr}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{textcomp}
+\usepackage{enumitem}
+
+% Configuración de colores
+\definecolor{NavyBlue}{HTML}{003366}
+\definecolor{LightGray}{HTML}{F5F5F5}
+\definecolor{DarkGray}{HTML}{333333}
+\definecolor{AlertRed}{HTML}{CC0000}
+\definecolor{SuccessGreen}{HTML}{006633}
+
+% Configuración de hipervínculos
+\hypersetup{
+    colorlinks=true,
+    linkcolor=NavyBlue,
+    citecolor=NavyBlue,
+    urlcolor=NavyBlue,
+    pdftitle={Especificación de Requisitos de Software - ComercioLocal},
+    pdfauthor={Jhonatan Castro},
+    pdfsubject={IEEE Std 830-1998},
+    pdfkeywords={SRS, IEEE 830, marketplace, ComercioLocal, PHP, WebSocket}
+}
+
+% Configuración de encabezados y pies de página
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\fontsize{9}{11}\selectfont ERS -- ComercioLocal v1.0}
+\fancyhead[R]{\fontsize{9}{11}\selectfont \leftmark}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Comando especial para las tablas de requisitos
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+
+\begin{document}
+
+% -------------------------------------------------------------
+% PORTADA
+% -------------------------------------------------------------
+\begin{titlepage}
+    \centering
+    \vspace*{1.5cm}
+    {\Huge\bfseries\color{NavyBlue} ComercioLocal}\\[0.6cm]
+    {\Large\bfseries Marketplace de Proximidad y Comunicación en Tiempo Real}\\[1.5cm]
+    
+    {\Huge\bfseries Especificación de Requisitos de Software}\\[0.8cm]
+    {\large Basado en el estándar IEEE Std 830-1998}\\[2cm]
+    
+    \textbf{Versión de la revisión:} 1.0\\
+    \textbf{Fecha de emisión:} \today\\[3cm]
+    
+    \begin{minipage}{0.45\textwidth}
+        \begin{flushleft} \large
+            \emph{Preparado para:}\\
+            Comunidad Local y\\
+            Pymes Municipales
+        \end{flushleft}
+    \end{minipage}
+    ~
+    \begin{minipage}{0.45\textwidth}
+        \begin{flushright} \large
+            \emph{Autor:}\\
+            \textbf{Jhonatan Castro}\\
+            \small Lead Developer / Architect
+        \end{flushright}
+    \end{minipage}
+    
+    \vfill
+    {\large \today}
+\end{titlepage}
+
+% -------------------------------------------------------------
+% FICHA DEL DOCUMENTO
+% -------------------------------------------------------------
+\chapter*{Ficha del documento}
+\addcontentsline{toc}{chapter}{Ficha del documento}
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|L|l|}
+\hline
+\rowcolor{NavyBlue}\color{white}\textbf{Fecha} & \color{white}\textbf{Revisión} & \color{white}\textbf{Descripción} & \color{white}\textbf{Autor/Verificador} \\ \hline
+28/05/2026 & 1.0 & Creación y redacción inicial detallada del documento bajo estándar IEEE 830. & Jhonatan Castro \\ \hline
+28/05/2026 & 1.1 & Ampliación conforme a análisis de conformidad: criterios de aceptación en RF, glosario de dominio, Ley 1581/2012, RF-17--RF-21, Apéndice C (trazabilidad), distribución de requisitos, subsección de usabilidad e índices de BD. & Jhonatan Castro \\ \hline
+\end{tabularx}
+\end{table}
+
+\vspace{1.5cm}
+\noindent\textbf{Documento validado por las partes en fecha:} \today
+
+\vspace{1.5cm}
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{XX}
+\textbf{Por el cliente} & \textbf{Por la empresa suministradora} \\
+& \\
+& \\
+Fdo. D./ Dña: \hrulefill & Fdo. D./ Dña: \hrulefill \\
+Nombre: \hrulefill & Nombre: Jhonatan Castro \\
+\end{tabularx}
+\end{table}
+
+\newpage
+
+% -------------------------------------------------------------
+% ÍNDICE
+% -------------------------------------------------------------
+\tableofcontents
+\newpage
+
+% -------------------------------------------------------------
+% CAPÍTULO 1: INTRODUCCIÓN
+% -------------------------------------------------------------
+\chapter{Introducción}
+
+La Especificación de Requisitos de Software (ERS) para la plataforma \textbf{ComercioLocal} proporciona una descripción detallada, estructurada y sistemática de las características funcionales y no funcionales del sistema. Su objetivo es asegurar un entendimiento alineado entre los desarrolladores, los administradores y los usuarios finales del sistema.
+
+\section{Propósito}
+El propósito de este documento es formalizar el conjunto de especificaciones técnicas y de negocio que componen la plataforma de comercio local \textbf{ComercioLocal v1.0} (en adelante, ``el Sistema''). Este documento sirve como contrato técnico de referencia a lo largo del ciclo de vida del software y como base para el diseño de casos de prueba y auditorías de conformidad.
+
+La audiencia objetivo de este documento incluye:
+\begin{itemize}
+    \item \textbf{Equipo de desarrollo y arquitectura:} Para guiar la codificación, estructuración de base de datos y despliegue.
+    \item \textbf{Personal de aseguramiento de calidad (QA):} Para diseñar los casos de prueba y asegurar que el comportamiento entregado sea fiel a lo estipulado.
+    \item \textbf{Administradores de la plataforma:} Para conocer los límites, capacidades y responsabilidades de moderación.
+    \item \textbf{Stakeholders de negocio y usuarios finales:} Para validar que el alcance funcional del Sistema satisface sus necesidades operativas y comerciales dentro del marketplace local.
+\end{itemize}
+
+\section{Alcance}
+El Sistema bajo desarrollo se denomina comercialmente como \textbf{ComercioLocal v1.0} (con nombre clave de repositorio \texttt{localstore-native}). El producto consiste en un marketplace web nativo, ligero y de proximidad geográfica, diseñado para conectar a compradores y vendedores de un mismo municipio o región metropolitana, eliminando fricciones logísticas típicas de plataformas globales.
+
+El alcance detallado abarca:
+\begin{itemize}
+    \item \textbf{Marketplace Local:} Publicación de listings con categorización, imágenes, precio y condición de los productos.
+    \item \textbf{Geolocalización:} Integración de mapas interactivos que permiten resolver la ciudad exacta y coordenadas GPS de la publicación sin ingresos manuales imprecisos.
+    \item \textbf{Chat en tiempo real:} Canal de comunicación bidireccional directo basado en WebSockets independientes.
+    \item \textbf{Ecosistema de moderación:} Panel administrativo y bitácoras para auditar y controlar reportes, suspensiones y validaciones de vendedores.
+\end{itemize}
+
+\subsection{Fuera del alcance}
+Los siguientes elementos están explícitamente \textbf{excluidos} del alcance de ComercioLocal v1.0, con el fin de delimitar el sistema y prevenir desviaciones no planificadas:
+\begin{itemize}
+    \item El sistema \textbf{no} procesará pagos reales (tarjetas de crédito/débito, transferencias bancarias, criptomonedas) en su versión 1.0. El flujo de pago de promociones es estrictamente simulado.
+    \item El sistema \textbf{no} incluirá funcionalidad de gestión de envíos, tracking logístico ni integración con operadores de transporte.
+    \item El sistema \textbf{no} proporcionará una API pública documentada para integración con aplicaciones o servicios de terceros.
+    \item El sistema \textbf{no} dispondrá de aplicación móvil nativa (iOS/Android). La experiencia móvil se provee mediante diseño web responsivo.
+    \item El sistema \textbf{no} implementará moderación automática de contenido basada en inteligencia artificial en su versión 1.0.
+    \item El sistema \textbf{no} gestionará inventario en tiempo real ni sincronización de stock con sistemas ERP externos.
+\end{itemize}
+
+\section{Personal involucrado}
+A continuación, se detalla la relación del personal clave involucrado en la especificación y desarrollo del Sistema:
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|L|l|}
+\hline
+\rowcolor{NavyBlue}\color{white}\textbf{Nombre} & \color{white}\textbf{Rol} & \color{white}\textbf{Responsabilidades} & \color{white}\textbf{Contacto} \\ \hline
+Jhonatan Castro & Lead Developer & Arquitectura, diseño de BD, sockets y backend principal. & jcastro@localstore.test \\ \hline
+Operador Admin & Moderador & Gestión de reportes de usuarios y verificación de identidades. & admin@localstore.test \\ \hline
+\end{tabularx}
+\end{table}
+
+\section{Definiciones, acrónimos y abreviaturas}
+Para la correcta interpretación de este documento, se definen los siguientes términos. Se distinguen dos categorías: términos técnicos y términos de dominio del negocio.
+
+\subsection{Términos técnicos}
+\begin{itemize}
+    \item \textbf{ERS (SRS):} Especificación de Requisitos de Software (Software Requirements Specification).
+    \item \textbf{CSRF:} Falsificación de Petición en Sitios Cruzados (Cross-Site Request Forgery).
+    \item \textbf{SQLi:} Inyección SQL (SQL Injection).
+    \item \textbf{MIME:} Extensiones Multipropósito de Correo de Internet (Multipurpose Internet Mail Extensions), usado para validar formatos reales de archivos.
+    \item \textbf{RCE:} Ejecución Remota de Código (Remote Code Execution).
+    \item \textbf{WS / WSS:} Protocolo WebSocket / WebSocket Seguro.
+    \item \textbf{PK / FK:} Llave Primaria (Primary Key) y Llave Foránea (Foreign Key) en bases de datos.
+    \item \textbf{AJAX:} JavaScript Asíncrono y XML (Asynchronous JavaScript and XML).
+    \item \textbf{TTFB:} Time To First Byte. Tiempo que transcurre desde que el cliente realiza la petición HTTP hasta que recibe el primer byte de respuesta del servidor.
+    \item \textbf{TLS/SSL:} Transport Layer Security / Secure Sockets Layer. Protocolos de cifrado de la capa de transporte que garantizan comunicaciones seguras en HTTPS y WSS.
+    \item \textbf{CDN:} Red de distribución de contenido (Content Delivery Network). En este sistema, utilizada para cargar librerías JS externas como Leaflet, Swiper y AOS.
+    \item \textbf{Prepared Statement:} Consulta SQL parametrizada que previene ataques SQLi separando el código de los datos de entrada del usuario.
+    \item \textbf{bcrypt:} Algoritmo de hashing adaptativo para contraseñas, resistente a ataques de fuerza bruta gracias a su función de costo configurable.
+    \item \textbf{XSS:} Cross-Site Scripting. Tipo de ataque que inyecta scripts maliciosos en páginas web servidas a otros usuarios.
+    \item \textbf{RF:} Requisito Funcional.
+    \item \textbf{RNF:} Requisito No Funcional.
+\end{itemize}
+
+\subsection{Términos de dominio del negocio}
+\begin{itemize}
+    \item \textbf{Listing / Anuncio:} Publicación individual de un producto en el marketplace, creada por un vendedor. Contiene título, precio, imágenes, descripción, categoría y ubicación geográfica.
+    \item \textbf{Marketplace de proximidad:} Plataforma que conecta compradores y vendedores dentro de una misma área geográfica municipal o metropolitana, priorizando transacciones locales.
+    \item \textbf{Geocodificación inversa:} Proceso de convertir coordenadas GPS (latitud/longitud) en una dirección postal legible o nombre de ciudad, utilizando la API externa Nominatim.
+    \item \textbf{Vendedor Verificado:} Usuario con rol \texttt{seller} cuya identidad o razón social ha sido validada por el equipo administrativo mediante documentación formal (Cédula o Registro Mercantil). Se distingue con una insignia (badge) visible en su perfil.
+    \item \textbf{Soft Delete:} Técnica de eliminación lógica que marca un registro como eliminado mediante un campo \texttt{deleted\_at} (TIMESTAMP) sin borrar físicamente el dato de la base de datos, preservando la integridad referencial.
+    \item \textbf{Chat thread / Hilo de conversación:} Canal de comunicación bidireccional y privado creado entre un comprador y un vendedor, vinculado a un producto específico del marketplace.
+    \item \textbf{Badge / Insignia:} Distinción visual en el perfil de un vendedor que indica su nivel de confianza o estado de verificación de la cuenta.
+    \item \textbf{Feed:} Listado principal de productos activos del marketplace, ordenado por prioridad promocional (\texttt{promo\_priority}) y fecha de publicación.
+    \item \textbf{Super\_admin:} Rol de máximo privilegio en el sistema, configurado vía variable de entorno. No es susceptible de modificación, degradación ni asignación por ningún otro rol dentro del sistema.
+    \item \textbf{Plan de promoción:} Nivel de pago (simulado) que eleva la prioridad de visualización de un listing en el feed general. Existen tres niveles: Basic (1), Recommended (2) y Premium (3).
+    \item \textbf{Role Sync:} Mecanismo automático del sistema que promueve el rol de un usuario de \texttt{user} a \texttt{seller} en el instante en que publica su primer listing exitosamente.
+    \item \textbf{WebSocket Daemon:} Proceso persistente ejecutado desde la interfaz de línea de comandos de PHP (\texttt{php server.php}) que gestiona las conexiones WebSocket activas en el puerto TCP 8080.
+\end{itemize}
+
+\section{Referencias}
+Los siguientes documentos, especificaciones técnicas y recursos tecnológicos sirven de referencia directa para el Sistema:
+\begin{enumerate}
+    \item \textbf{Estándar IEEE Std 830-1998:} Recommended Practice for Software Requirements Specifications. Institute of Electrical and Electronics Engineers.
+    \item \textbf{Ratchet WebSocket (v0.4.4):} Biblioteca de comunicación asíncrona en PHP (\url{http://socketo.me/}).
+    \item \textbf{Leaflet.js (v1.9+):} Biblioteca interactiva de mapas de código abierto (\url{https://leafletjs.com/}).
+    \item \textbf{OpenStreetMap Nominatim API:} Servicio REST para geocodificación inversa y resolución de ciudades. Documentación oficial: \url{https://nominatim.org/release-docs/latest/api/Reverse/}.
+    \item \textbf{PHP 8.2 Reference Manual:} Core de desarrollo del backend y referencia de funciones de seguridad: \url{https://www.php.net/manual/en/}.
+    \item \textbf{PHP Security Guidelines:} Guías de seguridad oficiales del motor de backend: \url{https://www.php.net/manual/en/security.php}.
+    \item \textbf{MySQL 8.0 Reference Manual:} Documentación oficial de la base de datos relacional utilizada: \url{https://dev.mysql.com/doc/refman/8.0/en/}.
+    \item \textbf{RFC 6455 -- The WebSocket Protocol:} Especificación técnica del protocolo de comunicación bidireccional implementado. IETF, 2011.
+    \item \textbf{OWASP Top Ten (2021):} Marco de referencia para los riesgos de seguridad web más críticos (\url{https://owasp.org/Top10/}).
+    \item \textbf{Ley 1581 de 2012 (Colombia):} Ley Estatutaria de Protección de Datos Personales (Habeas Data) y su Decreto Reglamentario 1377 de 2013.
+    \item \textbf{WCAG 2.1:} Web Content Accessibility Guidelines. W3C Recommendation (\url{https://www.w3.org/TR/WCAG21/}).
+\end{enumerate}
+
+\section{Resumen}
+Este documento se organiza de la siguiente manera:
+\begin{itemize}
+    \item El \textbf{Capítulo 1 (Introducción)} provee una perspectiva general del proyecto, los límites de su alcance, glosario técnico y de dominio, y referencias normativas.
+    \item El \textbf{Capítulo 2 (Descripción General)} detalla la perspectiva general del producto, sus usuarios objetivos, restricciones técnicas, suposiciones, dependencias externas y distribución de requisitos hacia versiones futuras.
+    \item El \textbf{Capítulo 3 (Requisitos Específicos)} constituye el núcleo del documento, listando exhaustivamente las interfaces, el conjunto completo de 21 requisitos funcionales (con precondiciones, postcondiciones, flujos alternativos y criterios de aceptación), requisitos no funcionales de rendimiento, seguridad, fiabilidad, usabilidad, disponibilidad, mantenibilidad y portabilidad, así como requisitos legales.
+    \item El \textbf{Capítulo 4 (Apéndices)} detalla el modelo físico de la base de datos con sus 14 tablas e índices (Apéndice A), la descripción de flujos y diagramas del sistema (Apéndice B), y la Matriz de Trazabilidad de Requisitos (Apéndice C).
+\end{itemize}
+
+\newpage
+
+% -------------------------------------------------------------
+% CAPÍTULO 2: DESCRIPCIÓN GENERAL
+% -------------------------------------------------------------
+\chapter{Descripción General}
+
+En esta sección se define el marco de funcionamiento de la plataforma ComercioLocal, describiendo el contexto general, sus usuarios finales y las principales restricciones impuestas.
+
+\section{Perspectiva del producto}
+ComercioLocal es una aplicación de arquitectura monolítica ligera pero desacoplada en su lógica de mensajería interactiva. A continuación, se presenta un esquema conceptual de las capas tecnológicas implementadas en el sistema:
+
+\begin{figure}[H]
+    \centering
+    \color{NavyBlue}
+    \setlength{\unitlength}{1mm}
+    \begin{picture}(130,55)
+        \put(5,45){\framebox(120,8){\bfseries BROWSER / CLIENTE (HTML5, Tailwind CSS, Vanilla JS, Leaflet.js)}}
+        \put(5,25){\framebox(60,12)[c]{\shortstack{\bfseries PHP WEB SERVER\\(Lógica POST/Vistas PHP)}}}
+        \put(70,25){\framebox(55,12)[c]{\shortstack{\bfseries WS SERVER (server.php)\\(Ratchet WebSocket 8080)}}}
+        \put(35,5){\framebox(60,10){\bfseries MySQL 8.0 (tiendalocal)}}
+        \put(65,45){\vector(0,-1){8}}
+        \put(35,25){\vector(0,-1){10}}
+        \put(95,25){\vector(-1,-1){10}}
+    \end{picture}
+    \caption{Diagrama de Arquitectura de Capas de ComercioLocal v1.0.}
+    \label{fig:arquitectura}
+\end{figure}
+
+El servidor web clásico de PHP se encarga de renderizar la presentación (\texttt{src/views}) y procesar transacciones asíncronas de datos (\texttt{src/api}) o formularios (\texttt{src/controllers}). Por otra parte, la mensajería instantánea opera de forma aislada a través de un demonio persistente en consola (\texttt{server.php}) que escucha conexiones WebSocket en el puerto \texttt{8080}. Ambos componentes se integran en la persistencia común de la base de datos MySQL.
+
+El sistema \textbf{no} es independiente; depende de las siguientes interfaces externas:
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|l|l|}
+\hline
+\rowcolor{NavyBlue}\color{white}\textbf{Interfaz externa} & \color{white}\textbf{Tipo} & \color{white}\textbf{Protocolo} & \color{white}\textbf{Dirección} \\ \hline
+Nominatim (OpenStreetMap) & API REST externa & HTTPS & Saliente \\ \hline
+MySQL 8.0 & Base de datos relacional & TCP/3306 (mysqli) & Interna \\ \hline
+Ratchet WebSocket Daemon & Servicio PHP CLI & WS/WSS TCP/8080 & Bidireccional \\ \hline
+CDN (Leaflet, Swiper, AOS) & Librerías JS externas & HTTPS & Entrante \\ \hline
+Servidor SMTP (futuro) & Correo electrónico & SMTP/TLS & Saliente \\ \hline
+\end{tabularx}
+\caption{Interfaces externas del sistema.}
+\end{table}
+
+\section{Funcionalidad del producto}
+El comportamiento primordial del Sistema gira en torno a los siguientes macro-procesos:
+\begin{itemize}
+    \item \textbf{Gestión de Listings:} Los usuarios registran productos con imágenes y ubicación en tiempo real.
+    \item \textbf{Comunicación Instantánea:} Al hacer clic en ``Contactar vendedor'', el Sistema vincula al comprador, vendedor y producto en una interfaz asíncrona de chat WebSocket que persiste sus mensajes.
+    \item \textbf{Promoción y Monetización Simulada:} Los vendedores pueden pagar (simulado) para elevar la prioridad y visualización de sus productos en el feed principal mediante planes Basic, Recommended y Premium.
+    \item \textbf{Verificación de Confianza:} Los vendedores pueden someter documentos PDF formales para obtener un distintivo (badge) de ``Vendedor Verificado'' que valida su cuenta.
+    \item \textbf{Moderación Reactiva:} Cualquier usuario puede reportar a personas o productos indebidos. La acción se gestiona en un dashboard donde los administradores resuelven el conflicto (suspender, eliminar, ignorar).
+\end{itemize}
+
+\section{Características de los usuarios}
+El Sistema clasifica formalmente a sus usuarios bajo cuatro perfiles específicos:
+\begin{enumerate}
+    \item \textbf{User (Comprador Estándar):} Perfil por defecto. Sus habilidades computacionales requeridas son básicas. Puede navegar por productos, agregar a favoritos, registrar reportes y chatear libremente.
+    \item \textbf{Seller (Vendedor):} Rol dinámico que se activa automáticamente al publicar su primer producto. Requiere conocimientos básicos de carga de archivos e interacción con mapas.
+    \item \textbf{Admin (Administrador):} Operador técnico encargado de la salud del marketplace. Utiliza la sección de administración para revisar reportes, aprobar verificaciones y auditar logs.
+    \item \textbf{Super\_admin:} Rol inmutable del sistema configurado por variable de entorno para realizar labores críticas y control total del personal de administración.
+\end{enumerate}
+
+\section{Restricciones}
+Las principales limitaciones de diseño y desarrollo que rigen al sistema son:
+\begin{itemize}
+    \item \textbf{Backend Nativo:} La lógica del servidor debe ser escrita en PHP 8.2 puro y directo, sin hacer uso de frameworks de desarrollo como Laravel o Symfony.
+    \item \textbf{Ausencia de Servidores de Colas:} La mensajería síncrona debe interactuar directamente con la base de datos utilizando llamadas internas HTTP POST para almacenar mensajes desde el bucle WebSocket.
+    \item \textbf{Puertos Estáticos:} El chat requiere el puerto TCP \texttt{8080} libre en el entorno local o un proxy reverso correctamente configurado para elevar HTTP a WSS en despliegue cloud.
+    \item \textbf{Geolocalización del navegador requiere HTTPS:} La API de Geolocalización HTML5 solo opera en \textit{secure contexts}. En producción, el servidor debe servir el contenido bajo HTTPS con certificado TLS válido.
+    \item \textbf{Disponibilidad de API externa:} La funcionalidad de geocodificación inversa es dependiente de la disponibilidad de la API de Nominatim (OpenStreetMap), que es un servicio externo gratuito con políticas de uso aceptable.
+\end{itemize}
+
+\section{Suposiciones y dependencias}
+\begin{itemize}
+    \item Se asume que el navegador del cliente cuenta con acceso de red sin filtros corporativos para cargar las librerías CDN de Leaflet y Swiper, y para comunicarse con el puerto WebSocket asignado.
+    \item El correcto funcionamiento de la geolocalización inversa depende de la disponibilidad y los límites de uso gratuitos de la API externa Nominatim de OpenStreetMap.
+    \item Se asume que el sistema será accedido desde navegadores de versión moderna (Chrome 90+, Firefox 88+, Safari 14+, Edge 90+) con soporte nativo para WebSockets (RFC 6455) y la Geolocation API del navegador.
+    \item Se asume la disponibilidad continua de una conexión a MySQL con usuario de base de datos con privilegios \texttt{SELECT}, \texttt{INSERT}, \texttt{UPDATE} y \texttt{DELETE} exclusivamente sobre la base de datos \texttt{tiendalocal}.
+    \item Se asume que el entorno de producción proveerá un certificado TLS/SSL válido para garantizar el uso de HTTPS y WSS, requeridos para el correcto funcionamiento de la API de Geolocalización del navegador en contextos seguros.
+    \item Se asume que el directorio \texttt{uploads/} del servidor tendrá permisos de escritura adecuados (equivalente a chmod 755 en el entorno Docker/Railway).
+    \item Se asume que el entorno de producción (Railway) proporcionará al menos 512 MB de RAM para soportar los procesos concurrentes del servidor HTTP y el WebSocket Daemon de forma simultánea.
+\end{itemize}
+
+\section{Distribución de requisitos}
+Los siguientes requisitos han sido identificados como candidatos para su implementación diferida a versiones posteriores del Sistema, condicionados a disponibilidad de recursos, integraciones externas de pago o complejidad técnica adicional:
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|L|l|}
+\hline
+\rowcolor{NavyBlue}\color{white}\textbf{Funcionalidad} & \color{white}\textbf{Descripción} & \color{white}\textbf{Versión objetivo} \\ \hline
+Pasarela de pago real & Integración de Stripe o PayPal para cobros efectivos de planes de promoción. En v1.0 el flujo es simulado (RF-10). & v2.0 \\ \hline
+Notificaciones push & Sistema de avisos vía Web Push API. En v1.0 solo se soportan notificaciones por correo electrónico (RF-19). & v2.0 \\ \hline
+API pública REST & Exposición de endpoints REST documentados para integración con plataformas o aplicaciones de terceros. & v2.0 \\ \hline
+Aplicación móvil nativa & Desarrollo de cliente iOS/Android mediante React Native o Flutter aprovechando la API interna. & v3.0 \\ \hline
+Moderación IA & Análisis automático de imágenes de productos con redes neuronales para detectar contenido inapropiado. & v3.0 \\ \hline
+Sistema de análisis & Dashboard de métricas y analítica de rendimiento del marketplace (ventas, conversiones, retención). & v2.0 \\ \hline
+\end{tabularx}
+\caption{Requisitos diferidos a versiones futuras de ComercioLocal.}
+\end{table}
+
+\section{Evolución previsible del sistema}
+En etapas futuras se prevén las siguientes extensiones:
+\begin{itemize}
+    \item Integración de pasarelas de pago reales y no simuladas (Stripe, PayPal) para la adquisición de promociones.
+    \item Implementación de un sistema de notificaciones push basadas en Web Push API.
+    \item Incorporación de un microservicio de análisis inteligente para la moderación automática de imágenes basado en redes neuronales.
+    \item Exposición de una API REST pública para integración con aplicaciones de terceros.
+\end{itemize}
+
+\newpage
+
+% -------------------------------------------------------------
+% CAPÍTULO 3: REQUISITOS ESPECÍFICOS
+% -------------------------------------------------------------
+\chapter{Requisitos Específicos}
+
+\section{Requisitos comunes de los interfaces}
+
+\subsection{Interfaces de usuario}
+La interfaz de usuario (UI) debe implementarse bajo criterios modernos de diseño fluido:
+\begin{itemize}
+    \item \textbf{Diseño Visual:} Basado en Tailwind CSS v4, usando una paleta de colores limpia con soporte responsivo total (Mobile-First) debido a la naturaleza móvil de las búsquedas locales. La interfaz debe adaptarse a resoluciones desde 320px (móvil) hasta 1920px (escritorio) sin pérdida de funcionalidad crítica.
+    \item \textbf{Interactividad:} Integración de sliders con Swiper.js para las galerías de imágenes y animaciones de transición sutiles mediante Animate.css y AOS (Animate On Scroll).
+    \item \textbf{Navegación:} El header de navegación principal expone de manera fija el acceso al buscador inteligente de ciudades, el feed general, chat, mis productos, favoritos y panel administrativo (si aplica).
+    \item \textbf{Mensajes de error:} Todos los errores presentados al usuario final deben expresarse en lenguaje natural comprensible, sin exponer detalles técnicos de la infraestructura subyacente (sin stack traces, nombres de archivo o queries SQL).
+\end{itemize}
+
+\subsection{Interfaces de hardware}
+\begin{itemize}
+    \item \textbf{Dispositivo Cliente:} Equipos de computación o dispositivos móviles con soporte para navegadores modernos compatibles con JavaScript estándar (ES6+), y conexión activa a Internet.
+    \item \textbf{Servidor del Sistema:} Un entorno (físico, virtualizado o contenedor Docker) con al menos 512 MB de RAM para soportar los procesos concurrentes de HTTP y el WebSocket Daemon. Se recomienda un mínimo de 1 vCPU y 10 GB de almacenamiento persistente para el directorio \texttt{uploads/}.
+\end{itemize}
+
+\subsection{Interfaces de software}
+El Sistema interactúa con las siguientes dependencias de software principales:
+\begin{itemize}
+    \item \textbf{Motor de base de datos MySQL (8.0+):} Interactúa usando el driver nativo de PHP \texttt{mysqli} configurado de forma robusta con prepared statements.
+    \item \textbf{Librerías del cliente JS:} Leaflet.js para procesamiento de mapas y geocodificación visual sobre el DOM.
+    \item \textbf{Ratchet WebSocket Server (PHP):} Operando bajo PHP CLI, conectado a la base de datos de MySQL para validar el ciclo de vida de los canales creados.
+\end{itemize}
+
+\subsection{Interfaces de comunicación}
+\begin{itemize}
+    \item \textbf{HTTP/HTTPS:} Utilizado para todo el flujo de carga de páginas, visualización de recursos estáticos, envío de formularios y endpoints API AJAX (JSON).
+    \item \textbf{WS/WSS:} Protocolo bidireccional asíncrono asignado para el servicio del chat (\texttt{ws://localhost:8080} o \texttt{wss://[domain-name]/ws} en entornos de producción con balanceadores de carga).
+    \item \textbf{HTTPS (saliente):} Para las peticiones de geocodificación inversa al API de Nominatim.
+\end{itemize}
+
+\newpage
+\section{Requisitos funcionales}
+
+Siguiendo el estándar IEEE 830, a continuación se detallan individualmente las 21 fichas de requisitos funcionales. Cada ficha incluye: descripción, precondición, postcondición, flujos alternativos y criterio de aceptación.
+
+% -------------------------------------------------------
+% RF-01
+% -------------------------------------------------------
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|L|}
+\hline
+\rowcolor{NavyBlue}\multicolumn{2}{|c|}{\color{white}\bfseries RF-01: Registro y Autenticación de Usuarios} \\ \hline
+\textbf{Número de requisito} & RF-01 \\ \hline
+\textbf{Nombre de requisito} & Registro y Autenticación de Usuarios \\ \hline
+\textbf{Tipo} & Requisito Funcional \\ \hline
+\textbf{Fuente del requisito} & Especificación del Negocio / Capa de Seguridad \\ \hline
+\textbf{Prioridad} & Alta / Esencial \\ \hline
+\textbf{Dependencias} & Ninguna (requisito base del sistema) \\ \hline
+\textbf{Precondición} & El usuario no posee una sesión activa en el sistema. Para el registro: el correo electrónico no debe existir previamente en la tabla \texttt{users}. \\ \hline
+\textbf{Descripción} & El sistema debe permitir a nuevos usuarios registrarse proporcionando nombre completo, correo electrónico, ciudad y contraseña. La contraseña debe almacenarse encriptada mediante algoritmo bcrypt (costo 10). La autenticación posterior debe ejecutarse comparando los hashes mediante funciones seguras en tiempo constante. Tras iniciar sesión con éxito, se debe regenerar el identificador de sesión (\texttt{session\_regenerate\_id(true)}) para mitigar ataques de Session Fixation. La contraseña debe tener una longitud mínima de 8 caracteres. \\ \hline
+\textbf{Postcondición} & \textbf{Registro:} Se crea un registro en \texttt{users} con \texttt{status='active'} y \texttt{role='user'}. Se crea automáticamente un registro asociado en \texttt{user\_settings} con valores por defecto. \textbf{Login:} Se establece la variable \texttt{\$\_SESSION['user\_id']} y el \texttt{session\_id()} es distinto al generado antes del inicio de sesión. \\ \hline
+\textbf{Flujos alternativos} & (E1) Si el correo ya existe al registrarse: el sistema retorna HTTP 409 con mensaje ``El correo electrónico ya está registrado''. (E2) Si la contraseña es menor a 8 caracteres: el sistema retorna HTTP 422. (E3) Si las credenciales de login no coinciden: el sistema retorna HTTP 401 con mensaje genérico sin revelar cuál campo es incorrecto. (E4) Si la cuenta está suspendida o bloqueada: el sistema retorna mensaje informativo de estado. \\ \hline
+\textbf{Criterio de aceptación} & Un usuario puede crear una cuenta con datos válidos e iniciar sesión con éxito. Al verificar la sesión PHP, el \texttt{session\_id()} post-login difiere del pre-login. La contraseña almacenada en BD no es texto plano y \texttt{password\_verify()} retorna \texttt{true} para la contraseña correcta. \\ \hline
+\end{tabularx}
+\end{table}
+
+% -------------------------------------------------------
+% RF-02
+% -------------------------------------------------------
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|L|}
+\hline
+\rowcolor{NavyBlue}\multicolumn{2}{|c|}{\color{white}\bfseries RF-02: Gestión de Perfil de Usuario} \\ \hline
+\textbf{Número de requisito} & RF-02 \\ \hline
+\textbf{Nombre de requisito} & Gestión de Perfil de Usuario y Preferencias \\ \hline
+\textbf{Tipo} & Requisito Funcional \\ \hline
+\textbf{Fuente del requisito} & Interfaz de Usuario / Requisitos del Cliente \\ \hline
+\textbf{Prioridad} & Media / Deseado \\ \hline
+\textbf{Dependencias} & RF-01 (el usuario debe estar autenticado) \\ \hline
+\textbf{Precondición} & El usuario tiene una sesión activa en el sistema (\texttt{\$\_SESSION['user\_id']} definido). \\ \hline
+\textbf{Descripción} & Cada usuario debe contar con un perfil privado donde actualizar sus datos básicos (nombre, teléfono, biografía, foto de avatar) y configurar sus opciones de privacidad: visibilidad de su teléfono, visualización de correo y quién puede enviarle mensajes (Cualquiera, Vendedores Verificados o Nadie). El sistema gestionará automáticamente una tabla de ajustes de notificaciones de correo para mensajes, reseñas y promociones. \\ \hline
+\textbf{Postcondición} & Los campos actualizados del usuario se reflejan en la tabla \texttt{users} y las preferencias en \texttt{user\_settings}. Si se carga un nuevo avatar, el archivo anterior es eliminado del servidor y la nueva ruta se persiste en \texttt{profile\_photo}. \\ \hline
+\textbf{Flujos alternativos} & (E1) Si el archivo de avatar no es una imagen válida (MIME incorrecto o tamaño > 2 MB): el sistema rechaza la carga y notifica al usuario sin alterar el avatar anterior. (E2) Si el usuario intenta acceder al perfil sin sesión activa: el sistema redirige al login con código HTTP 302. \\ \hline
+\textbf{Criterio de aceptación} & Tras actualizar el perfil, los datos modificados son visibles de inmediato en la interfaz sin necesidad de cerrar sesión. Las preferencias de privacidad persisten entre sesiones. \\ \hline
+\end{tabularx}
+\end{table}
+
+% -------------------------------------------------------
+% RF-03
+% -------------------------------------------------------
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|L|}
+\hline
+\rowcolor{NavyBlue}\multicolumn{2}{|c|}{\color{white}\bfseries RF-03: Creación e Inserción de Productos} \\ \hline
+\textbf{Número de requisito} & RF-03 \\ \hline
+\textbf{Nombre de requisito} & Creación e Inserción de Productos (Listings) \\ \hline
+\textbf{Tipo} & Requisito Funcional \\ \hline
+\textbf{Fuente del requisito} & Marketplace del Producto / Flujo Comercial \\ \hline
+\textbf{Prioridad} & Alta / Esencial \\ \hline
+\textbf{Dependencias} & RF-01, RF-04 (geolocalización), RF-05 (imágenes) \\ \hline
+\textbf{Precondición} & El usuario tiene sesión activa. El formulario de creación es accesible para cualquier usuario autenticado. \\ \hline
+\textbf{Descripción} & Los usuarios con sesión iniciada deben poder crear listings de productos. El formulario exige título, precio decimal con formato de dos decimales, descripción detallada, categoría (entre 23 predefinidas), condición (nuevo, usado, reacondicionado), coordenadas geográficas (latitud, longitud) y ciudad resuelta automáticamente. Al crear su primer listado con éxito, el sistema actualizará automáticamente el rol del usuario de \texttt{user} a \texttt{seller} (ver RF-16). \\ \hline
+\textbf{Postcondición} & Se crea un registro en la tabla \texttt{products} con \texttt{admin\_status='active'} y \texttt{promo\_priority=0}. Si es el primer listing del usuario, su campo \texttt{role} en \texttt{users} cambia a \texttt{'seller'}. Las imágenes cargadas se insertan en \texttt{product\_images}. \\ \hline
+\textbf{Flujos alternativos} & (E1) Si algún campo obligatorio está vacío: el sistema retorna el formulario con mensajes de validación específicos por campo. (E2) Si el precio no es un número decimal válido: el sistema rechaza el envío. (E3) Si la categoría enviada no existe en BD: el sistema retorna HTTP 422. \\ \hline
+\textbf{Criterio de aceptación} & El producto creado aparece en el feed principal del marketplace de forma inmediata. El vendedor puede localizarlo en su panel ``Mis productos''. La categoría, condición y ciudad se muestran correctamente según los datos ingresados. \\ \hline
+\end{tabularx}
+\end{table}
+
+% -------------------------------------------------------
+% RF-04
+% -------------------------------------------------------
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|L|}
+\hline
+\rowcolor{NavyBlue}\multicolumn{2}{|c|}{\color{white}\bfseries RF-04: Geolocalización mediante Mapa Interactivo} \\ \hline
+\textbf{Número de requisito} & RF-04 \\ \hline
+\textbf{Nombre de requisito} & Geolocalización de Listings mediante Mapa \\ \hline
+\textbf{Tipo} & Requisito Funcional \\ \hline
+\textbf{Fuente del requisito} & Funcionalidad del Producto \\ \hline
+\textbf{Prioridad} & Alta / Esencial \\ \hline
+\textbf{Dependencias} & RF-03 (se activa durante creación/edición de producto) \\ \hline
+\textbf{Precondición} & El formulario de creación o edición de producto está abierto. El navegador tiene acceso a internet para cargar los tiles de Leaflet.js y comunicarse con la API de Nominatim. \\ \hline
+\textbf{Descripción} & Durante la creación o edición de un producto, el vendedor debe ubicar un marcador sobre un mapa interactivo renderizado con Leaflet.js. El sistema debe enviar la coordenada capturada al endpoint externo Nominatim de OpenStreetMap mediante geocodificación inversa, extraer el campo del municipio/ciudad y guardarlo para alimentar los filtros de búsqueda por localización geográfica del marketplace. \\ \hline
+\textbf{Postcondición} & Los campos \texttt{latitude}, \texttt{longitude} y \texttt{city} del producto se rellenan automáticamente. El campo \texttt{city} contiene el nombre resuelto por Nominatim. El usuario puede visualizar en el mapa la posición marcada antes de guardar. \\ \hline
+\textbf{Flujos alternativos} & (E1) Si la API de Nominatim no está disponible o devuelve error: el sistema notifica al usuario y permite ingreso manual de ciudad como campo de texto alternativo. (E2) Si el usuario no concede permiso de geolocalización al navegador: el mapa se centra en una posición por defecto (Colombia) y el usuario ubica el marcador manualmente. \\ \hline
+\textbf{Criterio de aceptación} & Al hacer clic en el mapa, los campos ocultos de latitud, longitud y ciudad se rellenan correctamente. La ciudad resuelta por Nominatim coincide con la localización geográfica del marcador colocado. \\ \hline
+\end{tabularx}
+\end{table}
+
+% -------------------------------------------------------
+% RF-05
+% -------------------------------------------------------
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|L|}
+\hline
+\rowcolor{NavyBlue}\multicolumn{2}{|c|}{\color{white}\bfseries RF-05: Carga y Validación de Imágenes} \\ \hline
+\textbf{Número de requisito} & RF-05 \\ \hline
+\textbf{Nombre de requisito} & Carga y Validación Estricta de Imágenes \\ \hline
+\textbf{Tipo} & Requisito Funcional / Restricción de Seguridad \\ \hline
+\textbf{Fuente del requisito} & Capa de Seguridad / Funcionalidad del Producto \\ \hline
+\textbf{Prioridad} & Alta / Esencial \\ \hline
+\textbf{Dependencias} & RF-03 (imágenes de productos), RF-02 (avatar de perfil) \\ \hline
+\textbf{Precondición} & El usuario tiene sesión activa y está completando el formulario de creación/edición de producto o perfil. \\ \hline
+\textbf{Descripción} & El sistema debe permitir la subida de hasta 5 imágenes por producto. Por seguridad, el backend debe implementar una validación estricta del tipo MIME real del archivo utilizando \texttt{finfo\_file()} para verificar que la firma de bytes corresponda estrictamente a \texttt{image/jpeg}, \texttt{image/png} o \texttt{image/webp}. La extensión de archivo provista por el navegador del cliente no se tomará como válida. El tamaño máximo por archivo es de 5 MB. Los archivos se almacenan en \texttt{uploads/products/} con nombre generado mediante \texttt{uniqid()} para prevenir colisiones y sobreescritura. \\ \hline
+\textbf{Postcondición} & Las imágenes válidas se almacenan en disco y sus rutas se insertan en la tabla \texttt{product\_images} con referencia al \texttt{product\_id} correspondiente. \\ \hline
+\textbf{Flujos alternativos} & (E1) Si el tipo MIME real no es imagen válida: el sistema rechaza el archivo y notifica ``Formato de archivo no permitido'' sin procesar el contenido. (E2) Si el archivo excede 5 MB: el sistema rechaza la carga con mensaje informativo. (E3) Si se intentan subir más de 5 imágenes: el sistema procesa solo las primeras 5 e informa al usuario. \\ \hline
+\textbf{Criterio de aceptación} & Un archivo PHP renombrado como \texttt{.jpg} es rechazado por el sistema. Un archivo JPEG válido de menos de 5 MB es aceptado y su miniatura aparece en el listing del producto. \\ \hline
+\end{tabularx}
+\end{table}
+
+% -------------------------------------------------------
+% RF-06
+% -------------------------------------------------------
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|L|}
+\hline
+\rowcolor{NavyBlue}\multicolumn{2}{|c|}{\color{white}\bfseries RF-06: Búsqueda y Filtrado de Productos} \\ \hline
+\textbf{Número de requisito} & RF-06 \\ \hline
+\textbf{Nombre de requisito} & Búsqueda y Filtrado de Productos \\ \hline
+\textbf{Tipo} & Requisito Funcional \\ \hline
+\textbf{Fuente del requisito} & Marketplace del Producto \\ \hline
+\textbf{Prioridad} & Alta / Esencial \\ \hline
+\textbf{Dependencias} & RF-03, RF-04 (ciudad resuelta por geolocalización) \\ \hline
+\textbf{Precondición} & Existen productos con \texttt{admin\_status='active'} en la base de datos. \\ \hline
+\textbf{Descripción} & La interfaz principal del marketplace debe ofrecer un buscador instantáneo que filtre las publicaciones activas. Los filtros aplicables deben ser concurrentes e incluir: palabra clave (título/descripción), rango de precios (mínimo y máximo), categoría seleccionada, condición física y, de manera prioritaria, filtrado por ciudad resuelta. Para garantizar un tiempo de respuesta inferior a 150 ms, la consulta debe realizarse utilizando los índices multicolumna (\texttt{idx\_admin\_status}, \texttt{idx\_city}) creados en la base de datos MySQL. Los resultados se ordenan por \texttt{promo\_priority} DESC y \texttt{created\_at} DESC. \\ \hline
+\textbf{Postcondición} & Se retorna un listado JSON paginado de productos que cumplen todos los filtros activos, incluyendo: \texttt{id}, \texttt{title}, \texttt{price}, \texttt{city}, \texttt{condition\_type}, imagen principal y \texttt{promo\_priority}. \\ \hline
+\textbf{Flujos alternativos} & (E1) Si ningún producto coincide con los filtros: el sistema muestra un mensaje ``No se encontraron resultados'' sin mostrar error. (E2) Si el rango de precios es inválido (mínimo > máximo): el sistema ignora el filtro de precio o notifica al usuario. \\ \hline
+\textbf{Criterio de aceptación} & Al aplicar el filtro de ciudad ``Bogotá'', solo aparecen productos cuyo campo \texttt{city} contiene ``Bogotá''. Los resultados con \texttt{promo\_priority=3} aparecen antes que los de prioridad 0. El tiempo de respuesta de la búsqueda no supera 150 ms en condiciones normales de carga. \\ \hline
+\end{tabularx}
+\end{table}
+
+% -------------------------------------------------------
+% RF-07
+% -------------------------------------------------------
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|L|}
+\hline
+\rowcolor{NavyBlue}\multicolumn{2}{|c|}{\color{white}\bfseries RF-07: Chat Privado en Tiempo Real} \\ \hline
+\textbf{Número de requisito} & RF-07 \\ \hline
+\textbf{Nombre de requisito} & Chat Privado en Tiempo Real (WebSocket) \\ \hline
+\textbf{Tipo} & Requisito Funcional \\ \hline
+\textbf{Fuente del requisito} & WebSocket / Flujo de Comunicación \\ \hline
+\textbf{Prioridad} & Alta / Esencial \\ \hline
+\textbf{Dependencias} & RF-01, RF-03, RF-08 (persistencia de mensajes) \\ \hline
+\textbf{Precondición} & El WebSocket Daemon (\texttt{server.php}) está en ejecución en el puerto 8080. El comprador tiene sesión activa. El producto al que intenta contactar tiene \texttt{admin\_status='active'}. \\ \hline
+\textbf{Descripción} & El sistema debe soportar un canal interactivo de chat utilizando el protocolo WebSocket sobre Ratchet. Al iniciar la conversación en el frontend, el navegador envía un payload de tipo \texttt{init}. El servidor WebSocket debe consultar a MySQL si el usuario actual coincide con los IDs de comprador o vendedor registrados para ese hilo. En caso negativo, la conexión se abortará inmediatamente para evitar secuestro de canales de mensajería. \\ \hline
+\textbf{Postcondición} & Se establece una conexión WebSocket activa entre ambos participantes del hilo. El comprador y el vendedor pueden intercambiar mensajes de texto en tiempo real. Cada mensaje enviado es retransmitido a todos los participantes del hilo activos. \\ \hline
+\textbf{Flujos alternativos} & (E1) Si el usuario no es participante del hilo: el servidor cierra la conexión WebSocket con código 4001 (No autorizado). (E2) Si el WebSocket Daemon no está disponible: el cliente JS reintenta la conexión con política de backoff exponencial hasta 3 veces, luego muestra mensaje de error. (E3) Si el hilo no existe aún: se crea un nuevo registro en \texttt{conversations} al primer mensaje del comprador. \\ \hline
+\textbf{Criterio de aceptación} & Dos usuarios participantes del mismo hilo reciben los mensajes del otro en tiempo real sin recargar la página. Un tercer usuario sin acceso al hilo no puede recibir ni enviar mensajes en ese canal, y su conexión WS es rechazada. \\ \hline
+\end{tabularx}
+\end{table}
+
+% -------------------------------------------------------
+% RF-08
+% -------------------------------------------------------
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|L|}
+\hline
+\rowcolor{NavyBlue}\multicolumn{2}{|c|}{\color{white}\bfseries RF-08: Almacenamiento y Carga del Historial de Chat} \\ \hline
+\textbf{Número de requisito} & RF-08 \\ \hline
+\textbf{Nombre de requisito} & Almacenamiento del Historial de Chat \\ \hline
+\textbf{Tipo} & Requisito Funcional \\ \hline
+\textbf{Fuente del requisito} & WebSocket / Persistencia \\ \hline
+\textbf{Prioridad} & Alta / Esencial \\ \hline
+\textbf{Dependencias} & RF-07 \\ \hline
+\textbf{Precondición} & Una conversación válida existe en la tabla \texttt{conversations}. El mensaje ha sido validado y autorizado por el servidor WebSocket. \\ \hline
+\textbf{Descripción} & Cuando un mensaje de tipo \texttt{message} es validado y retransmitido por el servidor WebSocket, el backend asíncrono del chat debe invocar de forma transparente una petición POST interna para persistir el registro del mensaje en la tabla \texttt{messages} con su estado inicial marcado como no leído (\texttt{is\_read = 0}). El historial completo de chat se cargará de manera inmediata cada vez que el usuario abra la interfaz respectiva. \\ \hline
+\textbf{Postcondición} & Existe un registro en \texttt{messages} con \texttt{conversation\_id}, \texttt{sender\_id}, \texttt{message} (contenido) e \texttt{is\_read=0}. Al recargar la interfaz de chat, el historial completo es visible para ambos participantes. \\ \hline
+\textbf{Flujos alternativos} & (E1) Si la petición POST interna de persistencia falla: el mensaje es retransmitido por WS pero se registra el error en \texttt{src/logs/error.log}. El sistema intenta reintentar la persistencia una vez. (E2) Si el contenido del mensaje está vacío: el servidor WebSocket ignora el payload y no realiza persistencia. \\ \hline
+\textbf{Criterio de aceptación} & Tras enviar un mensaje, al cerrar y reabrir la ventana de chat, el mensaje enviado aparece en el historial. El campo \texttt{is\_read} en BD es 0 hasta que el receptor abre la conversación (RF-20). \\ \hline
+\end{tabularx}
+\end{table}
+
+% -------------------------------------------------------
+% RF-09
+% -------------------------------------------------------
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|L|}
+\hline
+\rowcolor{NavyBlue}\multicolumn{2}{|c|}{\color{white}\bfseries RF-09: Sistema de Favoritos} \\ \hline
+\textbf{Número de requisito} & RF-09 \\ \hline
+\textbf{Nombre de requisito} & Gestión de Favoritos \\ \hline
+\textbf{Tipo} & Requisito Funcional \\ \hline
+\textbf{Fuente del requisito} & Funcionalidad del Producto \\ \hline
+\textbf{Prioridad} & Baja / Opcional \\ \hline
+\textbf{Dependencias} & RF-01, RF-03 \\ \hline
+\textbf{Precondición} & El usuario tiene sesión activa. El producto al que intenta agregar como favorito existe y tiene \texttt{admin\_status='active'}. \\ \hline
+\textbf{Descripción} & Los compradores con sesión activa deben poder alternar el estado de favoritos en cualquier producto. Mediante llamadas asíncronas AJAX (\texttt{src/api/favorites/toggle.php}), el sistema creará o removerá la relación en la base de datos, garantizando consistencia a través de la restricción de llave única (\texttt{uk\_user\_product}) para impedir duplicados. \\ \hline
+\textbf{Postcondición} & \textbf{Al agregar:} Se inserta registro en \texttt{favorites} con \texttt{user\_id} y \texttt{product\_id}. El ícono de favorito en la UI cambia a estado activo (relleno). \textbf{Al quitar:} Se elimina el registro. El ícono vuelve a estado inactivo. \\ \hline
+\textbf{Flujos alternativos} & (E1) Si el usuario no tiene sesión y hace clic en favorito: el sistema retorna HTTP 401 y la UI redirige al login. (E2) Si el registro ya existe al intentar agregar: la restricción UNIQUE de BD previene el duplicado y el sistema retorna el estado actual sin error. \\ \hline
+\textbf{Criterio de aceptación} & Al marcar un producto como favorito, el ícono cambia visualmente de forma inmediata sin recargar la página. El producto aparece en la sección ``Mis favoritos'' del usuario. Al desmarcarlo, desaparece de la sección. \\ \hline
+\end{tabularx}
+\end{table}
+
+% -------------------------------------------------------
+% RF-10
+% -------------------------------------------------------
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|L|}
+\hline
+\rowcolor{NavyBlue}\multicolumn{2}{|c|}{\color{white}\bfseries RF-10: Promoción de Productos} \\ \hline
+\textbf{Número de requisito} & RF-10 \\ \hline
+\textbf{Nombre de requisito} & Promoción de Productos (Planes de Pago Simulados) \\ \hline
+\textbf{Tipo} & Requisito Funcional \\ \hline
+\textbf{Fuente del requisito} & Regla de Negocio / Monetización \\ \hline
+\textbf{Prioridad} & Media / Deseado \\ \hline
+\textbf{Dependencias} & RF-01, RF-03 \\ \hline
+\textbf{Precondición} & El usuario tiene rol \texttt{seller} y el producto a promocionar le pertenece (\texttt{user\_id} coincide con sesión activa). El producto tiene \texttt{admin\_status='active'}. \\ \hline
+\textbf{Descripción} & El sistema implementará tres niveles de promoción para productos: Basic, Recommended y Premium, los cuales otorgan prioridades numéricas (\texttt{1}, \texttt{2} o \texttt{3}). El flujo simula la validación de pago e inserta un registro activo en la tabla \texttt{product\_promotions}, actualizando la prioridad \texttt{promo\_priority} del producto para posicionarlo arriba en los resultados de búsqueda globales. \textbf{Nota:} El procesamiento de pago es simulado en v1.0; no se realizan cargos reales. \\ \hline
+\textbf{Postcondición} & Se inserta un registro en \texttt{product\_promotions} con \texttt{status='active'}, \texttt{start\_date} = ahora y \texttt{end\_date} según el plan. El campo \texttt{promo\_priority} del producto se actualiza al valor numérico del plan. \\ \hline
+\textbf{Flujos alternativos} & (E1) Si el producto ya tiene una promoción activa: el sistema notifica al usuario y no procesa una segunda hasta que expire la vigente. (E2) Si la promoción expira (\texttt{end\_date} < ahora): un proceso de limpieza restablece \texttt{promo\_priority=0} automáticamente. \\ \hline
+\textbf{Criterio de aceptación} & Un producto con plan Premium (prioridad 3) aparece antes que un producto sin promoción en el feed principal del marketplace. El registro en \texttt{product\_promotions} tiene \texttt{status='active'} con fechas coherentes. \\ \hline
+\end{tabularx}
+\end{table}
+
+% -------------------------------------------------------
+% RF-11
+% -------------------------------------------------------
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|L|}
+\hline
+\rowcolor{NavyBlue}\multicolumn{2}{|c|}{\color{white}\bfseries RF-11: Sistema de Reseñas y Valoraciones} \\ \hline
+\textbf{Número de requisito} & RF-11 \\ \hline
+\textbf{Nombre de requisito} & Reseñas y Valoraciones de Reputación \\ \hline
+\textbf{Tipo} & Requisito Funcional \\ \hline
+\textbf{Fuente del requisito} & Confianza y Reputación \\ \hline
+\textbf{Prioridad} & Media / Deseado \\ \hline
+\textbf{Dependencias} & RF-07, RF-08 (el usuario debe haber participado en un hilo de chat del producto) \\ \hline
+\textbf{Precondición} & El usuario tiene sesión activa. Existe un hilo de conversación (\texttt{conversations}) donde el usuario es \texttt{buyer\_id} o \texttt{seller\_id} y el \texttt{product\_id} coincide con el producto a reseñar. El usuario no ha emitido aún una reseña para ese producto (restricción UNIQUE). \\ \hline
+\textbf{Descripción} & Los usuarios deben poder emitir una reseña y valoración numérica (entre 1 y 5 estrellas) asociada a un producto que haya sido objeto de contacto/transacción. Para garantizar la veracidad, el sistema valida la regla de negocio de que el emisor de la reseña sea parte activa del hilo de chat asociado al producto. Se impone una restricción de clave única para admitir un máximo de una reseña por dupla de producto e interactuante. \\ \hline
+\textbf{Postcondición} & Se inserta un registro en \texttt{reviews} con \texttt{product\_id}, \texttt{user\_id}, \texttt{rating} (1-5) y \texttt{comment} (opcional). La valoración promedio del producto se actualiza en la interfaz. \\ \hline
+\textbf{Flujos alternativos} & (E1) Si el usuario intenta reseñar un producto en cuyo hilo de chat no participó: el sistema retorna HTTP 403 con mensaje ``No tienes permisos para reseñar este producto''. (E2) Si el usuario ya reseñó ese producto: el sistema informa que la reseña ya fue registrada sin crear duplicado. (E3) Si el rating está fuera del rango 1-5: el sistema rechaza la solicitud. \\ \hline
+\textbf{Criterio de aceptación} & Un usuario que participó en el chat de un producto puede dejar una reseña de 1 a 5 estrellas. Un usuario que no participó recibe error 403. No pueden existir dos reseñas del mismo usuario para el mismo producto. \\ \hline
+\end{tabularx}
+\end{table}
+
+% -------------------------------------------------------
+% RF-12
+% -------------------------------------------------------
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|L|}
+\hline
+\rowcolor{NavyBlue}\multicolumn{2}{|c|}{\color{white}\bfseries RF-12: Solicitud de Verificación de Vendedor} \\ \hline
+\textbf{Número de requisito} & RF-12 \\ \hline
+\textbf{Nombre de requisito} & Solicitud de Verificación de Vendedor \\ \hline
+\textbf{Tipo} & Requisito Funcional \\ \hline
+\textbf{Fuente del requisito} & Confianza y Reputación \\ \hline
+\textbf{Prioridad} & Media / Deseado \\ \hline
+\textbf{Dependencias} & RF-01, RF-16 (el usuario debe tener rol \texttt{seller}) \\ \hline
+\textbf{Precondición} & El usuario tiene sesión activa con rol \texttt{seller}. No tiene una solicitud de verificación en estado \texttt{pending} o \texttt{approved} ya registrada. \\ \hline
+\textbf{Descripción} & Para mejorar la credibilidad, los vendedores deben poder someter solicitudes de verificación de identidad enviando información detallada de su tienda o persona y cargando obligatoriamente un archivo en formato PDF (Cédula de ciudadanía o Registro Mercantil). El sistema almacena la ruta en \texttt{uploads/verificaciones/} con estado en pendiente (\texttt{pending}) hasta su revisión por un administrador. \\ \hline
+\textbf{Postcondición} & Se crea un registro en \texttt{seller\_verifications} con \texttt{status='pending'} y la ruta al documento PDF cargado. El administrador puede visualizar la solicitud en el panel de moderación (RF-13). \\ \hline
+\textbf{Flujos alternativos} & (E1) Si el archivo cargado no es un PDF válido (tipo MIME != \texttt{application/pdf}): el sistema rechaza la carga con mensaje de error. (E2) Si el vendedor ya tiene una solicitud \texttt{pending}: el sistema informa que ya existe una solicitud en revisión. (E3) Si el documento excede el límite de tamaño (máximo 10 MB): el sistema lo rechaza. \\ \hline
+\textbf{Criterio de aceptación} & El vendedor puede enviar el formulario con un PDF válido. El registro aparece en el panel administrativo con estado \texttt{pending}. El perfil del vendedor no muestra el badge de verificado hasta que un administrador apruebe la solicitud. \\ \hline
+\end{tabularx}
+\end{table}
+
+% -------------------------------------------------------
+% RF-13
+% -------------------------------------------------------
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|L|}
+\hline
+\rowcolor{NavyBlue}\multicolumn{2}{|c|}{\color{white}\bfseries RF-13: Panel Administrativo de Moderación} \\ \hline
+\textbf{Número de requisito} & RF-13 \\ \hline
+\textbf{Nombre de requisito} & Panel de Control y CRUDs de Administración \\ \hline
+\textbf{Tipo} & Requisito Funcional / Restricción \\ \hline
+\textbf{Fuente del requisito} & Capa Administrativa / Backoffice \\ \hline
+\textbf{Prioridad} & Alta / Esencial \\ \hline
+\textbf{Dependencias} & RF-01 (usuario con rol \texttt{admin} o \texttt{super\_admin}) \\ \hline
+\textbf{Precondición} & El usuario tiene sesión activa con rol \texttt{admin} o \texttt{super\_admin}. La petición HTTP proviene de la ruta protegida \texttt{src/views/admin/}. \\ \hline
+\textbf{Descripción} & El panel administrativo (\texttt{src/views/admin/}) debe ser accesible únicamente para usuarios con roles \texttt{admin} o \texttt{super\_admin}. El sistema bloqueará intentos de acceso sin privilegios a nivel de servidor (guards de sesión HTTP). Los administradores dispondrán de interfaces de gestión completa (CRUD) para usuarios y productos, además de una consola de aprobación para las solicitudes de verificación pendientes. \\ \hline
+\textbf{Postcondición} & Las operaciones CRUD realizadas sobre usuarios o productos se reflejan de inmediato en la base de datos y en el marketplace. Cada acción sensible genera un registro en \texttt{activity\_log} (RF-15). \\ \hline
+\textbf{Flujos alternativos} & (E1) Si un usuario sin privilegios intenta acceder a \texttt{src/views/admin/}: el sistema retorna HTTP 403 o redirige a la página de inicio. La acción de acceso denegado se registra en el log de errores. (E2) Si se intenta eliminar al usuario \texttt{super\_admin}: el sistema bloquea la operación con mensaje de error. \\ \hline
+\textbf{Criterio de aceptación} & Un usuario con rol \texttt{user} que intenta acceder a la URL del panel administrativo recibe HTTP 403. Un administrador puede suspender una cuenta de usuario y el cambio se refleja en \texttt{users.status}. La suspensión queda registrada en \texttt{activity\_log}. \\ \hline
+\end{tabularx}
+\end{table}
+
+% -------------------------------------------------------
+% RF-14
+% -------------------------------------------------------
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|L|}
+\hline
+\rowcolor{NavyBlue}\multicolumn{2}{|c|}{\color{white}\bfseries RF-14: Moderación de Reportes de Contenido} \\ \hline
+\textbf{Número de requisito} & RF-14 \\ \hline
+\textbf{Nombre de requisito} & Moderación de Reportes de Contenido \\ \hline
+\textbf{Tipo} & Requisito Funcional \\ \hline
+\textbf{Fuente del requisito} & Capa Administrativa \\ \hline
+\textbf{Prioridad} & Alta / Esencial \\ \hline
+\textbf{Dependencias} & RF-01, RF-13 \\ \hline
+\textbf{Precondición} & Existe al menos un reporte en \texttt{product\_reports} o \texttt{user\_reports} con \texttt{status='pending'}. El administrador tiene sesión activa. \\ \hline
+\textbf{Descripción} & Los administradores contarán con una bandeja de entrada con el histórico de denuncias/reportes creados por usuarios. Podrán ver el motivo, la descripción, y la ruta de la evidencia cargada (imagen/pdf). Las decisiones posibles para el reporte deben ser: marcar como resuelto (\texttt{resolved}) con suspensión automática del elemento ofensivo, o desestimarlo (\texttt{dismissed}), registrando notas internas del administrador. \\ \hline
+\textbf{Postcondición} & \textbf{Resuelto:} El reporte actualiza \texttt{status='resolved'}, \texttt{reviewed\_by} y \texttt{reviewed\_at}. El producto o usuario reportado cambia a estado suspendido automáticamente. \textbf{Desestimado:} El reporte actualiza \texttt{status='dismissed'} con las notas del administrador. La acción queda en \texttt{activity\_log}. \\ \hline
+\textbf{Flujos alternativos} & (E1) Si el administrador intenta resolver un reporte ya procesado: el sistema informa que el reporte ya fue gestionado. (E2) Si el elemento reportado ya fue eliminado: el sistema permite cerrar el reporte con nota informativa. \\ \hline
+\textbf{Criterio de aceptación} & Al resolver un reporte sobre un producto, su \texttt{admin\_status} cambia a \texttt{'inactive'} y deja de aparecer en el marketplace. La acción queda registrada en \texttt{activity\_log} con el ID del administrador. \\ \hline
+\end{tabularx}
+\end{table}
+
+% -------------------------------------------------------
+% RF-15
+% -------------------------------------------------------
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|L|}
+\hline
+\rowcolor{NavyBlue}\multicolumn{2}{|c|}{\color{white}\bfseries RF-15: Bitácora de Auditoría Administrativa} \\ \hline
+\textbf{Número de requisito} & RF-15 \\ \hline
+\textbf{Nombre de requisito} & Bitácora de Auditoría (Activity Log) \\ \hline
+\textbf{Tipo} & Requisito Funcional / Restricción \\ \hline
+\textbf{Fuente del requisito} & Capa Administrativa / Auditoría \\ \hline
+\textbf{Prioridad} & Media / Deseado \\ \hline
+\textbf{Dependencias} & RF-13, RF-14 \\ \hline
+\textbf{Precondición} & Se ejecuta una acción administrativa catalogada como sensible (suspensión, validación, eliminación de producto, etc.). \\ \hline
+\textbf{Descripción} & Cada acción catalogada como sensible llevada a cabo en el panel administrativo (suspender cuenta, rechazar validación de vendedor, eliminar listings) debe ser registrada automáticamente en la tabla \texttt{activity\_log}. El registro debe contener el ID del administrador ejecutor, una descripción explícita de la acción en formato de texto y la estampa de tiempo (\texttt{created\_at}) del servidor. \\ \hline
+\textbf{Postcondición} & Existe un nuevo registro en \texttt{activity\_log} con \texttt{admin\_id}, \texttt{action} (descripción textual) y \texttt{created\_at} (TIMESTAMP de servidor). Los logs son de sólo inserción; no se permite modificación ni eliminación de registros existentes. \\ \hline
+\textbf{Flujos alternativos} & (E1) Si la inserción en \texttt{activity\_log} falla por error de BD: la acción administrativa se completa igualmente y el error se registra en \texttt{src/logs/error.log} del sistema de archivos. \\ \hline
+\textbf{Criterio de aceptación} & Tras suspender una cuenta de usuario desde el panel, existe un registro en \texttt{activity\_log} que identifica al administrador ejecutor, describe la acción y tiene un \texttt{created\_at} coherente con el momento de la ejecución. No existe ningún mecanismo de UI que permita borrar registros del log. \\ \hline
+\end{tabularx}
+\end{table}
+
+% -------------------------------------------------------
+% RF-16
+% -------------------------------------------------------
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|L|}
+\hline
+\rowcolor{NavyBlue}\multicolumn{2}{|c|}{\color{white}\bfseries RF-16: Sincronización Automática de Roles} \\ \hline
+\textbf{Número de requisito} & RF-16 \\ \hline
+\textbf{Nombre de requisito} & Sincronización Automática de Roles (Role Sync) \\ \hline
+\textbf{Tipo} & Requisito Funcional \\ \hline
+\textbf{Fuente del requisito} & Regla del Sistema \\ \hline
+\textbf{Prioridad} & Alta / Esencial \\ \hline
+\textbf{Dependencias} & RF-01, RF-03 \\ \hline
+\textbf{Precondición} & El usuario tiene sesión activa con rol \texttt{user}. Se acaba de completar con éxito la inserción del primer producto en \texttt{products}. \\ \hline
+\textbf{Descripción} & El sistema debe vigilar proactivamente el rol del usuario utilizando un script de verificación automatizada (\texttt{role\_sync.php}). Cuando una cuenta de tipo comprador (\texttt{user}) ejecute con éxito una acción de creación de producto (listing), su perfil en la base de datos se debe elevar automáticamente al estado de vendedor (\texttt{seller}). Los administradores y super\_admins están exentos de esta sincronización para evitar degradación involuntaria de credenciales. \\ \hline
+\textbf{Postcondición} & El campo \texttt{role} del usuario en la tabla \texttt{users} cambia de \texttt{'user'} a \texttt{'seller'}. La variable de sesión del usuario se actualiza para reflejar el nuevo rol sin requerir nuevo login. \\ \hline
+\textbf{Flujos alternativos} & (E1) Si el usuario ya tiene rol \texttt{seller}, \texttt{admin} o \texttt{super\_admin}: el script no realiza modificación alguna. (E2) Si la actualización del rol en BD falla: el producto se crea igualmente y el error se registra en el log del sistema. \\ \hline
+\textbf{Criterio de aceptación} & Un usuario con rol \texttt{user} que crea su primer producto tiene rol \texttt{seller} en la BD inmediatamente después. Un administrador que crea un producto mantiene su rol \texttt{admin} sin cambios. \\ \hline
+\end{tabularx}
+\end{table}
+
+% -------------------------------------------------------
+% RF-17
+% -------------------------------------------------------
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|L|}
+\hline
+\rowcolor{NavyBlue}\multicolumn{2}{|c|}{\color{white}\bfseries RF-17: Gestión de Conversaciones (Archivar/Ocultar)} \\ \hline
+\textbf{Número de requisito} & RF-17 \\ \hline
+\textbf{Nombre de requisito} & Gestión y Ocultamiento de Hilos de Conversación \\ \hline
+\textbf{Tipo} & Requisito Funcional \\ \hline
+\textbf{Fuente del requisito} & Funcionalidad de Chat / Experiencia de Usuario \\ \hline
+\textbf{Prioridad} & Media / Deseado \\ \hline
+\textbf{Dependencias} & RF-07, RF-08 \\ \hline
+\textbf{Precondición} & El usuario tiene sesión activa y es participante (comprador o vendedor) del hilo de conversación a ocultar. \\ \hline
+\textbf{Descripción} & Cada participante de un hilo de chat debe poder ocultar (archivar) la conversación de su propia vista de mensajes sin afectar la visibilidad del otro participante. Esta acción se implementa mediante los campos \texttt{hidden\_by\_buyer} y \texttt{hidden\_by\_seller} de la tabla \texttt{conversations}. Ocultar una conversación es una operación reversible; el hilo se vuelve visible de nuevo si se recibe un nuevo mensaje. \\ \hline
+\textbf{Postcondición} & El campo \texttt{hidden\_by\_buyer} (o \texttt{hidden\_by\_seller}) del hilo se actualiza a \texttt{1}. La conversación deja de aparecer en la bandeja de mensajes del usuario que la ocultó. El otro participante no ve cambios en su bandeja. \\ \hline
+\textbf{Flujos alternativos} & (E1) Si se recibe un nuevo mensaje en una conversación oculta: el campo \texttt{hidden\_by\_*} se restablece a \texttt{0} automáticamente y la conversación vuelve a la bandeja del usuario. \\ \hline
+\textbf{Criterio de aceptación} & Al ocultar una conversación, desaparece de la bandeja de mensajes del usuario que la ocultó sin afectar la del otro participante. Al recibir un nuevo mensaje en esa conversación, reaparece en la bandeja. \\ \hline
+\end{tabularx}
+\end{table}
+
+% -------------------------------------------------------
+% RF-18
+% -------------------------------------------------------
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|L|}
+\hline
+\rowcolor{NavyBlue}\multicolumn{2}{|c|}{\color{white}\bfseries RF-18: Contador de Vistas de Listings} \\ \hline
+\textbf{Número de requisito} & RF-18 \\ \hline
+\textbf{Nombre de requisito} & Contador de Vistas de Listings \\ \hline
+\textbf{Tipo} & Requisito Funcional \\ \hline
+\textbf{Fuente del requisito} & Analítica del Marketplace \\ \hline
+\textbf{Prioridad} & Baja / Opcional \\ \hline
+\textbf{Dependencias} & RF-03 \\ \hline
+\textbf{Precondición} & El listing existe con \texttt{admin\_status='active'}. Un usuario (autenticado o anónimo) accede a la página de detalle del producto. \\ \hline
+\textbf{Descripción} & Cada vez que un usuario accede a la página de detalle de un producto, el sistema debe incrementar en una unidad el contador \texttt{views} de la tabla \texttt{products}. El total de vistas debe ser visible para el vendedor en su panel de ``Mis productos'' como métrica de rendimiento de su listing. El sistema no debe contabilizar la visita del propio vendedor. \\ \hline
+\textbf{Postcondición} & El campo \texttt{views} del producto en \texttt{products} se incrementa en \texttt{+1}. El contador actualizado es visible en el panel del vendedor sin recargar la página. \\ \hline
+\textbf{Flujos alternativos} & (E1) Si el visitante es el propietario del listing (\texttt{user\_id} coincide con \texttt{\$\_SESSION['user\_id']}): no se incrementa el contador. (E2) Si el incremento falla en BD: el error se registra en logs sin interrumpir la carga de la página de detalle. \\ \hline
+\textbf{Criterio de aceptación} & Al acceder un usuario diferente al vendedor a la página de detalle de un producto, el campo \texttt{views} en BD aumenta en 1. El vendedor puede ver el total actualizado en su panel. \\ \hline
+\end{tabularx}
+\end{table}
+
+% -------------------------------------------------------
+% RF-19
+% -------------------------------------------------------
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|L|}
+\hline
+\rowcolor{NavyBlue}\multicolumn{2}{|c|}{\color{white}\bfseries RF-19: Sistema de Notificaciones por Correo Electrónico} \\ \hline
+\textbf{Número de requisito} & RF-19 \\ \hline
+\textbf{Nombre de requisito} & Notificaciones por Correo Electrónico \\ \hline
+\textbf{Tipo} & Requisito Funcional \\ \hline
+\textbf{Fuente del requisito} & Experiencia de Usuario / Fidelización \\ \hline
+\textbf{Prioridad} & Media / Deseado \\ \hline
+\textbf{Dependencias} & RF-01, RF-02, RF-07, RF-11 \\ \hline
+\textbf{Precondición} & El usuario tiene habilitadas las notificaciones por correo en su configuración de \texttt{user\_settings}. Se ha producido un evento relevante (nuevo mensaje, reseña recibida o novedad promocional). \\ \hline
+\textbf{Descripción} & El sistema debe enviar notificaciones por correo electrónico a los usuarios cuando ocurran eventos relevantes, condicionado a las preferencias de \texttt{user\_settings}: \textbf{(a)} notificación de nuevo mensaje de chat (\texttt{notif\_email\_messages}), \textbf{(b)} notificación de nueva reseña recibida (\texttt{notif\_email\_reviews}), \textbf{(c)} novedades comerciales de la plataforma (\texttt{notif\_email\_sales}) y \textbf{(d)} novedades de planes de promoción (\texttt{notif\_email\_promos}). Las notificaciones push vía Web Push API se contemplan para la versión 2.0. \\ \hline
+\textbf{Postcondición} & Se envía un correo electrónico al destinatario cuyo contenido identifica el tipo de evento y un enlace directo al contexto relevante dentro de la plataforma. \\ \hline
+\textbf{Flujos alternativos} & (E1) Si el usuario tiene la notificación deshabilitada en \texttt{user\_settings}: no se envía el correo para ese tipo de evento. (E2) Si el servidor SMTP no está disponible: el error se registra en logs y el evento continúa sin la notificación. \\ \hline
+\textbf{Criterio de aceptación} & Un usuario con \texttt{notif\_email\_messages=1} recibe un correo al recibir un nuevo mensaje de chat. Un usuario con \texttt{notif\_email\_messages=0} no recibe el correo. \\ \hline
+\end{tabularx}
+\end{table}
+
+% -------------------------------------------------------
+% RF-20
+% -------------------------------------------------------
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|L|}
+\hline
+\rowcolor{NavyBlue}\multicolumn{2}{|c|}{\color{white}\bfseries RF-20: Marcado de Mensajes como Leídos} \\ \hline
+\textbf{Número de requisito} & RF-20 \\ \hline
+\textbf{Nombre de requisito} & Gestión del Estado de Lectura de Mensajes \\ \hline
+\textbf{Tipo} & Requisito Funcional \\ \hline
+\textbf{Fuente del requisito} & Funcionalidad de Chat / Experiencia de Usuario \\ \hline
+\textbf{Prioridad} & Media / Deseado \\ \hline
+\textbf{Dependencias} & RF-07, RF-08 \\ \hline
+\textbf{Precondición} & Existen mensajes en la tabla \texttt{messages} con \texttt{is\_read=0} cuyo \texttt{conversation\_id} corresponde a un hilo en el que el usuario actual es participante, y el \texttt{sender\_id} es diferente al usuario en sesión. \\ \hline
+\textbf{Descripción} & Cuando un usuario abre una conversación de chat, el sistema debe marcar automáticamente como leídos (\texttt{is\_read=1}) todos los mensajes no leídos enviados por el otro participante. El contador de mensajes no leídos en el ícono de notificaciones del header debe actualizarse de forma asíncrona para reflejar el nuevo estado. \\ \hline
+\textbf{Postcondición} & El campo \texttt{is\_read} de los mensajes no leídos del interlocutor cambia a \texttt{1}. El badge de notificación del usuario (contador de no leídos) disminuye en el número de mensajes marcados como leídos. \\ \hline
+\textbf{Flujos alternativos} & (E1) Si no hay mensajes no leídos en la conversación abierta: no se realiza ninguna actualización en BD. (E2) Si la actualización falla en BD: el error se registra en logs y la UI muestra el contador anterior sin interrupción. \\ \hline
+\textbf{Criterio de aceptación} & Al abrir una conversación con mensajes no leídos, el campo \texttt{is\_read} de esos mensajes pasa a \texttt{1} en BD. El contador de mensajes no leídos del header se actualiza sin recargar la página. \\ \hline
+\end{tabularx}
+\end{table}
+
+% -------------------------------------------------------
+% RF-21
+% -------------------------------------------------------
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|L|}
+\hline
+\rowcolor{NavyBlue}\multicolumn{2}{|c|}{\color{white}\bfseries RF-21: Gestión del Estado de Venta del Producto} \\ \hline
+\textbf{Número de requisito} & RF-21 \\ \hline
+\textbf{Nombre de requisito} & Gestión del Estado de Venta del Producto (Disponible/Vendido) \\ \hline
+\textbf{Tipo} & Requisito Funcional \\ \hline
+\textbf{Fuente del requisito} & Flujo Comercial / Gestión de Listings \\ \hline
+\textbf{Prioridad} & Alta / Esencial \\ \hline
+\textbf{Dependencias} & RF-03, RF-01 (usuario con rol \texttt{seller}) \\ \hline
+\textbf{Precondición} & El producto existe en \texttt{products} con \texttt{status='disponible'}. El usuario en sesión es el propietario del listing (\texttt{user\_id} coincide). \\ \hline
+\textbf{Descripción} & El vendedor propietario de un listing debe poder actualizar el estado de venta de su producto entre \texttt{disponible} y \texttt{vendido}. Un producto marcado como \texttt{vendido} debe mostrarse visualmente diferenciado en el marketplace (ej. overlay con etiqueta ``VENDIDO'') pero no eliminarse, para preservar el historial de transacciones del hilo de chat asociado. Los filtros de búsqueda del marketplace solo retornan productos con \texttt{status='disponible'} por defecto. \\ \hline
+\textbf{Postcondición} & El campo \texttt{status} del producto en \texttt{products} cambia de \texttt{'disponible'} a \texttt{'vendido'} (o viceversa). El listing marcado como \texttt{vendido} desaparece de los resultados de búsqueda por defecto y aparece con marcador visual en el perfil del vendedor. \\ \hline
+\textbf{Flujos alternativos} & (E1) Si un usuario que no es el propietario intenta cambiar el estado: el sistema retorna HTTP 403. (E2) Si el producto ya está en el estado solicitado: el sistema no realiza cambios y retorna HTTP 200 con el estado actual. \\ \hline
+\textbf{Criterio de aceptación} & Al marcar un producto como vendido, desaparece de los resultados de la búsqueda general. El panel ``Mis productos'' del vendedor muestra el producto con etiqueta ``VENDIDO''. El hilo de chat asociado permanece accesible para ambos participantes. \\ \hline
+\end{tabularx}
+\end{table}
+
+\newpage
+\section{Requisitos no funcionales}
+
+\subsection{Requisitos de rendimiento}
+Para garantizar una experiencia de navegación fluida que retenga a los usuarios, se definen los siguientes objetivos medibles y auditables:
+\begin{itemize}
+    \item \textbf{(RNF-R01) Latencia de Mensajería:} La transmisión y recepción de mensajes de chat en tiempo real a través del servidor WebSocket Ratchet no debe exceder una latencia de 100 ms en pruebas de red local.
+    \item \textbf{(RNF-R02) Tiempos de Búsqueda de Listings:} Las consultas de búsqueda de productos con filtros de geolocalización y precios combinados deben procesarse y responderse en menos de 150 ms, gracias a los índices multicolumna configurados en MySQL.
+    \item \textbf{(RNF-R03) Tiempo de Primer Byte (TTFB):} La carga de la página principal del marketplace (feed) no debe superar un TTFB de 500 ms bajo condiciones normales de carga.
+    \item \textbf{(RNF-R04) Tiempo de Carga de Imágenes:} El proceso de subida de hasta 5 imágenes de un listing (máximo 5 MB cada una) debe completarse en menos de 8 segundos en conexiones de banda ancha estándar ($\geq$ 10 Mbps de subida).
+    \item \textbf{(RNF-R05) Usuarios Concurrentes:} El sistema debe soportar un mínimo de 50 usuarios simultáneos activos (combinando sesiones HTTP y conexiones WebSocket) sin degradación perceptible del tiempo de respuesta (definida como un incremento de más del 50\% sobre las métricas de referencia). El umbral de latencia se define como: $t_{carga} \leq 1.5 \times t_{referencia}$.
+    \item \textbf{(RNF-R06) Expiración de Sesión:} Las sesiones PHP inactivas deben expirar en un máximo de 30 minutos, redirigiendo al usuario al formulario de login.
+    \item \textbf{(RNF-R07) Health Check:} El endpoint \texttt{/health.php} debe responder con HTTP 200 en menos de 200 ms para permitir la supervisión automática del contenedor por los sistemas de orquestación de Railway.
+\end{itemize}
+
+\subsection{Seguridad}
+El sistema implementa una arquitectura sólida de seguridad distribuida en 5 capas críticas:
+\begin{enumerate}
+    \item \textbf{Capa 1 -- Prevención de Inyección SQL (SQLi):} El 100\% de las consultas SQL interactúan a través de prepared statements de \texttt{mysqli}. Ninguna entrada suministrada por el usuario es concatenada de forma directa en las cadenas SQL del backend.
+    \item \textbf{Capa 2 -- Prevención de Cross-Site Request Forgery (CSRF):} Todos los formularios procesados por el método \texttt{POST} requieren un token criptográfico generado por sesión mediante \texttt{bin2hex(random\_bytes(32))}. El token debe validarse con la función segura en tiempo constante \texttt{hash\_equals()} antes de delegar control a los controladores del negocio. El token tiene una vida útil equivalente a la duración de la sesión PHP activa.
+    \item \textbf{Capa 3 -- Control de Sesiones y Hashes:} Encriptación estricta de contraseñas con \texttt{PASSWORD\_BCRYPT} (costo 10, mínimo 8 caracteres). Los identificadores de sesión PHP nativos son regenerados post-autenticación y forzados con directivas de seguridad como \texttt{HttpOnly} y \texttt{Secure} para evitar fugas de sesión por inyección XSS.
+    \item \textbf{Capa 4 -- Validación de Carga de Archivos:} Se restringe el procesamiento de archivos maliciosos validando el tipo MIME real con \texttt{finfo\_file()} sobre los primeros bytes mágicos del recurso temporal. La extensión del archivo declarada por el cliente nunca se usa como criterio de validación.
+    \item \textbf{Capa 5 -- Gestión de Excepciones y Logger:} El sistema silencia y oculta los detalles de error e infraestructura a nivel de interfaz de usuario, mostrando advertencias amigables genéricas y escribiendo de forma segura las trazas técnicas detalladas en el archivo protegido \texttt{src/logs/error.log} (sin acceso público HTTP directo).
+\end{enumerate}
+
+Adicionalmente, se establecen las siguientes políticas de seguridad:
+\begin{itemize}
+    \item \textbf{Política de contraseñas:} Las contraseñas de usuario deben tener un mínimo de 8 caracteres. Se recomienda al usuario (sin imposición) el uso de caracteres alfanuméricos y especiales.
+    \item \textbf{Política de bloqueo de cuenta:} Tras 5 intentos de login fallidos consecutivos en un período de 15 minutos, la cuenta se bloquea temporalmente por 30 minutos para mitigar ataques de fuerza bruta.
+    \item \textbf{Retención de logs:} Los archivos \texttt{src/logs/error.log} se rotan cuando superan 10 MB, conservando los últimos 3 archivos comprimidos. El directorio \texttt{logs/} no es accesible vía HTTP (protegido con \texttt{.htaccess} o configuración Nginx).
+    \item \textbf{Directivas PHP de seguridad:} El sistema debe operar con \texttt{display\_errors=Off}, \texttt{expose\_php=Off}, \texttt{session.cookie\_httponly=1} y \texttt{session.cookie\_secure=1} en el entorno de producción.
+\end{itemize}
+
+\subsection{Fiabilidad}
+\begin{itemize}
+    \item El sistema debe garantizar la integridad transaccional de los datos haciendo uso del motor relacional de almacenamiento InnoDB de MySQL, que soporta transacciones ACID.
+    \item El script del lado del cliente \texttt{chat.js} implementará políticas de reconexión adaptativas (backoff exponencial con máximo 3 reintentos) para restablecer el canal WebSocket de manera automática en caso de microcortes de red.
+\end{itemize}
+
+\subsection{Usabilidad}
+\begin{itemize}
+    \item \textbf{Tiempo de aprendizaje:} Un usuario nuevo, sin formación previa, debe ser capaz de publicar su primer listing en un tiempo no superior a 5 minutos, basado en la claridad de los formularios y los mensajes de ayuda contextual.
+    \item \textbf{Diseño responsivo:} La interfaz debe adaptarse correctamente a resoluciones de pantalla desde 320px (móvil pequeño) hasta 1920px (escritorio de alta resolución) sin pérdida de funcionalidad crítica ni desbordamiento de contenido.
+    \item \textbf{Mensajes de error comprensibles:} Todos los mensajes de error presentados al usuario final deben expresarse en lenguaje natural claro, sin exponer detalles técnicos de la infraestructura subyacente (rutas de archivo, stack traces, queries SQL).
+    \item \textbf{Accesibilidad básica:} Los elementos interactivos críticos (botones, formularios, enlaces de navegación) deben incluir atributos \texttt{aria-label} apropiados para compatibilidad básica con lectores de pantalla, conforme al nivel A de las WCAG 2.1.
+    \item \textbf{Retroalimentación visual:} El sistema debe proveer retroalimentación visual inmediata (indicadores de carga, mensajes de confirmación, cambios de estado de botones) para todas las acciones asíncronas que tarden más de 500 ms en procesarse.
+\end{itemize}
+
+\subsection{Disponibilidad}
+\begin{itemize}
+    \item La plataforma desplegada sobre infraestructura cloud en Railway debe apuntar a una métrica de disponibilidad sostenida del 99.5\% de tiempo operativo (equivalente a un tiempo máximo de inactividad de ~43 horas anuales).
+    \item El servidor expone un endpoint dedicado de health-check (\texttt{health.php}) que permite a los sistemas de orquestación reiniciar el contenedor en caso de detectar caídas en los servicios subyacentes.
+\end{itemize}
+
+\subsection{Mantenibilidad}
+\begin{itemize}
+    \item Estructura organizada bajo el principio de separación de responsabilidades: vistas de maquetación en \texttt{src/views}, controladores asíncronos JSON en \texttt{src/api}, acciones de formularios en \texttt{src/controllers} y scripts de utilidades en \texttt{src/config}.
+    \item Código fuente documentado con comentarios técnicos de conformidad con los estándares establecidos para lenguajes PHP y JavaScript.
+    \item El tiempo estimado para incorporar un nuevo requisito funcional de complejidad media no debe superar 5 días hábiles para un desarrollador familiarizado con la arquitectura del sistema.
+\end{itemize}
+
+\subsection{Portabilidad}
+\begin{itemize}
+    \item Soporte para despliegue nativo multisistema y multiplataforma gracias a la dockerización del core mediante un archivo de configuración \texttt{Dockerfile} y especificaciones de entorno parametrizadas en el archivo \texttt{railway.toml}.
+    \item Compatibilidad garantizada con entornos de desarrollo locales estándar, incluidos Windows (Laragon), GNU/Linux y macOS que ejecuten entornos basados en PHP 8.2+.
+\end{itemize}
+
+\section{Requisitos legales y de privacidad}
+\begin{itemize}
+    \item \textbf{Cumplimiento Ley 1581/2012 (Colombia) -- Habeas Data:} El sistema debe tratar los datos personales de los usuarios conforme a la Ley Estatutaria de Protección de Datos Personales y su Decreto Reglamentario 1377 de 2013. El usuario debe otorgar consentimiento explícito e inequívoco durante el proceso de registro para el tratamiento de sus datos de identificación, contacto y ubicación geográfica.
+    \item \textbf{Minimización de datos de ubicación:} La coordenada GPS exacta del vendedor no debe exponerse públicamente en ninguna vista accesible por usuarios no autorizados. La interfaz pública del listing mostrará únicamente la ciudad resuelta por geocodificación inversa, y el mapa público aplicará un desplazamiento o resolución aproximada de radio no inferior a 500 metros respecto a la ubicación exacta almacenada.
+    \item \textbf{Derecho de eliminación y supresión:} El sistema debe implementar un mecanismo de borrado lógico (soft delete mediante campo \texttt{deleted\_at}) que permita al usuario solicitar la desactivación de su cuenta, preservando la integridad referencial de los registros históricos de transacciones y conversaciones.
+    \item \textbf{Retención de datos:} Los registros de la bitácora de auditoría (\texttt{activity\_log}) y los mensajes de chat (\texttt{messages}) se retendrán por un período máximo de 2 años desde su creación, tras el cual podrán ser purgados automáticamente mediante procesos programados.
+    \item \textbf{Política de privacidad:} La plataforma debe incluir un enlace accesible a una Política de Privacidad que describa el tratamiento, finalidad y derechos de los titulares de los datos personales almacenados, conforme a la Ley 1581/2012.
+    \item \textbf{Seguridad en el tratamiento:} Los documentos de identidad cargados para verificación de vendedores (\texttt{uploads/verificaciones/}) deben almacenarse en directorios no accesibles directamente vía HTTP, accesibles únicamente a través de controladores PHP autenticados con validación de rol administrativo.
+\end{itemize}
+
+\newpage
+
+% -------------------------------------------------------------
+% CAPÍTULO 4: APÉNDICES
+% -------------------------------------------------------------
+\chapter{Apéndices}
+
+\section{Apéndice A: Diccionario de datos de la base de datos}
+
+El sistema utiliza la base de datos relacional \texttt{tiendalocal} conformada por 14 tablas físicas bajo la codificación de caracteres \texttt{utf8mb4\_unicode\_ci}. A continuación se documenta su diccionario de datos formal.
+
+\subsection{Tabla: \texttt{users}}
+Almacena las cuentas de usuarios de la plataforma, incluyendo compradores, vendedores y administradores.
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|l|L|}
+\hline
+\rowcolor{LightGray}\textbf{Campo} & \textbf{Tipo} & \textbf{Restricción} & \textbf{Descripción} \\ \hline
+\texttt{id} & INT & PK, AUTO\_INC & Identificador numérico secuencial del usuario. \\ \hline
+\texttt{full\_name} & VARCHAR(100) & NOT NULL & Nombre completo del usuario. \\ \hline
+\texttt{email} & VARCHAR(100) & UNIQUE, NOT NULL & Dirección de correo electrónico (clave de acceso). \\ \hline
+\texttt{password} & VARCHAR(255) & NOT NULL & Contraseña hash codificada bajo algoritmo bcrypt. \\ \hline
+\texttt{phone} & VARCHAR(20) & NULL & Teléfono celular de contacto. \\ \hline
+\texttt{city} & VARCHAR(100) & NOT NULL & Ciudad por defecto configurada en el perfil. \\ \hline
+\texttt{address} & VARCHAR(200) & NULL & Dirección física complementaria. \\ \hline
+\texttt{bio} & TEXT & NULL & Biografía o descripción de la tienda física. \\ \hline
+\texttt{profile\_photo} & VARCHAR(255) & NULL & Nombre de archivo de avatar guardado en disco. \\ \hline
+\texttt{status} & ENUM & NOT NULL & Estado: \texttt{active}, \texttt{inactive}, \texttt{blocked}, \texttt{suspended}. \\ \hline
+\texttt{role} & ENUM & NOT NULL & Privilegio: \texttt{user}, \texttt{seller}, \texttt{admin}, \texttt{super\_admin}. \\ \hline
+\texttt{deleted\_at} & TIMESTAMP & NULL & Estampa para lógica de borrado lógico (Soft Delete). \\ \hline
+\texttt{last\_login} & TIMESTAMP & NULL & Registro del último inicio de sesión con éxito. \\ \hline
+\end{tabularx}
+\end{table}
+
+\subsection{Tabla: \texttt{products}}
+Almacena los anuncios o publicaciones (listings) registrados en el marketplace.
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|l|L|}
+\hline
+\rowcolor{LightGray}\textbf{Campo} & \textbf{Tipo} & \textbf{Restricción} & \textbf{Descripción} \\ \hline
+\texttt{id} & INT & PK, AUTO\_INC & Identificador único del anuncio. \\ \hline
+\texttt{title} & VARCHAR(150) & NOT NULL & Título descriptivo del producto en venta. \\ \hline
+\texttt{price} & DECIMAL(10,2) & NOT NULL & Precio fijado para el producto. \\ \hline
+\texttt{description} & TEXT & NOT NULL & Descripción detallada de las características. \\ \hline
+\texttt{category\_id} & INT & FK $\rightarrow$ \texttt{categories.id} & Relación con la categoría correspondiente. \\ \hline
+\texttt{status} & ENUM & NOT NULL & Estado de venta: \texttt{disponible}, \texttt{vendido}. \\ \hline
+\texttt{longitude} & DECIMAL(11,7) & NOT NULL & Coordenada de longitud geográfica obtenida del mapa. \\ \hline
+\texttt{latitude} & DECIMAL(10,7) & NOT NULL & Coordenada de latitud geográfica obtenida del mapa. \\ \hline
+\texttt{city} & VARCHAR(100) & NOT NULL & Ciudad resuelta por geocodificación inversa. \\ \hline
+\texttt{condition\_type} & ENUM & NOT NULL & Estado físico: \texttt{nuevo}, \texttt{usado}, \texttt{reacondicionado}. \\ \hline
+\texttt{user\_id} & INT & FK $\rightarrow$ \texttt{users.id} & Identificador del vendedor que creó el listing. \\ \hline
+\texttt{admin\_status} & ENUM & NOT NULL & Estado de moderación: \texttt{active}, \texttt{inactive}, \texttt{deleted}. \\ \hline
+\texttt{promo\_priority} & TINYINT & NOT NULL & Nivel de prioridad: \texttt{0} (Normal) a \texttt{3} (Premium). \\ \hline
+\texttt{views} & INT & DEFAULT 0 & Contador total de vistas del listing (RF-18). \\ \hline
+\texttt{created\_at} & TIMESTAMP & DEFAULT CURRENT & Fecha y hora de creación de la publicación. \\ \hline
+\end{tabularx}
+\end{table}
+
+\subsection{Tabla: \texttt{categories}}
+Almacena el catálogo de clasificación de productos predefinido (23 categorías).
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|l|L|}
+\hline
+\rowcolor{LightGray}\textbf{Campo} & \textbf{Tipo} & \textbf{Restricción} & \textbf{Descripción} \\ \hline
+\texttt{id} & INT & PK, AUTO\_INC & Identificador único de la categoría. \\ \hline
+\texttt{name} & VARCHAR(100) & NOT NULL & Nombre formal de la categoría (ej. Electrónica). \\ \hline
+\end{tabularx}
+\end{table}
+
+\subsection{Tabla: \texttt{product\_images}}
+Asocia imágenes a los anuncios de productos creados.
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|l|L|}
+\hline
+\rowcolor{LightGray}\textbf{Campo} & \textbf{Tipo} & \textbf{Restricción} & \textbf{Descripción} \\ \hline
+\texttt{id} & INT & PK, AUTO\_INC & Identificador de la imagen. \\ \hline
+\texttt{product\_id} & INT & FK $\rightarrow$ \texttt{products.id} & Relación con el producto al que pertenece la imagen. \\ \hline
+\texttt{image\_url} & VARCHAR(255) & NOT NULL & Nombre físico del archivo dentro de \texttt{uploads/products/}. \\ \hline
+\end{tabularx}
+\end{table}
+
+\subsection{Tabla: \texttt{conversations}}
+Define los hilos de chat creados entre usuarios compradores y vendedores.
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|l|L|}
+\hline
+\rowcolor{LightGray}\textbf{Campo} & \textbf{Tipo} & \textbf{Restricción} & \textbf{Descripción} \\ \hline
+\texttt{id} & INT & PK, AUTO\_INC & Identificador de la conversación. \\ \hline
+\texttt{product\_id} & INT & FK $\rightarrow$ \texttt{products.id} & Producto referenciado en la negociación (puede ser nulo). \\ \hline
+\texttt{buyer\_id} & INT & FK $\rightarrow$ \texttt{users.id} & Identificador de la cuenta del comprador interesado. \\ \hline
+\texttt{seller\_id} & INT & FK $\rightarrow$ \texttt{users.id} & Identificador de la cuenta del vendedor. \\ \hline
+\texttt{hidden\_by\_buyer} & TINYINT(1) & DEFAULT 0 & Marca lógica de archivado del lado del comprador (RF-17). \\ \hline
+\texttt{hidden\_by\_seller} & TINYINT(1) & DEFAULT 0 & Marca lógica de archivado del lado del vendedor (RF-17). \\ \hline
+\end{tabularx}
+\end{table}
+
+\subsection{Tabla: \texttt{messages}}
+Almacena el registro de mensajes pertenecientes a cada hilo de conversación del chat.
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|l|L|}
+\hline
+\rowcolor{LightGray}\textbf{Campo} & \textbf{Tipo} & \textbf{Restricción} & \textbf{Descripción} \\ \hline
+\texttt{id} & INT & PK, AUTO\_INC & Identificador secuencial del mensaje. \\ \hline
+\texttt{conversation\_id} & INT & FK $\rightarrow$ \texttt{conversations.id} & Hilo de conversación al que pertenece el mensaje. \\ \hline
+\texttt{sender\_id} & INT & FK $\rightarrow$ \texttt{users.id} & Identificador del usuario emisor del mensaje. \\ \hline
+\texttt{message} & TEXT & NOT NULL & Contenido textual del mensaje enviado. \\ \hline
+\texttt{is\_read} & TINYINT(1) & DEFAULT 0 & Estado de lectura: \texttt{0} (Sin Leer), \texttt{1} (Leído). Ver RF-20. \\ \hline
+\end{tabularx}
+\end{table}
+
+\subsection{Tabla: \texttt{favorites}}
+Asocia los productos que un usuario ha decidido marcar para seguimiento o compra posterior.
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|l|L|}
+\hline
+\rowcolor{LightGray}\textbf{Campo} & \textbf{Tipo} & \textbf{Restricción} & \textbf{Descripción} \\ \hline
+\texttt{id} & INT & PK, AUTO\_INC & Identificador de la relación de favorito. \\ \hline
+\texttt{user\_id} & INT & FK $\rightarrow$ \texttt{users.id} & Identificador del usuario interesado. \\ \hline
+\texttt{product\_id} & INT & FK $\rightarrow$ \texttt{products.id} & Identificador del producto catalogado como favorito. \\ \hline
+\end{tabularx}
+\end{table}
+
+\subsection{Tabla: \texttt{reviews}}
+Permite registrar calificaciones sobre las interacciones y compras/ventas del sistema.
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|l|L|}
+\hline
+\rowcolor{LightGray}\textbf{Campo} & \textbf{Tipo} & \textbf{Restricción} & \textbf{Descripción} \\ \hline
+\texttt{id} & INT & PK, AUTO\_INC & Identificador numérico único de la reseña. \\ \hline
+\texttt{product\_id} & INT & FK $\rightarrow$ \texttt{products.id} & Identificador del anuncio objeto de la calificación. \\ \hline
+\texttt{user\_id} & INT & FK $\rightarrow$ \texttt{users.id} & Identificador del usuario que emite la valoración. \\ \hline
+\texttt{rating} & TINYINT & CHECK (1-5) & Puntuación numérica en estrellas del 1 al 5. \\ \hline
+\texttt{comment} & TEXT & NULL & Observaciones cualitativas detalladas sobre la venta. \\ \hline
+\end{tabularx}
+\end{table}
+
+\subsection{Tabla: \texttt{product\_promotions}}
+Almacena el registro de promociones vigentes asociadas a productos destacados.
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|l|L|}
+\hline
+\rowcolor{LightGray}\textbf{Campo} & \textbf{Tipo} & \textbf{Restricción} & \textbf{Descripción} \\ \hline
+\texttt{id} & INT & PK, AUTO\_INC & Identificador único de la promoción. \\ \hline
+\texttt{product\_id} & INT & FK $\rightarrow$ \texttt{products.id} & Relación con el anuncio que se desea promocionar. \\ \hline
+\texttt{plan\_type} & ENUM & NOT NULL & Nivel del plan de promoción: \texttt{basic}, \texttt{recommended}, \texttt{premium}. \\ \hline
+\texttt{price} & DECIMAL(10,2) & NOT NULL & Costo cobrado por la simulación del servicio. \\ \hline
+\texttt{start\_date} & DATETIME & NOT NULL & Fecha de activación de los beneficios visuales. \\ \hline
+\texttt{end\_date} & DATETIME & NOT NULL & Fecha de caducidad y retorno a prioridad ordinaria. \\ \hline
+\texttt{status} & ENUM & NOT NULL & Estado actual: \texttt{pending}, \texttt{active}, \texttt{expired}. \\ \hline
+\end{tabularx}
+\end{table}
+
+\subsection{Tabla: \texttt{product\_reports}}
+Gestiona las denuncias enviadas por usuarios referidas a listings ofensivos o prohibidos.
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|l|L|}
+\hline
+\rowcolor{LightGray}\textbf{Campo} & \textbf{Tipo} & \textbf{Restricción} & \textbf{Descripción} \\ \hline
+\texttt{id} & INT & PK, AUTO\_INC & Identificador del reporte. \\ \hline
+\texttt{product\_id} & INT & FK $\rightarrow$ \texttt{products.id} & Listing reportado bajo sospecha de infracción. \\ \hline
+\texttt{reporter\_id} & INT & FK $\rightarrow$ \texttt{users.id} & Identificador del usuario que emite la alerta de reporte. \\ \hline
+\texttt{reason} & VARCHAR(60) & NOT NULL & Categoría del reporte (Fraude, Spam, Armas, etc.). \\ \hline
+\texttt{description} & TEXT & NOT NULL & Descripción narrativa complementaria del problema. \\ \hline
+\texttt{evidence\_path} & VARCHAR(255) & NULL & Ruta del archivo cargado como evidencia demostrativa. \\ \hline
+\texttt{status} & ENUM & NOT NULL & Estado: \texttt{pending}, \texttt{resolved}, \texttt{dismissed}. \\ \hline
+\texttt{admin\_notes} & TEXT & NULL & Notas aclaratorias registradas por el moderador. \\ \hline
+\texttt{reviewed\_by} & INT & FK $\rightarrow$ \texttt{users.id} & ID del administrador que resolvió la denuncia. \\ \hline
+\texttt{reviewed\_at} & TIMESTAMP & NULL & Marca de fecha en la que se atendió el caso. \\ \hline
+\end{tabularx}
+\end{table}
+
+\subsection{Tabla: \texttt{user\_reports}}
+Gestiona las denuncias de perfiles de usuario enviadas por otros usuarios de la plataforma.
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|l|L|}
+\hline
+\rowcolor{LightGray}\textbf{Campo} & \textbf{Tipo} & \textbf{Restricción} & \textbf{Descripción} \\ \hline
+\texttt{id} & INT & PK, AUTO\_INC & Identificador del reporte. \\ \hline
+\texttt{reported\_user\_id} & INT & FK $\rightarrow$ \texttt{users.id} & Cuenta de usuario bajo investigación o denuncia. \\ \hline
+\texttt{reporter\_id} & INT & FK $\rightarrow$ \texttt{users.id} & Identificador del usuario que emite la alerta de reporte. \\ \hline
+\texttt{reason} & VARCHAR(60) & NOT NULL & Categoría del reporte (Acoso, Fraude, Spam, etc.). \\ \hline
+\texttt{description} & TEXT & NOT NULL & Descripción narrativa complementaria del problema. \\ \hline
+\texttt{evidence\_path} & VARCHAR(255) & NULL & Ruta del archivo cargado como evidencia demostrativa. \\ \hline
+\texttt{status} & ENUM & NOT NULL & Estado: \texttt{pending}, \texttt{resolved}, \texttt{dismissed}. \\ \hline
+\texttt{admin\_notes} & TEXT & NULL & Notas aclaratorias registradas por el moderador. \\ \hline
+\texttt{reviewed\_by} & INT & FK $\rightarrow$ \texttt{users.id} & ID del administrador que resolvió la denuncia. \\ \hline
+\texttt{reviewed\_at} & TIMESTAMP & NULL & Marca de fecha en la que se atendió el caso. \\ \hline
+\end{tabularx}
+\end{table}
+
+\subsection{Tabla: \texttt{seller\_verifications}}
+Almacena los documentos de identificación y el estado de validación de los vendedores de confianza.
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|l|L|}
+\hline
+\rowcolor{LightGray}\textbf{Campo} & \textbf{Tipo} & \textbf{Restricción} & \textbf{Descripción} \\ \hline
+\texttt{id} & INT & PK, AUTO\_INC & Identificador de la solicitud. \\ \hline
+\texttt{user\_id} & INT & FK $\rightarrow$ \texttt{users.id} & Vendedor que solicita la insignia verificada. \\ \hline
+\texttt{verification\_type} & VARCHAR(20) & NOT NULL & Modalidad de registro: \texttt{persona} o \texttt{negocio}. \\ \hline
+\texttt{store\_name} & VARCHAR(255) & NOT NULL & Nombre comercial de la tienda física o virtual. \\ \hline
+\texttt{category} & VARCHAR(100) & NOT NULL & Sector comercial de operaciones. \\ \hline
+\texttt{city} & VARCHAR(100) & NOT NULL & Ciudad de radicación oficial. \\ \hline
+\texttt{phone} & VARCHAR(30) & NOT NULL & Teléfono verificado de contacto del comercio. \\ \hline
+\texttt{document\_type} & VARCHAR(100) & NOT NULL & Tipo de documento entregado (Cédula de Ciudadanía, RUT, etc.). \\ \hline
+\texttt{document\_path} & VARCHAR(255) & NOT NULL & Ruta de acceso físico al archivo PDF en el servidor. \\ \hline
+\texttt{status} & ENUM & NOT NULL & Estado: \texttt{pending}, \texttt{approved}, \texttt{rejected}. \\ \hline
+\texttt{rejection\_reason} & TEXT & NULL & Motivo descriptivo de rechazo de la solicitud. \\ \hline
+\end{tabularx}
+\end{table}
+
+\subsection{Tabla: \texttt{user\_settings}}
+Almacena los ajustes detallados de notificaciones y visibilidad por cuenta de usuario.
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|l|L|}
+\hline
+\rowcolor{LightGray}\textbf{Campo} & \textbf{Tipo} & \textbf{Restricción} & \textbf{Descripción} \\ \hline
+\texttt{user\_id} & INT & PK, FK $\rightarrow$ \texttt{users.id} & Relación uno a uno con el perfil de usuario. \\ \hline
+\texttt{notif\_email\_messages} & TINYINT(1) & DEFAULT 1 & Habilitar avisos por correo para nuevos chats. \\ \hline
+\texttt{notif\_email\_reviews} & TINYINT(1) & DEFAULT 1 & Habilitar avisos por correo para nuevas reseñas. \\ \hline
+\texttt{notif\_email\_sales} & TINYINT(1) & DEFAULT 1 & Habilitar avisos por correo para novedades comerciales. \\ \hline
+\texttt{notif\_email\_promos} & TINYINT(1) & DEFAULT 1 & Habilitar avisos por correo para novedades promocionales. \\ \hline
+\texttt{notif\_browser} & TINYINT(1) & DEFAULT 1 & Habilitar notificaciones a través del navegador. \\ \hline
+\texttt{privacy\_show\_phone} & TINYINT(1) & DEFAULT 1 & Mostrar el número telefónico de manera pública. \\ \hline
+\texttt{privacy\_show\_email} & TINYINT(1) & DEFAULT 0 & Mostrar la dirección de correo de manera pública. \\ \hline
+\texttt{privacy\_who\_can\_message} & ENUM & DEFAULT `all\textquotesingle & Restricción de chat: \texttt{all}, \texttt{verified}, \texttt{nobody}. \\ \hline
+\end{tabularx}
+\end{table}
+
+\subsection{Tabla: \texttt{activity\_log}}
+Registra una bitácora histórica inmutable de las operaciones llevadas a cabo en la administración.
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|l|L|}
+\hline
+\rowcolor{LightGray}\textbf{Campo} & \textbf{Tipo} & \textbf{Restricción} & \textbf{Descripción} \\ \hline
+\texttt{id} & INT & PK, AUTO\_INC & Identificador secuencial del log de auditoría. \\ \hline
+\texttt{admin\_id} & INT & FK $\rightarrow$ \texttt{users.id} & ID del administrador ejecutor (NULL si es acción del sistema). \\ \hline
+\texttt{action} & TEXT & NOT NULL & Descripción textual de la labor ejecutada. \\ \hline
+\texttt{created\_at} & TIMESTAMP & DEFAULT CURRENT & Fecha y hora en la que se grabó la acción. \\ \hline
+\end{tabularx}
+\end{table}
+
+\subsection{Índices y restricciones de base de datos}
+La siguiente tabla documenta los índices y restricciones adicionales definidos sobre las tablas del sistema para garantizar rendimiento e integridad:
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|l|L|}
+\hline
+\rowcolor{NavyBlue}\color{white}\textbf{Nombre del índice} & \color{white}\textbf{Tabla} & \color{white}\textbf{Tipo} & \color{white}\textbf{Propósito} \\ \hline
+\texttt{idx\_admin\_status} & \texttt{products} & INDEX & Acelera filtros por estado de moderación (\texttt{admin\_status}) en búsquedas del marketplace. Referenciado en RF-06. \\ \hline
+\texttt{idx\_city} & \texttt{products} & INDEX & Optimiza las consultas de búsqueda geográfica filtradas por ciudad resuelta. Referenciado en RF-06. \\ \hline
+\texttt{uk\_user\_product} & \texttt{favorites} & UNIQUE & Impide el registro duplicado del mismo producto como favorito por el mismo usuario. Referenciado en RF-09. \\ \hline
+\texttt{uk\_review\_product\_user} & \texttt{reviews} & UNIQUE & Garantiza un máximo de una reseña por combinación de producto y usuario. Referenciado en RF-11. \\ \hline
+\texttt{idx\_conversation\_participants} & \texttt{conversations} & INDEX & Acelera la consulta de hilos por \texttt{buyer\_id} y \texttt{seller\_id}. Referenciado en RF-07. \\ \hline
+\end{tabularx}
+\caption{Índices y restricciones de integridad de la base de datos \texttt{tiendalocal}.}
+\end{table}
+
+\newpage
+\section{Apéndice B: Flujos y diagramas del sistema}
+
+Esta sección describe los flujos principales del sistema que deben ser representados mediante diagramas formales. Se recomienda utilizar herramientas como draw.io, PlantUML o Lucidchart para su generación y adjuntarlos como imágenes exportadas en formato PDF o PNG.
+
+\subsection{B.1 Diagrama de Casos de Uso (UML)}
+Debe representar los cuatro actores del sistema (\texttt{User}, \texttt{Seller}, \texttt{Admin}, \texttt{Super\_admin}) y los 21 casos de uso funcionales agrupados por módulo (Autenticación, Marketplace, Chat, Moderación, Administración). Este diagrama es la representación más alta de la interacción usuario-sistema.
+
+\subsection{B.2 Diagrama Entidad-Relación (ER)}
+Representación gráfica de las 14 tablas de la base de datos \texttt{tiendalocal} y sus relaciones de integridad referencial (FK). Debe incluir cardinalidades (1:N, N:M) y las restricciones de unicidad documentadas en el Apéndice A.
+
+\subsection{B.3 Diagrama de Secuencia: Flujo de Chat WebSocket}
+Modelar la secuencia completa del flujo de mensajería en tiempo real:
+\begin{enumerate}
+    \item Usuario hace clic en ``Contactar vendedor'' (Browser).
+    \item Browser establece conexión WebSocket con \texttt{server.php:8080}.
+    \item Browser envía payload \texttt{\{type: "init", conversation\_id: X, user\_id: Y\}}.
+    \item \texttt{server.php} valida participante contra MySQL (\texttt{conversations}).
+    \item Si es participante válido: Browser envía mensaje de tipo \texttt{message}.
+    \item \texttt{server.php} retransmite a los participantes conectados y realiza POST interno para persistir en \texttt{messages}.
+    \item Si no es participante: \texttt{server.php} cierra conexión WS con código 4001.
+\end{enumerate}
+
+\subsection{B.4 Diagrama de Secuencia: Registro y Autenticación}
+Modelar el flujo completo desde el formulario HTML de registro hasta la inserción en BD, generación de sesión segura y redirección post-login, incluyendo los puntos de validación CSRF y hash bcrypt.
+
+\subsection{B.5 Diagrama de Flujo: Geolocalización inversa}
+Modelar el flujo de captura de coordenadas GPS mediante Leaflet.js, la petición HTTPS a la API de Nominatim, la extracción del campo de ciudad del JSON de respuesta y su inserción en los campos ocultos del formulario de creación de producto.
+
+\newpage
+\section{Apéndice C: Matriz de Trazabilidad de Requisitos}
+
+La siguiente matriz vincula cada requisito funcional con su módulo de implementación principal, las tablas de base de datos afectadas y el identificador del caso de prueba planificado. Esta matriz es el instrumento fundamental para asegurar que cada requisito sea implementado, verificado y validado de forma completa.
+
+\begin{longtable}{|l|p{5.5cm}|p{5cm}|l|}
+\hline
+\rowcolor{NavyBlue}\color{white}\textbf{ID Req.} & \color{white}\textbf{Módulo / Archivo principal} & \color{white}\textbf{Tablas BD afectadas} & \color{white}\textbf{ID Prueba} \\ \hline
+\endfirsthead
+\hline
+\rowcolor{NavyBlue}\color{white}\textbf{ID Req.} & \color{white}\textbf{Módulo / Archivo principal} & \color{white}\textbf{Tablas BD afectadas} & \color{white}\textbf{ID Prueba} \\ \hline
+\endhead
+RF-01 & \texttt{src/controllers/auth/register.php}, \texttt{src/controllers/auth/login.php} & \texttt{users}, \texttt{user\_settings} & TC-01 \\ \hline
+RF-02 & \texttt{src/views/profile/}, \texttt{src/controllers/profile/} & \texttt{users}, \texttt{user\_settings} & TC-02 \\ \hline
+RF-03 & \texttt{src/controllers/products/create.php} & \texttt{products}, \texttt{categories}, \texttt{product\_images} & TC-03 \\ \hline
+RF-04 & \texttt{src/views/create\_product/} (Leaflet.js), API Nominatim & \texttt{products} (lat, lng, city) & TC-04 \\ \hline
+RF-05 & \texttt{src/api/upload/}, \texttt{src/controllers/products/} & \texttt{product\_images} & TC-05 \\ \hline
+RF-06 & \texttt{src/api/products/search.php} & \texttt{products}, \texttt{categories} (+ índices) & TC-06 \\ \hline
+RF-07 & \texttt{server.php} (WebSocket Daemon) & \texttt{conversations} & TC-07 \\ \hline
+RF-08 & \texttt{server.php}, \texttt{src/api/messages/save.php} & \texttt{messages} & TC-08 \\ \hline
+RF-09 & \texttt{src/api/favorites/toggle.php} & \texttt{favorites} & TC-09 \\ \hline
+RF-10 & \texttt{src/controllers/promotions/} & \texttt{product\_promotions}, \texttt{products} & TC-10 \\ \hline
+RF-11 & \texttt{src/api/reviews/} & \texttt{reviews}, \texttt{conversations} & TC-11 \\ \hline
+RF-12 & \texttt{src/controllers/verify/submit.php} & \texttt{seller\_verifications} & TC-12 \\ \hline
+RF-13 & \texttt{src/views/admin/} & \texttt{users}, \texttt{products}, \texttt{activity\_log} & TC-13 \\ \hline
+RF-14 & \texttt{src/views/admin/reports/} & \texttt{product\_reports}, \texttt{user\_reports}, \texttt{activity\_log} & TC-14 \\ \hline
+RF-15 & \texttt{src/config/logger.php} & \texttt{activity\_log} & TC-15 \\ \hline
+RF-16 & \texttt{src/config/role\_sync.php} & \texttt{users} & TC-16 \\ \hline
+RF-17 & \texttt{src/api/conversations/hide.php} & \texttt{conversations} & TC-17 \\ \hline
+RF-18 & \texttt{src/api/products/view.php} & \texttt{products} (campo \texttt{views}) & TC-18 \\ \hline
+RF-19 & \texttt{src/config/mailer.php} & \texttt{user\_settings} & TC-19 \\ \hline
+RF-20 & \texttt{src/api/messages/mark\_read.php} & \texttt{messages} (campo \texttt{is\_read}) & TC-20 \\ \hline
+RF-21 & \texttt{src/api/products/status.php} & \texttt{products} (campo \texttt{status}) & TC-21 \\ \hline
+\caption{Matriz de trazabilidad RF -- Implementación -- Base de datos -- Pruebas.}
+\end{longtable}
+
+\vspace{1cm}
+\noindent\textbf{Nota sobre los IDs de prueba:} Los casos de prueba TC-01 a TC-21 deben ser detallados en un documento separado de Plan de Pruebas, especificando para cada uno: precondiciones, pasos de ejecución, datos de entrada, resultado esperado y criterio de aceptación. Este documento de Plan de Pruebas es un entregable complementario a la presente ERS.
+
+\end{document}

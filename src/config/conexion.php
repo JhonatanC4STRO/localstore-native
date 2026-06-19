@@ -16,8 +16,19 @@ if ($mysql_url) {
     $port = (int)trim(getenv('DB_PORT') ?: getenv('MYSQLPORT') ?: '3306');
 }
 
-$conn = mysqli_connect($host, $user, $pass, $db, $port);
+require_once __DIR__ . '/logger.php';
 
-if (!$conn) {
-    die('Error de conexión: ' . mysqli_connect_error());
+try {
+    mysqli_report(MYSQLI_REPORT_OFF); // Evita excepciones nativas automáticas ruidosas que revelan rutas
+    $conn = @mysqli_connect($host, $user, $pass, $db, $port);
+    if (!$conn) {
+        throw new Exception(mysqli_connect_error());
+    }
+} catch (Throwable $e) {
+    log_error("Fallo de conexión a la base de datos: " . $e->getMessage(), 'DATABASE');
+    http_response_code(500);
+    die("<div style='font-family:\"Outfit\",sans-serif; text-align:center; padding:50px; color:#334155;'>
+            <h2 style='color:#ef4444;'>Error Interno de Servidor</h2>
+            <p>Lo sentimos, ha ocurrido un problema técnico en la plataforma. Por favor, inténtelo de nuevo más tarde.</p>
+         </div>");
 }

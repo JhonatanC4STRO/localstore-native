@@ -1,0 +1,60 @@
+\babel@toc {spanish}{}\relax 
+\contentsline {chapter}{Ficha del documento}{1}{chapter*.1}%
+\contentsline {chapter}{\numberline {1}Introducción}{4}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Propósito}{4}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Alcance}{4}{section.1.2}%
+\contentsline {subsection}{\numberline {1.2.1}Fuera del alcance}{5}{subsection.1.2.1}%
+\contentsline {section}{\numberline {1.3}Personal involucrado}{5}{section.1.3}%
+\contentsline {section}{\numberline {1.4}Definiciones, acrónimos y abreviaturas}{5}{section.1.4}%
+\contentsline {subsection}{\numberline {1.4.1}Términos técnicos}{5}{subsection.1.4.1}%
+\contentsline {subsection}{\numberline {1.4.2}Términos de dominio del negocio}{6}{subsection.1.4.2}%
+\contentsline {section}{\numberline {1.5}Referencias}{7}{section.1.5}%
+\contentsline {section}{\numberline {1.6}Resumen}{8}{section.1.6}%
+\contentsline {chapter}{\numberline {2}Descripción General}{9}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Perspectiva del producto}{9}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Funcionalidad del producto}{10}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Características de los usuarios}{10}{section.2.3}%
+\contentsline {section}{\numberline {2.4}Restricciones}{10}{section.2.4}%
+\contentsline {section}{\numberline {2.5}Suposiciones y dependencias}{11}{section.2.5}%
+\contentsline {section}{\numberline {2.6}Distribución de requisitos}{11}{section.2.6}%
+\contentsline {section}{\numberline {2.7}Evolución previsible del sistema}{12}{section.2.7}%
+\contentsline {chapter}{\numberline {3}Requisitos Específicos}{13}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Requisitos comunes de los interfaces}{13}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}Interfaces de usuario}{13}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.1.2}Interfaces de hardware}{13}{subsection.3.1.2}%
+\contentsline {subsection}{\numberline {3.1.3}Interfaces de software}{13}{subsection.3.1.3}%
+\contentsline {subsection}{\numberline {3.1.4}Interfaces de comunicación}{14}{subsection.3.1.4}%
+\contentsline {section}{\numberline {3.2}Requisitos funcionales}{15}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Requisitos no funcionales}{36}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}Requisitos de rendimiento}{36}{subsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.3.2}Seguridad}{36}{subsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.3.3}Fiabilidad}{37}{subsection.3.3.3}%
+\contentsline {subsection}{\numberline {3.3.4}Usabilidad}{37}{subsection.3.3.4}%
+\contentsline {subsection}{\numberline {3.3.5}Disponibilidad}{38}{subsection.3.3.5}%
+\contentsline {subsection}{\numberline {3.3.6}Mantenibilidad}{38}{subsection.3.3.6}%
+\contentsline {subsection}{\numberline {3.3.7}Portabilidad}{38}{subsection.3.3.7}%
+\contentsline {section}{\numberline {3.4}Requisitos legales y de privacidad}{38}{section.3.4}%
+\contentsline {chapter}{\numberline {4}Apéndices}{40}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Apéndice A: Diccionario de datos de la base de datos}{40}{section.4.1}%
+\contentsline {subsection}{\numberline {4.1.1}Tabla: \texttt {users}}{40}{subsection.4.1.1}%
+\contentsline {subsection}{\numberline {4.1.2}Tabla: \texttt {products}}{41}{subsection.4.1.2}%
+\contentsline {subsection}{\numberline {4.1.3}Tabla: \texttt {categories}}{41}{subsection.4.1.3}%
+\contentsline {subsection}{\numberline {4.1.4}Tabla: \texttt {product\_images}}{41}{subsection.4.1.4}%
+\contentsline {subsection}{\numberline {4.1.5}Tabla: \texttt {conversations}}{42}{subsection.4.1.5}%
+\contentsline {subsection}{\numberline {4.1.6}Tabla: \texttt {messages}}{42}{subsection.4.1.6}%
+\contentsline {subsection}{\numberline {4.1.7}Tabla: \texttt {favorites}}{42}{subsection.4.1.7}%
+\contentsline {subsection}{\numberline {4.1.8}Tabla: \texttt {reviews}}{43}{subsection.4.1.8}%
+\contentsline {subsection}{\numberline {4.1.9}Tabla: \texttt {product\_promotions}}{43}{subsection.4.1.9}%
+\contentsline {subsection}{\numberline {4.1.10}Tabla: \texttt {product\_reports}}{43}{subsection.4.1.10}%
+\contentsline {subsection}{\numberline {4.1.11}Tabla: \texttt {user\_reports}}{44}{subsection.4.1.11}%
+\contentsline {subsection}{\numberline {4.1.12}Tabla: \texttt {seller\_verifications}}{44}{subsection.4.1.12}%
+\contentsline {subsection}{\numberline {4.1.13}Tabla: \texttt {user\_settings}}{45}{subsection.4.1.13}%
+\contentsline {subsection}{\numberline {4.1.14}Tabla: \texttt {activity\_log}}{46}{subsection.4.1.14}%
+\contentsline {subsection}{\numberline {4.1.15}Índices y restricciones de base de datos}{46}{subsection.4.1.15}%
+\contentsline {section}{\numberline {4.2}Apéndice B: Flujos y diagramas del sistema}{48}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}B.1 Diagrama de Casos de Uso (UML)}{48}{subsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.2.2}B.2 Diagrama Entidad-Relación (ER)}{48}{subsection.4.2.2}%
+\contentsline {subsection}{\numberline {4.2.3}B.3 Diagrama de Secuencia: Flujo de Chat WebSocket}{48}{subsection.4.2.3}%
+\contentsline {subsection}{\numberline {4.2.4}B.4 Diagrama de Secuencia: Registro y Autenticación}{48}{subsection.4.2.4}%
+\contentsline {subsection}{\numberline {4.2.5}B.5 Diagrama de Flujo: Geolocalización inversa}{48}{subsection.4.2.5}%
+\contentsline {section}{\numberline {4.3}Apéndice C: Matriz de Trazabilidad de Requisitos}{49}{section.4.3}%

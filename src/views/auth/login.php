@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once "../../config/conexion.php";
 ?>
 <!DOCTYPE html>
@@ -114,8 +115,8 @@ require_once "../../config/conexion.php";
         <p class="form-sub">Inicia sesión para acceder a tus anuncios, mensajes y favoritos.</p>
       </div>
 
-      <!-- ── LOGIC PRESERVED: action, method, name attrs ── -->
       <form action="../../controllers/auth_login.php" method="POST">
+        <?php require_once __DIR__ . "/../../config/csrf.php"; insert_csrf_input(); ?>
 
         <div class="form-group">
           <label class="form-label" for="email">

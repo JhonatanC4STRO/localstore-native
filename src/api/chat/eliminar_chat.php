@@ -8,7 +8,7 @@
 ══════════════════════════════════════ */
 
 session_start();
-include(__DIR__ . '/../../config/conexion.php');
+require_once __DIR__ . '/../../config/conexion.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -39,22 +39,34 @@ if ($conversation_id <= 0) {
     exit();
 }
 
-// ── 4. Verificar pertenencia y rol ────
-$sql_auth = "SELECT id, buyer_id, seller_id
-             FROM conversations
-             WHERE id = $conversation_id
-               AND (buyer_id = $user_id OR seller_id = $user_id)
-             LIMIT 1";
+// ── 4. Verificar pertenencia y rol usando consulta preparada ────
+$stmt_auth = mysqli_prepare($conn, "
+    SELECT id, buyer_id, seller_id
+    FROM conversations
+    WHERE id = ?
+      AND (buyer_id = ? OR seller_id = ?)
+    LIMIT 1
+");
 
-$res_auth = mysqli_query($conn, $sql_auth);
+if (!$stmt_auth) {
+    http_response_code(500);
+    echo json_encode(['ok' => false, 'error' => 'Error de servidor al validar acceso']);
+    exit();
+}
+
+mysqli_stmt_bind_param($stmt_auth, "iii", $conversation_id, $user_id, $user_id);
+mysqli_stmt_execute($stmt_auth);
+$res_auth = mysqli_stmt_get_result($stmt_auth);
 
 if (!$res_auth || mysqli_num_rows($res_auth) === 0) {
+    mysqli_stmt_close($stmt_auth);
     http_response_code(403);
     echo json_encode(['ok' => false, 'error' => 'No tienes permiso para eliminar este chat']);
     exit();
 }
 
 $conv = mysqli_fetch_assoc($res_auth);
+mysqli_stmt_close($stmt_auth);
 
 // ── 5. Determinar qué columna marcar ──
 if ((int) $conv['buyer_id'] === $user_id) {
@@ -63,25 +75,52 @@ if ((int) $conv['buyer_id'] === $user_id) {
     $campo = 'hidden_by_seller';
 }
 
-// ── 6. Soft-delete solo para este usuario ──
-$ok = mysqli_query($conn, "UPDATE conversations SET $campo = 1 WHERE id = $conversation_id");
+// ── 6. Soft-delete solo para este usuario usando consulta preparada ──
+// Nota: $campo es seguro al ser validado por el servidor, pero parametrizamos el ID.
+$stmt_upd = mysqli_prepare($conn, "UPDATE conversations SET $campo = 1 WHERE id = ?");
+$ok = false;
+if ($stmt_upd) {
+    mysqli_stmt_bind_param($stmt_upd, "i", $conversation_id);
+    $ok = mysqli_stmt_execute($stmt_upd);
+    mysqli_stmt_close($stmt_upd);
+}
 
 if (!$ok) {
-    error_log("Error soft-delete: " . mysqli_error($conn));
     http_response_code(500);
     echo json_encode(['ok' => false, 'error' => 'Error al eliminar la conversación']);
     exit();
 }
 
-// ── 7. Si AMBOS la eliminaron → borrar definitivamente ──
-$res_both = mysqli_query($conn, "SELECT id FROM conversations
-                                  WHERE id = $conversation_id
-                                    AND hidden_by_buyer  = 1
-                                    AND hidden_by_seller = 1 LIMIT 1");
+// ── 7. Si AMBOS la eliminaron → borrar definitivamente usando consultas preparadas ──
+$stmt_both = mysqli_prepare($conn, "
+    SELECT id FROM conversations
+    WHERE id = ?
+      AND hidden_by_buyer  = 1
+      AND hidden_by_seller = 1
+    LIMIT 1
+");
 
-if ($res_both && mysqli_num_rows($res_both) > 0) {
-    mysqli_query($conn, "DELETE FROM messages      WHERE conversation_id = $conversation_id");
-    mysqli_query($conn, "DELETE FROM conversations WHERE id = $conversation_id");
+if ($stmt_both) {
+    mysqli_stmt_bind_param($stmt_both, "i", $conversation_id);
+    mysqli_stmt_execute($stmt_both);
+    $res_both = mysqli_stmt_get_result($stmt_both);
+    
+    if ($res_both && mysqli_num_rows($res_both) > 0) {
+        $stmt_del_msg = mysqli_prepare($conn, "DELETE FROM messages WHERE conversation_id = ?");
+        if ($stmt_del_msg) {
+            mysqli_stmt_bind_param($stmt_del_msg, "i", $conversation_id);
+            mysqli_stmt_execute($stmt_del_msg);
+            mysqli_stmt_close($stmt_del_msg);
+        }
+        
+        $stmt_del_conv = mysqli_prepare($conn, "DELETE FROM conversations WHERE id = ?");
+        if ($stmt_del_conv) {
+            mysqli_stmt_bind_param($stmt_del_conv, "i", $conversation_id);
+            mysqli_stmt_execute($stmt_del_conv);
+            mysqli_stmt_close($stmt_del_conv);
+        }
+    }
+    mysqli_stmt_close($stmt_both);
 }
 
 echo json_encode([

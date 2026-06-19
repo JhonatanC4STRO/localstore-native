@@ -10,6 +10,12 @@ if (!isset($_SESSION['user'])) {
 
 // Procesar guardado del formulario
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
+    require_once __DIR__ . '/../../config/csrf.php';
+    if (!verify_csrf_token($_POST['csrf_token'] ?? null)) {
+        log_error("Fallo de validación de token CSRF al editar producto.", "SECURITY");
+        die("Fallo de validación de seguridad (CSRF). Intente nuevamente.");
+    }
+
     $product_id = intval($_POST['product_id']);
     $user_id = $_SESSION['user']['id'];
 
@@ -78,8 +84,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
                 mkdir($upload_dir, 0755, true);
             }
 
+            $allowed_mimes = ['image/jpeg', 'image/png', 'image/webp'];
+
             foreach ($_FILES['fotos']['tmp_name'] as $key => $tmp_name) {
                 if ($_FILES['fotos']['error'][$key] === UPLOAD_ERR_OK) {
+                    
+                    // A. Validar tamaño máximo (5MB)
+                    $size = $_FILES['fotos']['size'][$key] ?? 0;
+                    if ($size > 5 * 1024 * 1024) {
+                        header("Location: edit.php?id=" . $product_id . "&error=" . urlencode('Las fotos no deben superar los 5MB de tamaño.'));
+                        exit();
+                    }
+
+                    // B. Validar tipo MIME real de forma segura
+                    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                    $mime = finfo_file($finfo, $tmp_name);
+                    finfo_close($finfo);
+
+                    if (!in_array($mime, $allowed_mimes, true)) {
+                        header("Location: edit.php?id=" . $product_id . "&error=" . urlencode('Formato de imagen no permitido. Solo se admiten JPG, PNG o WebP.'));
+                        exit();
+                    }
+
                     $file_name = $_FILES['fotos']['name'][$key];
                     $file_ext = pathinfo($file_name, PATHINFO_EXTENSION);
                     $new_file_name = time() . "_" . bin2hex(random_bytes(4)) . "." . $file_ext;
@@ -206,8 +232,16 @@ $userName    = $isLoggedIn ? explode(' ', $user['full_name'])[0] : '';
                 </button>
             </div>
 
+            <?php if (isset($_GET['error'])): ?>
+                <div style="background: rgba(239, 68, 68, 0.08); border: 1.5px solid rgba(239, 68, 68, 0.25); border-radius: 12px; padding: 14px; margin-bottom: 20px; color: #b91c1c; font-size: 0.88rem; display: flex; gap: 10px; align-items: center;">
+                    <i class="bi bi-exclamation-circle-fill" style="color:#ef4444; font-size:1.15rem;"></i>
+                    <span><strong>Error:</strong> <?= htmlspecialchars($_GET['error']) ?></span>
+                </div>
+            <?php endif; ?>
+
             <!-- ══ FORM — LOGIC PRESERVED ══ -->
             <form id="editForm" action="./edit.php?id=<?php echo htmlspecialchars($id); ?>" method="POST" enctype="multipart/form-data">
+                <?php require_once __DIR__ . "/../../config/csrf.php"; insert_csrf_input(); ?>
                 <input type="hidden" name="product_id" value="<?php echo htmlspecialchars($id); ?>">
                 <input type="hidden" name="latitude" id="latitude" value="<?php echo htmlspecialchars($product['latitude'] ?? ''); ?>">
                 <input type="hidden" name="longitude" id="longitude" value="<?php echo htmlspecialchars($product['longitude'] ?? ''); ?>">

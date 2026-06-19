@@ -21,6 +21,12 @@ if (!isset($_SESSION['user']['id'])) {
 }
 
 $uid = (int)$_SESSION['user']['id'];
-$ok  = mysqli_query($conn, "DELETE FROM search_history WHERE user_id = $uid");
+$stmt = mysqli_prepare($conn, "DELETE FROM search_history WHERE user_id = ?");
+$ok = false;
+if ($stmt) {
+    mysqli_stmt_bind_param($stmt, "i", $uid);
+    $ok = mysqli_stmt_execute($stmt);
+    mysqli_stmt_close($stmt);
+}
 
 echo json_encode(['success' => (bool)$ok]);

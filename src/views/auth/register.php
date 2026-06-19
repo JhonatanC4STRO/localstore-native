@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once "../../config/conexion.php";
 ?>
 <!DOCTYPE html>
@@ -115,8 +116,21 @@ require_once "../../config/conexion.php";
         </div>
       </div>
 
-      <!-- ── LOGIC 100% PRESERVED: action, method, name attrs ── -->
+      <?php if (isset($_GET['error'])):
+        $err = $_GET['error'];
+        $msg = match ($err) {
+            'invalid_email' => 'El correo electrónico ingresado no es válido.',
+            'email_exists'  => 'El correo electrónico ya se encuentra registrado.',
+            default         => 'Ocurrió un error al registrar la cuenta. Por favor intente nuevamente.',
+        };
+      ?>
+        <div style="color: #ef4444; font-size: 0.875rem; margin-bottom: 1rem; text-align: center; font-weight: 600;">
+          <i class="bi bi-exclamation-circle-fill"></i> <?= htmlspecialchars($msg) ?>
+        </div>
+      <?php endif; ?>
+
       <form action="../../controllers/auth_register.php" method="POST" id="regForm" novalidate>
+        <?php require_once __DIR__ . "/../../config/csrf.php"; insert_csrf_input(); ?>
         <input type="hidden" name="type_user" id="type_user" value="usuario">
         <div class="section-label">Tus datos</div>
 

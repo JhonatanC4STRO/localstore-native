@@ -58,7 +58,15 @@
       "Bash(node --check C:/laragon/www/localstore-native/public/js/home.js)",
       "Bash(node --check C:/laragon/www/localstore-native/public/js/crear.js)",
       "Bash(node --check C:/laragon/www/localstore-native/public/js/edit.js)",
-      "Bash(node --check C:/laragon/www/localstore-native/public/js/all.js)"
+      "Bash(node --check C:/laragon/www/localstore-native/public/js/all.js)",
+      "Bash(Get-ChildItem -Path \"c:\\\\laragon\\\\www\\\\localstore-native\" -Force)",
+      "Bash(Select-Object FullName, PSIsContainer)",
+      "Bash(Sort-Object FullName)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(node -e \"const pkg = require\\('./node_modules/@astrojs/starlight/package.json'\\); console.log\\(pkg.version\\)\")",
+      "Bash(dir \"c:\\\\laragon\\\\www\\\\localstore-native\\\\docs\\\\dist\")",
+      "Bash(node -e ' *)"
     ]
   }
 }

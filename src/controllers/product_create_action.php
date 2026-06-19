@@ -14,8 +14,16 @@ function redirect_error(string $msg): void
     exit();
 }
 
+require_once __DIR__ . "/../config/csrf.php";
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect_error('Método no permitido');
+}
+
+// Validar token CSRF
+if (!verify_csrf_token($_POST['csrf_token'] ?? null)) {
+    log_error("Fallo de validación de token CSRF al crear producto.", "SECURITY");
+    redirect_error('Fallo de validación de seguridad (CSRF). Intente nuevamente.');
 }
 
 $nombre       = trim($_POST['nombre'] ?? '');
@@ -120,8 +128,26 @@ if (isset($_FILES['fotos']) && is_array($_FILES['fotos']['tmp_name'])) {
     $uploadDir = __DIR__ . '/../../public/uploads/products/';
     if (!is_dir($uploadDir)) @mkdir($uploadDir, 0755, true);
 
+    $allowed_mimes = ['image/jpeg', 'image/png', 'image/webp'];
+
     foreach ($_FILES['fotos']['tmp_name'] as $key => $tmp_name) {
         if (($_FILES['fotos']['error'][$key] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) continue;
+        
+        // 1. Validar tamaño máximo (5MB)
+        $size = $_FILES['fotos']['size'][$key] ?? 0;
+        if ($size > 5 * 1024 * 1024) {
+            redirect_error('Las fotos no deben superar los 5MB de tamaño.');
+        }
+
+        // 2. Validar tipo MIME real de forma segura
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime = finfo_file($finfo, $tmp_name);
+        finfo_close($finfo);
+
+        if (!in_array($mime, $allowed_mimes, true)) {
+            redirect_error('Formato de imagen no permitido. Solo se admiten fotos en formato JPG, PNG o WebP.');
+        }
+
         $origName  = $_FILES['fotos']['name'][$key] ?? '';
         $image_name = time() . "_" . preg_replace('/[^A-Za-z0-9._-]/', '_', $origName);
         $path = $uploadDir . $image_name;
@@ -129,6 +155,7 @@ if (isset($_FILES['fotos']) && is_array($_FILES['fotos']['tmp_name'])) {
             $imgStmt = mysqli_prepare($conn, "INSERT INTO product_images (product_id, image_url) VALUES (?, ?)");
             mysqli_stmt_bind_param($imgStmt, 'is', $product_id, $image_name);
             mysqli_stmt_execute($imgStmt);
+            mysqli_stmt_close($imgStmt);
         }
     }
 }
