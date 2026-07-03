@@ -243,11 +243,14 @@
         socket.close();
       }
 
-      const wsProto = window.location.protocol === 'https:' ? 'wss' : 'ws';
-      const wsHost  = window.location.hostname;
+      // En HTTPS el proxy inverso (Traefik/Dokploy) enruta /chat al puerto
+      // interno 8080; en local se conecta directo al puerto.
+      const wsUrl = window.location.protocol === 'https:'
+        ? `wss://${window.location.hostname}/chat`
+        : `ws://${window.location.hostname}:8080/chat`;
 
       try {
-        socket = new WebSocket(`${wsProto}://${wsHost}:8080/chat`);
+        socket = new WebSocket(wsUrl);
 
         socket.onopen = () => {
           _wsReconnectDelay = 1000; // resetear backoff al conectar
